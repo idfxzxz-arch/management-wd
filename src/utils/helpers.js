@@ -1,6 +1,3 @@
-import { divisions } from "../data/divisions";
-import { employees } from "../data/employees";
-
 export const roleAccess = {
   Owner: ["Owner"],
   Head: ["Owner", "Kepala Divisi"],
@@ -9,11 +6,11 @@ export const roleAccess = {
 
 export function divisionName(id) {
   if (id === "all") return "Semua Divisi";
-  return divisions.find((division) => division.id === id)?.name || "-";
+  return id || "-";
 }
 
 export function employeeName(id) {
-  return employees.find((employee) => employee.id === id)?.name || "-";
+  return id || "-";
 }
 
 export function scopedByDivision(items, user) {
@@ -27,4 +24,23 @@ export function currencyDate(value) {
 
 export function contains(value, query) {
   return String(value).toLowerCase().includes(query.toLowerCase());
+}
+
+export function detectPerformance({ averageProgress = 0, completedTasks = 0, targetTasks = 1, lateTasks = 0, revisionTasks = 0 }) {
+  const completionRate = Math.round((completedTasks / Math.max(targetTasks, 1)) * 100);
+  const score = Math.max(0, Math.round(averageProgress * 0.55 + completionRate * 0.35 - lateTasks * 12 - revisionTasks * 5));
+
+  if (score >= 85) {
+    return { label: "Sangat Baik", tone: "green", score, recommendation: "Pertahankan ritme kerja dan jadikan contoh untuk anggota lain." };
+  }
+
+  if (score >= 70) {
+    return { label: "Baik", tone: "blue", score, recommendation: "Kinerja stabil, tinggal rapikan kendala kecil dan dokumentasi." };
+  }
+
+  if (score >= 55) {
+    return { label: "Perlu Perhatian", tone: "yellow", score, recommendation: "Perlu follow up target, blocker, dan revisi agar tidak menumpuk." };
+  }
+
+  return { label: "Butuh Monitoring", tone: "red", score, recommendation: "Perlu monitoring harian dan prioritas ulang tugas yang terlambat." };
 }

@@ -1,11 +1,13 @@
 import { Link, useParams } from "react-router-dom";
-import { minutes } from "../data/minutes";
-import { divisionName } from "../utils/helpers";
+import { useAppData } from "../data/AppDataProvider";
 import { Page } from "./Divisions";
 
 export default function MinuteDetail() {
   const { id } = useParams();
+  const { minutes, divisionName, loading, error } = useAppData();
   const minute = minutes.find((item) => String(item.id) === id);
+  if (loading) return <Page title="Detail Notulen"><p className="text-slate-500">Memuat data Supabase...</p></Page>;
+  if (error) return <Page title="Detail Notulen"><p className="text-amber-700">{error}</p></Page>;
   if (!minute) return <Page title="Detail Notulen"><p className="text-slate-500">Notulen tidak ditemukan.</p></Page>;
 
   return (

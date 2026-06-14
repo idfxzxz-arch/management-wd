@@ -1,18 +1,20 @@
 import { useState } from "react";
 import Badge from "../components/Badge";
 import DataTable from "../components/DataTable";
-import { tasks } from "../data/tasks";
 import { getCurrentUser } from "../utils/auth";
-import { divisionName, employeeName, scopedByDivision } from "../utils/helpers";
+import { useAppData } from "../data/AppDataProvider";
 import { Page } from "./Divisions";
 
 export default function TaskApproval() {
   const user = getCurrentUser();
+  const { tasks, divisionName, employeeName, scopedByDivision, loading, error } = useAppData();
   const [statuses, setStatuses] = useState({});
   const rows = scopedByDivision(tasks, user).filter((task) => task.approval !== "Approved");
 
   return (
-    <Page title="Approval Tugas" subtitle="Daftar tugas yang menunggu approval, approve dummy, dan revisi dummy.">
+    <Page title="Approval Tugas" subtitle="Daftar tugas yang menunggu approval, approve, dan revisi.">
+      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data Supabase...</div>}
+      {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       <DataTable
         rows={rows}
         columns={[

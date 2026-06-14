@@ -1,18 +1,42 @@
-import { users } from "../data/users";
+import { supabase, isSupabaseConfigured } from "../lib/supabase";
 
 const KEY = "wd_user";
 
-export function login(email, password) {
-  const user = users.find((item) => item.email === email && item.password === password);
-  if (!user) return null;
+export async function login(email, password) {
+  if (!isSupabaseConfigured) {
+    throw new Error("Supabase belum dikonfigurasi. Isi file .env terlebih dahulu.");
+  }
+
+  const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+  if (authError) throw authError;
+
+  const { data: user, error } = await supabase
+    .from("app_users")
+    .select("id,name,email,role,division_id,status")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!user) throw new Error("Akun Auth ditemukan, tetapi profil role belum ada di tabel app_users.");
+
   const safeUser = { ...user };
-  delete safeUser.password;
-  localStorage.setItem(KEY, JSON.stringify(safeUser));
-  return safeUser;
+  const normalizedUser = {
+    id: safeUser.id,
+    name: safeUser.name,
+    email: safeUser.email,
+    role: safeUser.role,
+    divisionId: safeUser.division_id,
+    status: safeUser.status,
+  };
+  localStorage.setItem(KEY, JSON.stringify(normalizedUser));
+  return normalizedUser;
 }
 
 export function logout() {
   localStorage.removeItem(KEY);
+  if (isSupabaseConfigured) {
+    supabase.auth.signOut();
+  }
 }
 
 export function getCurrentUser() {

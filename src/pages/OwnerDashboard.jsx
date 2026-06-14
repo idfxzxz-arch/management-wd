@@ -2,20 +2,39 @@ import { Activity, Building2, CheckCircle2, Clock, FileText, Users, XCircle } fr
 import StatCard from "../components/StatCard";
 import ProgressBar from "../components/ProgressBar";
 import Badge from "../components/Badge";
-import { divisions } from "../data/divisions";
-import { employees } from "../data/employees";
-import { tasks } from "../data/tasks";
-import { minutes } from "../data/minutes";
-import { activityLogs } from "../data/activityLogs";
+import { detectPerformance } from "../utils/helpers";
+import { useAppData } from "../data/AppDataProvider";
 
 export default function OwnerDashboard() {
+  const { divisions, employees, tasks, minutes, activityLogs, weeklyReports, loading, error } = useAppData();
   const done = tasks.filter((task) => task.status === "Selesai").length;
   const late = tasks.filter((task) => task.status === "Terlambat").length;
   const active = tasks.length - done;
-  const progress = Math.round(tasks.reduce((sum, task) => sum + task.progress, 0) / tasks.length);
+  const progress = tasks.length ? Math.round(tasks.reduce((sum, task) => sum + task.progress, 0) / tasks.length) : 0;
+  const weeklyTotals = weeklyReports.reduce(
+    (acc, report) => {
+      acc.completed += report.completedTasks;
+      acc.target += report.targetTasks;
+      acc.late += report.lateTasks;
+      acc.revision += report.revisionTasks;
+      acc.progress += report.averageProgress;
+      return acc;
+    },
+    { completed: 0, target: 0, late: 0, revision: 0, progress: 0 }
+  );
+  const weeklyAverage = weeklyReports.length ? Math.round(weeklyTotals.progress / weeklyReports.length) : 0;
+  const weeklyPerformance = detectPerformance({
+    averageProgress: weeklyAverage,
+    completedTasks: weeklyTotals.completed,
+    targetTasks: weeklyTotals.target,
+    lateTasks: weeklyTotals.late,
+    revisionTasks: weeklyTotals.revision,
+  });
 
   return (
     <div className="space-y-6">
+      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data Supabase...</div>}
+      {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       <div className="surface-panel overflow-hidden">
         <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#0b1f3a_0%,#12305a_58%,#173b6d_100%)] px-5 py-5 text-white sm:px-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -49,10 +68,11 @@ export default function OwnerDashboard() {
         <StatCard title="Tugas Terlambat" value={late} icon={XCircle} tone="red" />
         <StatCard title="Total Notulen" value={minutes.length} icon={FileText} tone="slate" />
         <StatCard title="Progress Perusahaan" value={`${progress}%`} icon={Activity} tone="green" />
+        <StatCard title="Kinerja Mingguan" value={weeklyPerformance.label} icon={Activity} tone={weeklyPerformance.tone} />
       </div>
       <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
         <section className="surface-panel p-5">
-          <h2 className="section-title font-semibold text-slate-900">Grafik Dummy Performa Divisi</h2>
+          <h2 className="section-title font-semibold text-slate-900">Grafik Performa Divisi</h2>
           <div className="mt-5 space-y-4">
             {divisions.map((division, index) => (
               <div key={division.id}>
@@ -85,6 +105,32 @@ export default function OwnerDashboard() {
       <section className="surface-panel p-5">
         <h2 className="section-title mb-4 font-semibold text-slate-900">Statistik Progress Perusahaan</h2>
         <ProgressBar value={progress} />
+      </section>
+      <section className="surface-panel p-5">
+        <div className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
+          <div>
+            <h2 className="section-title font-semibold text-slate-900">Deteksi Kinerja Perusahaan</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-500">{weeklyPerformance.recommendation}</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Badge>{weeklyPerformance.label}</Badge>
+              <Badge>{weeklyTotals.late > 0 ? "Perlu Perhatian" : "Selesai"}</Badge>
+            </div>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="rounded-lg border border-slate-200 bg-white/80 p-4">
+              <p className="text-xs font-semibold uppercase text-slate-400">Selesai / Target</p>
+              <p className="mt-2 text-2xl font-bold text-slate-900">{weeklyTotals.completed}/{weeklyTotals.target}</p>
+            </div>
+            <div className="rounded-lg border border-slate-200 bg-white/80 p-4">
+              <p className="text-xs font-semibold uppercase text-slate-400">Rata-rata Progress</p>
+              <p className="mt-2 text-2xl font-bold text-slate-900">{weeklyAverage}%</p>
+            </div>
+            <div className="rounded-lg border border-slate-200 bg-white/80 p-4">
+              <p className="text-xs font-semibold uppercase text-slate-400">Skor Deteksi</p>
+              <p className="mt-2 text-2xl font-bold text-slate-900">{weeklyPerformance.score}</p>
+            </div>
+          </div>
+        </div>
       </section>
     </div>
   );

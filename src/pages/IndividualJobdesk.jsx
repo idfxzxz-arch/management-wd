@@ -3,19 +3,22 @@ import { useMemo, useState } from "react";
 import Badge from "../components/Badge";
 import DataTable from "../components/DataTable";
 import ProgressBar from "../components/ProgressBar";
-import { tasks } from "../data/tasks";
 import { getCurrentUser } from "../utils/auth";
-import { contains, divisionName, employeeName, scopedByDivision } from "../utils/helpers";
+import { contains } from "../utils/helpers";
 import { Page, Search } from "./Divisions";
+import { useAppData } from "../data/AppDataProvider";
 
 export default function IndividualJobdesk() {
   const user = getCurrentUser();
+  const { tasks, divisionName, employeeName, scopedByDivision, loading, error } = useAppData();
   const [query, setQuery] = useState("");
   const base = user.role === "Staff" && user.divisionId !== "all" ? tasks.filter((task) => task.assigneeId === user.id) : scopedByDivision(tasks, user);
   const rows = useMemo(() => base.filter((task) => contains(task.title + task.description + employeeName(task.assigneeId) + task.assignedByName, query)), [query, base]);
 
   return (
     <Page title="Jobdesk Individu" subtitle="Daftar tugas per karyawan lengkap dengan catatan kepala divisi.">
+      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data Supabase...</div>}
+      {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       <Search value={query} setValue={setQuery} placeholder="Cari tugas, karyawan, atau catatan" />
       <DataTable
         rows={rows}

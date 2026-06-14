@@ -3,19 +3,19 @@ import StatCard from "../components/StatCard";
 import Badge from "../components/Badge";
 import ProgressBar from "../components/ProgressBar";
 import { getCurrentUser } from "../utils/auth";
-import { tasks } from "../data/tasks";
-import { minutes } from "../data/minutes";
-import { announcements } from "../data/announcements";
-import { employeeName } from "../utils/helpers";
+import { useAppData } from "../data/AppDataProvider";
 
 export default function StaffDashboard() {
   const user = getCurrentUser();
+  const { tasks, minutes, announcements, employeeName, loading, error } = useAppData();
   const personalTasks = user.divisionId === "all" ? tasks : tasks.filter((task) => task.assigneeId === user.id);
   const nearest = [...personalTasks].sort((a, b) => new Date(a.deadline) - new Date(b.deadline))[0];
   const unreadMinutes = user.divisionId === "all" ? minutes : minutes.filter((minute) => minute.divisionId === user.divisionId);
 
   return (
     <div className="space-y-6">
+      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data Supabase...</div>}
+      {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Dashboard Staff</h1>
         <p className="mt-1 text-sm text-slate-500">Ringkasan pekerjaan staff umum dan informasi internal.</p>
@@ -61,8 +61,8 @@ export default function StaffDashboard() {
           </div>
           <div className="rounded border border-slate-200 bg-white p-5 shadow-sm">
             <h2 className="font-semibold text-slate-900">Pengumuman Terbaru</h2>
-            <p className="mt-3 text-sm font-medium text-slate-800">{announcements[0].title}</p>
-            <p className="mt-1 text-sm text-slate-500">{announcements[0].content}</p>
+            <p className="mt-3 text-sm font-medium text-slate-800">{announcements[0]?.title || "Belum ada pengumuman"}</p>
+            <p className="mt-1 text-sm text-slate-500">{announcements[0]?.content || "Data akan muncul setelah pengumuman ditambahkan di Supabase."}</p>
           </div>
         </section>
       </div>

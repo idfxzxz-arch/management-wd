@@ -3,19 +3,19 @@ import StatCard from "../components/StatCard";
 import ProgressBar from "../components/ProgressBar";
 import Badge from "../components/Badge";
 import { getCurrentUser } from "../utils/auth";
-import { divisionName, employeeName, scopedByDivision } from "../utils/helpers";
-import { employees } from "../data/employees";
-import { tasks } from "../data/tasks";
-import { minutes } from "../data/minutes";
+import { useAppData } from "../data/AppDataProvider";
 
 export default function HeadDashboard() {
   const user = getCurrentUser();
+  const { employees, tasks, minutes, divisionName, employeeName, scopedByDivision, loading, error } = useAppData();
   const divisionTasks = scopedByDivision(tasks, user);
   const members = scopedByDivision(employees, user).filter((employee) => employee.role !== "Owner");
   const latestMinutes = scopedByDivision(minutes, user).slice(0, 3);
 
   return (
     <div className="space-y-6">
+      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data Supabase...</div>}
+      {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Dashboard Kepala Divisi</h1>
         <p className="mt-1 text-sm text-slate-500">{user.divisionId === "all" ? "Akun demo umum untuk 5 Kepala Divisi" : divisionName(user.divisionId)}</p>

@@ -7,25 +7,35 @@ import AuthLayout from "../layouts/AuthLayout";
 const demos = [
   ["Owner", "owner@wdgroup.com"],
   ["Kepala Divisi", "head@wdgroup.com"],
-  ["Staff Umum", "staff@wdgroup.com"],
+  ["Staff", "staff@wdgroup.com"],
 ];
 
 export default function Login() {
   const navigate = useNavigate();
   const current = getCurrentUser();
-  const [form, setForm] = useState({ email: "owner@wdgroup.com", password: "123456" });
+  const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   if (current) return <Navigate to={dashboardPath(current.role)} replace />;
 
-  function submit(event) {
+  async function submit(event) {
     event.preventDefault();
-    const user = login(form.email, form.password);
-    if (!user) {
-      setError("Email atau password dummy tidak sesuai.");
-      return;
+    setLoading(true);
+    setError("");
+
+    try {
+      const user = await login(form.email, form.password);
+      if (!user) {
+        setError("Email atau password tidak sesuai dengan data Supabase.");
+        return;
+      }
+      navigate(dashboardPath(user.role), { replace: true });
+    } catch (loginError) {
+      setError(loginError.message);
+    } finally {
+      setLoading(false);
     }
-    navigate(dashboardPath(user.role), { replace: true });
   }
 
   return (
@@ -36,7 +46,7 @@ export default function Login() {
             <div className="inline-flex rounded-lg bg-white/10 px-3 py-1 text-sm font-semibold text-blue-100 ring-1 ring-white/10">Prototype Internal Company</div>
             <h1 className="mt-7 max-w-2xl text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">WD Group Internal Management System</h1>
             <p className="mt-5 max-w-xl text-sm leading-7 text-blue-100 sm:text-base">
-              Sistem dummy untuk mengelola divisi, karyawan, jobdesk, approval, notulen, laporan, SOP, dokumen, dan aktivitas internal berdasarkan role user.
+              Sistem untuk mengelola divisi, karyawan, jobdesk, approval, notulen, laporan, SOP, dokumen, dan aktivitas internal berdasarkan role user.
             </p>
           </div>
           <div className="mt-10 grid gap-3 sm:grid-cols-3">
@@ -44,12 +54,12 @@ export default function Login() {
               <button
                 key={email}
                 type="button"
-                onClick={() => setForm({ email, password: "123456" })}
+                onClick={() => setForm({ email, password: "" })}
                 className="rounded-lg border border-white/15 bg-white/10 p-4 text-left shadow-lg shadow-slate-950/10 ring-1 ring-white/5 transition hover:-translate-y-0.5 hover:bg-white/15"
               >
                 <p className="text-sm font-semibold">{role}</p>
                 <p className="mt-1 break-all text-xs text-blue-100">{email}</p>
-                <p className="mt-2 text-xs text-blue-200">Password: 123456</p>
+                <p className="mt-2 text-xs text-blue-200">Buat akun di Supabase Auth</p>
               </button>
             ))}
           </div>
@@ -69,7 +79,9 @@ export default function Login() {
               <Lock size={18} className="text-slate-400" />
               <input type="password" className="w-full outline-none" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} />
             </div>
-            <button className="mt-6 w-full rounded-lg bg-navy-800 px-4 py-3 font-semibold text-white shadow-sm transition hover:bg-navy-900">Masuk Dashboard</button>
+            <button disabled={loading} className="mt-6 w-full rounded-lg bg-navy-800 px-4 py-3 font-semibold text-white shadow-sm transition hover:bg-navy-900 disabled:cursor-not-allowed disabled:opacity-70">
+              {loading ? "Memeriksa Supabase..." : "Masuk Dashboard"}
+            </button>
           </form>
         </section>
       </div>

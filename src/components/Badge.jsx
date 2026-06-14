@@ -15,6 +15,8 @@ const styles = {
   "Belum Mulai": "bg-slate-50 text-slate-700 ring-slate-200",
   Terlambat: "bg-red-50 text-red-700 ring-red-200",
   "Perlu Perhatian": "bg-red-50 text-red-700 ring-red-200",
+  "Butuh Monitoring": "bg-red-50 text-red-700 ring-red-200",
+  Pendampingan: "bg-cyan-50 text-cyan-700 ring-cyan-200",
   Nonaktif: "bg-red-50 text-red-700 ring-red-200",
   Tinggi: "bg-red-50 text-red-700 ring-red-200",
   Sedang: "bg-amber-50 text-amber-700 ring-amber-200",

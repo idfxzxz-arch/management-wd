@@ -1,12 +1,14 @@
 import Badge from "../components/Badge";
 import DataTable from "../components/DataTable";
-import { activityLogs } from "../data/activityLogs";
-import { divisionName } from "../utils/helpers";
+import { useAppData } from "../data/AppDataProvider";
 import { Page } from "./Divisions";
 
 export default function ActivityLog() {
+  const { activityLogs, divisionName, loading, error } = useAppData();
   return (
     <Page title="Activity Log" subtitle="Riwayat aktivitas sistem internal WD Group.">
+      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data Supabase...</div>}
+      {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       <DataTable
         rows={activityLogs}
         columns={[

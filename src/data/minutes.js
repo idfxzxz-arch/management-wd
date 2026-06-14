@@ -1,5 +1,1 @@
-export const minutes = [
-  { id: 201, title: "Evaluasi Sistem Internal", date: "2026-06-10", time: "10:00", divisionId: "it", leader: "Nadia Prameswari", participants: ["Raka", "Fajar", "Nadia"], discussion: "Progress modul dashboard, routing, dan otorisasi role.", decision: "Dashboard role harus diprioritaskan untuk demo.", followUp: "Raka menyelesaikan UI, Fajar menyiapkan dokumen akses.", actionDeadline: "2026-06-20" },
-  { id: 202, title: "Review Kampanye Juni", date: "2026-06-08", time: "14:00", divisionId: "marketing", leader: "Maya Salsabila", participants: ["Maya", "Laras"], discussion: "Kinerja konten, iklan, dan insight audiens.", decision: "Naikkan frekuensi newsletter mingguan.", followUp: "Laras membuat kalender konten Q3.", actionDeadline: "2026-06-24" },
-  { id: 203, title: "Kontrol Budget Operasional", date: "2026-06-07", time: "09:30", divisionId: "finance", leader: "Bima Santoso", participants: ["Bima", "Dimas"], discussion: "Pengeluaran vendor dan reimbursement.", decision: "Semua klaim wajib melampirkan bukti digital.", followUp: "Dimas melengkapi rekap reimbursement.", actionDeadline: "2026-06-16" },
-];
+export const minutes = [];
