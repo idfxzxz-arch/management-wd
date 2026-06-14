@@ -33,7 +33,7 @@ export default function OwnerDashboard() {
 
   return (
     <div className="space-y-6">
-      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data Supabase...</div>}
+      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data...</div>}
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       <div className="surface-panel overflow-hidden">
         <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#0b1f3a_0%,#12305a_58%,#173b6d_100%)] px-5 py-5 text-white sm:px-6">

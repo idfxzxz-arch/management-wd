@@ -14,7 +14,7 @@ export default function Employees() {
 
   return (
     <Page title="Halaman Karyawan" subtitle="Data karyawan, jabatan, divisi, role, status, dan tanggal bergabung.">
-      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data Supabase...</div>}
+      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data...</div>}
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       <Search value={query} setValue={setQuery} placeholder="Cari nama, email, jabatan, atau divisi" />
       <DataTable

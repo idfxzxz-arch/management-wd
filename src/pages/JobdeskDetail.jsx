@@ -9,7 +9,7 @@ export default function JobdeskDetail() {
   const { tasks, divisionName, employeeName, loading, error } = useAppData();
   const task = tasks.find((item) => String(item.id) === id);
 
-  if (loading) return <Page title="Detail Jobdesk"><p className="text-slate-500">Memuat data Supabase...</p></Page>;
+  if (loading) return <Page title="Detail Jobdesk"><p className="text-slate-500">Memuat data...</p></Page>;
   if (error) return <Page title="Detail Jobdesk"><p className="text-amber-700">{error}</p></Page>;
   if (!task) return <Page title="Detail Jobdesk"><p className="text-slate-500">Tugas tidak ditemukan.</p></Page>;
 

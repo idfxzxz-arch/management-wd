@@ -14,7 +14,7 @@ export default function HeadDashboard() {
 
   return (
     <div className="space-y-6">
-      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data Supabase...</div>}
+      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data...</div>}
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Dashboard Kepala Divisi</h1>

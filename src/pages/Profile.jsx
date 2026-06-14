@@ -10,7 +10,7 @@ export default function Profile() {
   const myTasks = user.role === "Owner" || user.divisionId === "all" ? tasks.slice(0, 8) : tasks.filter((task) => task.assigneeId === user.id || task.divisionId === user.divisionId);
   return (
     <Page title="Profile" subtitle="Informasi user login dan riwayat tugas singkat.">
-      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data Supabase...</div>}
+      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data...</div>}
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       <section className="rounded border border-slate-200 bg-white p-5 shadow-sm">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

@@ -12,7 +12,7 @@ export default function Divisions() {
 
   return (
     <Page title="Halaman Divisi" subtitle="Daftar divisi, kepala divisi, anggota, total tugas, dan status performa.">
-      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data Supabase...</div>}
+      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data...</div>}
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       <Search value={query} setValue={setQuery} placeholder="Cari divisi atau kepala divisi" />
       <DataTable

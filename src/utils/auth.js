@@ -4,7 +4,7 @@ const KEY = "wd_user";
 
 export async function login(email, password) {
   if (!isSupabaseConfigured) {
-    throw new Error("Supabase belum dikonfigurasi. Isi file .env terlebih dahulu.");
+    throw new Error("Koneksi data belum dikonfigurasi. Isi file .env terlebih dahulu.");
   }
 
   const { error: authError } = await supabase.auth.signInWithPassword({ email, password });

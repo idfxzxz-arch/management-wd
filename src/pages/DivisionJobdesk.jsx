@@ -21,7 +21,7 @@ export default function DivisionJobdesk() {
       subtitle="Daftar jobdesk berdasarkan divisi, pemberi tugas, target kerja, prioritas, deadline, dan status."
       action={<button onClick={() => setOpen(true)} className="rounded bg-navy-800 px-4 py-2 text-sm font-semibold text-white">Tambah</button>}
     >
-      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data Supabase...</div>}
+      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data...</div>}
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       <Search value={query} setValue={setQuery} placeholder="Cari jobdesk divisi" />
       <DataTable
@@ -70,7 +70,7 @@ function JobdeskForm({ divisions, employees, user, onSaved }) {
     setMessage("");
 
     if (!isSupabaseConfigured) {
-      setMessage("Supabase belum dikonfigurasi.");
+      setMessage("Koneksi data belum dikonfigurasi.");
       return;
     }
 

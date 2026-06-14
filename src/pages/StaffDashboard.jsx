@@ -14,7 +14,7 @@ export default function StaffDashboard() {
 
   return (
     <div className="space-y-6">
-      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data Supabase...</div>}
+      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data...</div>}
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Dashboard Staff</h1>
@@ -62,7 +62,7 @@ export default function StaffDashboard() {
           <div className="rounded border border-slate-200 bg-white p-5 shadow-sm">
             <h2 className="font-semibold text-slate-900">Pengumuman Terbaru</h2>
             <p className="mt-3 text-sm font-medium text-slate-800">{announcements[0]?.title || "Belum ada pengumuman"}</p>
-            <p className="mt-1 text-sm text-slate-500">{announcements[0]?.content || "Data akan muncul setelah pengumuman ditambahkan di Supabase."}</p>
+            <p className="mt-1 text-sm text-slate-500">{announcements[0]?.content || "Data akan muncul setelah pengumuman ditambahkan."}</p>
           </div>
         </section>
       </div>

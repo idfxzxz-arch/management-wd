@@ -10,7 +10,7 @@ export default function UserManagement() {
   const { users, divisionName, loading, error } = useAppData();
   return (
     <Page title="User Management" subtitle="Khusus Owner untuk melihat user, role, divisi, status, dan aksi .">
-      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data Supabase...</div>}
+      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data...</div>}
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       <DataTable
         rows={users}

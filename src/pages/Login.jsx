@@ -27,7 +27,7 @@ export default function Login() {
     try {
       const user = await login(form.email, form.password);
       if (!user) {
-        setError("Email atau password tidak sesuai dengan data Supabase.");
+        setError("Email atau password tidak sesuai.");
         return;
       }
       navigate(dashboardPath(user.role), { replace: true });
@@ -59,7 +59,7 @@ export default function Login() {
               >
                 <p className="text-sm font-semibold">{role}</p>
                 <p className="mt-1 break-all text-xs text-blue-100">{email}</p>
-                <p className="mt-2 text-xs text-blue-200">Buat akun di Supabase Auth</p>
+                <p className="mt-2 text-xs text-blue-200">Buat akun login terlebih dahulu</p>
               </button>
             ))}
           </div>
@@ -80,7 +80,7 @@ export default function Login() {
               <input type="password" className="w-full outline-none" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} />
             </div>
             <button disabled={loading} className="mt-6 w-full rounded-lg bg-navy-800 px-4 py-3 font-semibold text-white shadow-sm transition hover:bg-navy-900 disabled:cursor-not-allowed disabled:opacity-70">
-              {loading ? "Memeriksa Supabase..." : "Masuk Dashboard"}
+              {loading ? "Memeriksa akun..." : "Masuk Dashboard"}
             </button>
           </form>
         </section>

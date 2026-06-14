@@ -50,7 +50,7 @@ export function AppDataProvider({ children }) {
     if (!isSupabaseConfigured) {
       setData(emptyData);
       setLoading(false);
-      setError("Supabase belum dikonfigurasi. Isi VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY.");
+      setError("Koneksi data belum dikonfigurasi. Isi environment variable aplikasi.");
       return;
     }
 

@@ -15,7 +15,7 @@ export default function Documents() {
 
   return (
     <Page title="Arsip Dokumen" subtitle="Daftar dokumen , kategori, divisi, tanggal upload, dan tipe file.">
-      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data Supabase...</div>}
+      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data...</div>}
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       <Search value={query} setValue={setQuery} placeholder="Cari dokumen, kategori, atau tipe file" />
       <DataTable

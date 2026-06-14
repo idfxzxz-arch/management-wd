@@ -9,7 +9,7 @@ export default function SOP() {
   const rows = scopedByDivision(sops, getCurrentUser());
   return (
     <Page title="SOP Perusahaan" subtitle="Daftar SOP, divisi terkait, deskripsi, tanggal update, dan status aktif.">
-      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data Supabase...</div>}
+      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data...</div>}
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       <DataTable
         rows={rows}

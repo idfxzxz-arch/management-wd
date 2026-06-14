@@ -39,7 +39,7 @@ export default function WorkReports() {
 
   return (
     <Page title="Laporan Kerja" subtitle="Laporan harian, laporan mingguan, statistik, dan deteksi kinerja otomatis." action={<button onClick={() => setOpen(true)} className="rounded-lg bg-navy-800 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-navy-900">Kirim Laporan</button>}>
-      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data Supabase...</div>}
+      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data...</div>}
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <StatCard title="Laporan Mingguan" value={weeklyRows.length} icon={ClipboardList} tone="blue" />

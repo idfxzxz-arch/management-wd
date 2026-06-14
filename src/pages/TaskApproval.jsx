@@ -13,7 +13,7 @@ export default function TaskApproval() {
 
   return (
     <Page title="Approval Tugas" subtitle="Daftar tugas yang menunggu approval, approve, dan revisi.">
-      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data Supabase...</div>}
+      {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data...</div>}
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       <DataTable
         rows={rows}
