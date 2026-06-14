@@ -16,9 +16,30 @@ export default function OwnerDashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Dashboard Owner</h1>
-        <p className="mt-1 text-sm text-slate-500">Ringkasan performa seluruh WD Group Company.</p>
+      <div className="surface-panel overflow-hidden">
+        <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#0b1f3a_0%,#12305a_58%,#173b6d_100%)] px-5 py-5 text-white sm:px-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-blue-100">Executive Overview</p>
+              <h1 className="mt-2 text-2xl font-bold sm:text-3xl">Dashboard Owner</h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-blue-100">Ringkasan performa seluruh WD Group Company dalam satu tampilan cepat untuk presentasi dan monitoring internal.</p>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="rounded-lg bg-white/10 px-4 py-3 ring-1 ring-white/15">
+                <p className="text-xl font-bold">{progress}%</p>
+                <p className="text-xs text-blue-100">Progress</p>
+              </div>
+              <div className="rounded-lg bg-white/10 px-4 py-3 ring-1 ring-white/15">
+                <p className="text-xl font-bold">{active}</p>
+                <p className="text-xs text-blue-100">Aktif</p>
+              </div>
+              <div className="rounded-lg bg-white/10 px-4 py-3 ring-1 ring-white/15">
+                <p className="text-xl font-bold">{late}</p>
+                <p className="text-xs text-blue-100">Risk</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard title="Total Divisi" value={divisions.length} icon={Building2} tone="blue" />
@@ -30,8 +51,8 @@ export default function OwnerDashboard() {
         <StatCard title="Progress Perusahaan" value={`${progress}%`} icon={Activity} tone="green" />
       </div>
       <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-        <section className="rounded border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="font-semibold text-slate-900">Grafik Dummy Performa Divisi</h2>
+        <section className="surface-panel p-5">
+          <h2 className="section-title font-semibold text-slate-900">Grafik Dummy Performa Divisi</h2>
           <div className="mt-5 space-y-4">
             {divisions.map((division, index) => (
               <div key={division.id}>
@@ -39,18 +60,18 @@ export default function OwnerDashboard() {
                   <span className="font-medium text-slate-700">{division.name}</span>
                   <span className="text-slate-500">{[88, 81, 64, 78, 90][index]}%</span>
                 </div>
-                <div className="h-3 rounded bg-slate-200">
-                  <div className="h-3 rounded bg-navy-700" style={{ width: `${[88, 81, 64, 78, 90][index]}%` }} />
+                <div className="h-3 rounded-full bg-slate-200">
+                  <div className="h-3 rounded-full bg-navy-700" style={{ width: `${[88, 81, 64, 78, 90][index]}%` }} />
                 </div>
               </div>
             ))}
           </div>
         </section>
-        <section className="rounded border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="font-semibold text-slate-900">Aktivitas Terbaru</h2>
+        <section className="surface-panel p-5">
+          <h2 className="section-title font-semibold text-slate-900">Aktivitas Terbaru</h2>
           <div className="mt-4 space-y-3">
             {activityLogs.slice(0, 5).map((log) => (
-              <div key={log.id} className="rounded border border-slate-100 p-3">
+              <div key={log.id} className="rounded-lg border border-slate-100 bg-white/80 p-3 shadow-sm">
                 <p className="text-sm text-slate-700"><span className="font-semibold">{log.actor}</span> {log.action}</p>
                 <div className="mt-2 flex items-center justify-between">
                   <span className="text-xs text-slate-500">{log.time}</span>
@@ -61,8 +82,8 @@ export default function OwnerDashboard() {
           </div>
         </section>
       </div>
-      <section className="rounded border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 className="mb-4 font-semibold text-slate-900">Statistik Progress Perusahaan</h2>
+      <section className="surface-panel p-5">
+        <h2 className="section-title mb-4 font-semibold text-slate-900">Statistik Progress Perusahaan</h2>
         <ProgressBar value={progress} />
       </section>
     </div>

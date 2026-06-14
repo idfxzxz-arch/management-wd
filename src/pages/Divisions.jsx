@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Search as SearchIcon } from "lucide-react";
 import Badge from "../components/Badge";
 import DataTable from "../components/DataTable";
 import { divisions } from "../data/divisions";
@@ -30,9 +31,9 @@ export default function Divisions() {
 export function Page({ title, subtitle, children, action }) {
   return (
     <div className="space-y-5">
-      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+      <div className="surface-panel flex flex-col justify-between gap-4 px-5 py-4 sm:flex-row sm:items-end">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">{title}</h1>
+          <h1 className="section-title text-xl font-bold text-slate-900 sm:text-2xl">{title}</h1>
           {subtitle && <p className="mt-1 text-sm text-slate-500">{subtitle}</p>}
         </div>
         {action}
@@ -43,5 +44,10 @@ export function Page({ title, subtitle, children, action }) {
 }
 
 export function Search({ value, setValue, placeholder = "Cari data" }) {
-  return <input className="w-full rounded border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-navy-700" value={value} onChange={(event) => setValue(event.target.value)} placeholder={placeholder} />;
+  return (
+    <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm shadow-slate-200/60 focus-within:border-navy-700 focus-within:ring-2 focus-within:ring-blue-100 lg:max-w-xl">
+      <SearchIcon size={18} className="shrink-0 text-slate-400" />
+      <input className="w-full text-sm outline-none" value={value} onChange={(event) => setValue(event.target.value)} placeholder={placeholder} />
+    </div>
+  );
 }

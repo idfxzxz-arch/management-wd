@@ -27,7 +27,7 @@ const styles = {
 
 export default function Badge({ children }) {
   return (
-    <span className={`inline-flex items-center rounded px-2 py-1 text-xs font-semibold ring-1 ${styles[children] || "bg-slate-50 text-slate-700 ring-slate-200"}`}>
+    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${styles[children] || "bg-slate-50 text-slate-700 ring-slate-200"}`}>
       {children}
     </span>
   );

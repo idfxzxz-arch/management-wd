@@ -30,22 +30,22 @@ export default function Login() {
 
   return (
     <AuthLayout>
-      <div className="grid min-h-screen lg:grid-cols-[1.05fr_0.95fr]">
-        <section className="flex flex-col justify-between bg-navy-900 p-8 text-white lg:p-12">
+      <div className="grid min-h-screen bg-slate-50 lg:grid-cols-[1.05fr_0.95fr]">
+        <section className="flex flex-col justify-between bg-[linear-gradient(135deg,#071a33_0%,#0b1f3a_52%,#12305a_100%)] p-6 text-white sm:p-8 lg:p-12">
           <div>
-            <div className="inline-flex rounded bg-white/10 px-3 py-1 text-sm font-semibold text-blue-100">Prototype Internal Company</div>
-            <h1 className="mt-8 max-w-2xl text-4xl font-bold leading-tight lg:text-5xl">WD Group Internal Management System</h1>
-            <p className="mt-5 max-w-xl text-base leading-7 text-blue-100">
+            <div className="inline-flex rounded-lg bg-white/10 px-3 py-1 text-sm font-semibold text-blue-100 ring-1 ring-white/10">Prototype Internal Company</div>
+            <h1 className="mt-7 max-w-2xl text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">WD Group Internal Management System</h1>
+            <p className="mt-5 max-w-xl text-sm leading-7 text-blue-100 sm:text-base">
               Sistem dummy untuk mengelola divisi, karyawan, jobdesk, approval, notulen, laporan, SOP, dokumen, dan aktivitas internal berdasarkan role user.
             </p>
           </div>
-          <div className="mt-12 grid gap-3 sm:grid-cols-3">
+          <div className="mt-10 grid gap-3 sm:grid-cols-3">
             {demos.map(([role, email]) => (
               <button
                 key={email}
                 type="button"
                 onClick={() => setForm({ email, password: "123456" })}
-                className="rounded border border-white/15 bg-white/10 p-4 text-left hover:bg-white/15"
+                className="rounded-lg border border-white/15 bg-white/10 p-4 text-left shadow-lg shadow-slate-950/10 ring-1 ring-white/5 transition hover:-translate-y-0.5 hover:bg-white/15"
               >
                 <p className="text-sm font-semibold">{role}</p>
                 <p className="mt-1 break-all text-xs text-blue-100">{email}</p>
@@ -54,22 +54,22 @@ export default function Login() {
             ))}
           </div>
         </section>
-        <section className="flex items-center justify-center p-6">
-          <form onSubmit={submit} className="w-full max-w-md rounded border border-slate-200 bg-white p-6 shadow-soft">
+        <section className="app-bg flex items-center justify-center p-4 sm:p-6">
+          <form onSubmit={submit} className="w-full max-w-md rounded-lg border border-slate-200 bg-white/92 p-5 shadow-soft backdrop-blur sm:p-6">
             <h2 className="text-2xl font-bold text-slate-900">Login</h2>
             <p className="mt-2 text-sm text-slate-500">Masuk menggunakan akun demo yang tersedia.</p>
-            {error && <div className="mt-5 rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+            {error && <div className="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
             <label className="mt-6 block text-sm font-semibold text-slate-700">Email</label>
-            <div className="mt-2 flex items-center gap-2 rounded border border-slate-200 px-3 py-2 focus-within:border-navy-700">
+            <div className="mt-2 flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2.5 focus-within:border-navy-700 focus-within:ring-2 focus-within:ring-blue-100">
               <Mail size={18} className="text-slate-400" />
               <input className="w-full outline-none" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} />
             </div>
             <label className="mt-4 block text-sm font-semibold text-slate-700">Password</label>
-            <div className="mt-2 flex items-center gap-2 rounded border border-slate-200 px-3 py-2 focus-within:border-navy-700">
+            <div className="mt-2 flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2.5 focus-within:border-navy-700 focus-within:ring-2 focus-within:ring-blue-100">
               <Lock size={18} className="text-slate-400" />
               <input type="password" className="w-full outline-none" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} />
             </div>
-            <button className="mt-6 w-full rounded bg-navy-800 px-4 py-3 font-semibold text-white hover:bg-navy-900">Masuk Dashboard</button>
+            <button className="mt-6 w-full rounded-lg bg-navy-800 px-4 py-3 font-semibold text-white shadow-sm transition hover:bg-navy-900">Masuk Dashboard</button>
           </form>
         </section>
       </div>

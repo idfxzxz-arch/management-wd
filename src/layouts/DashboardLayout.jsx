@@ -10,11 +10,11 @@ export default function DashboardLayout() {
   const user = getCurrentUser();
 
   return (
-    <div className="flex min-h-screen bg-slate-100">
+    <div className="app-bg flex min-h-screen">
       <Sidebar user={user} open={open} onClose={() => setOpen(false)} />
       <div className="flex min-w-0 flex-1 flex-col">
         <Navbar user={user} onMenu={() => setOpen(true)} />
-        <main className="flex-1 p-4 lg:p-6">
+        <main className="mx-auto w-full max-w-[1500px] flex-1 p-4 sm:p-5 lg:p-6">
           <Outlet />
         </main>
         <Footer />

@@ -24,12 +24,23 @@ export default function IndividualJobdesk() {
           { key: "divisionId", header: "Divisi", render: (row) => divisionName(row.divisionId) },
           { key: "assignedBy", header: "Dari", render: (row) => <Badge>{row.assignedBy}</Badge> },
           { key: "title", header: "Judul Tugas", render: (row) => <Link className="font-semibold text-navy-700 hover:underline" to={`/jobdesk/${row.id}`}>{row.title}</Link> },
-          { key: "description", header: "Deskripsi", render: (row) => <span className="block max-w-md whitespace-normal">{row.description}</span> },
+          { key: "description", header: "Deskripsi", width: "260px", render: (row) => <span className="cell-clamp">{row.description}</span> },
           { key: "deadline", header: "Deadline" },
-          { key: "priority", header: "Prioritas", render: (row) => <Badge>{row.priority}</Badge> },
-          { key: "status", header: "Status", render: (row) => <Badge>{row.status}</Badge> },
-          { key: "progress", header: "Progress", render: (row) => <div className="w-40"><ProgressBar value={row.progress} /></div> },
-          { key: "note", header: "Catatan", render: (row) => <span className="block max-w-sm whitespace-normal">{row.note}</span> },
+          {
+            key: "status",
+            header: "Status",
+            width: "190px",
+            render: (row) => (
+              <div className="min-w-[170px] space-y-2">
+                <div className="flex flex-wrap gap-2">
+                  <Badge>{row.priority}</Badge>
+                  <Badge>{row.status}</Badge>
+                </div>
+                <ProgressBar value={row.progress} />
+              </div>
+            ),
+          },
+          { key: "note", header: "Catatan", width: "240px", render: (row) => <span className="cell-clamp">{row.note}</span> },
         ]}
       />
     </Page>

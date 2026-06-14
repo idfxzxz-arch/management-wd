@@ -44,14 +44,17 @@ export default function Sidebar({ user, open, onClose }) {
 
   return (
     <>
-      <div className={`fixed inset-0 z-40 bg-slate-950/40 lg:hidden ${open ? "block" : "hidden"}`} onClick={onClose} />
-      <aside className={`fixed inset-y-0 left-0 z-50 w-72 border-r border-navy-700 bg-navy-900 text-white transition-transform lg:static lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"}`}>
+      <div className={`fixed inset-0 z-40 bg-slate-950/50 backdrop-blur-sm lg:hidden ${open ? "block" : "hidden"}`} onClick={onClose} />
+      <aside className={`fixed inset-y-0 left-0 z-50 w-72 border-r border-white/10 bg-[linear-gradient(180deg,#081a32_0%,#0b1f3a_55%,#10294a_100%)] text-white shadow-2xl shadow-slate-950/20 transition-transform lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:shadow-none ${open ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="flex h-16 items-center justify-between border-b border-white/10 px-5">
-          <div>
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-sm font-black text-navy-900">WD</div>
+            <div>
             <p className="text-base font-bold">WD Group</p>
             <p className="text-xs text-blue-100">Internal Management</p>
+            </div>
           </div>
-          <button className="rounded p-2 text-blue-100 hover:bg-white/10 lg:hidden" onClick={onClose} aria-label="Tutup menu">
+          <button className="rounded-lg p-2 text-blue-100 hover:bg-white/10 lg:hidden" onClick={onClose} aria-label="Tutup menu">
             <X size={18} />
           </button>
         </div>
@@ -62,7 +65,7 @@ export default function Sidebar({ user, open, onClose }) {
               to={to}
               onClick={onClose}
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded px-3 py-2.5 text-sm font-medium transition ${isActive ? "bg-white text-navy-900" : "text-blue-100 hover:bg-white/10 hover:text-white"}`
+                `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${isActive ? "bg-white text-navy-900 shadow-sm" : "text-blue-100 hover:bg-white/10 hover:text-white"}`
               }
             >
               <Icon size={18} />
