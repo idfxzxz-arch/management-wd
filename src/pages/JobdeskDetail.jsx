@@ -35,10 +35,25 @@ export default function JobdeskDetail() {
           </div>
           <div className="mt-5"><ProgressBar value={task.progress} /></div>
           <p className="mt-5 rounded bg-amber-50 px-4 py-3 text-sm text-amber-800">Catatan: {task.note}</p>
+          {(task.submissionNote || task.submissionFileUrl) && (
+            <div className="mt-5 rounded border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+              <p className="font-semibold">Submission Staff</p>
+              {task.submissionNote && <p className="mt-1">{task.submissionNote}</p>}
+              {task.submissionFileUrl && (
+                <a className="mt-2 inline-flex font-semibold text-navy-700 hover:underline" href={task.submissionFileUrl} target="_blank" rel="noreferrer">
+                  Lihat bukti: {task.submissionFileName || "File submission"}
+                </a>
+              )}
+              {task.submittedAt && <p className="mt-2 text-xs text-emerald-700">Dikirim: {new Date(task.submittedAt).toLocaleString("id-ID")}</p>}
+            </div>
+          )}
         </section>
         <div className="space-y-4">
           <section className="rounded border border-slate-200 bg-white p-5 shadow-sm">
             <ProgressUpdate task={task} user={user} onSaved={reload} />
+          </section>
+          <section className="rounded border border-slate-200 bg-white p-5 shadow-sm">
+            <SubmissionForm task={task} user={user} onSaved={reload} />
           </section>
           <section className="rounded border border-slate-200 bg-white p-5 shadow-sm">
             <h2 className="font-semibold text-slate-900">Riwayat Update</h2>
@@ -54,6 +69,118 @@ export default function JobdeskDetail() {
         </div>
       </div>
     </Page>
+  );
+}
+
+function SubmissionForm({ task, user, onSaved }) {
+  const [note, setNote] = useState(task.submissionNote || "");
+  const [file, setFile] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+  const canSubmit = user?.role === "Staff" || String(user?.id) === String(task.assigneeId);
+
+  async function submit(event) {
+    event.preventDefault();
+    setMessage("");
+
+    if (!canSubmit) {
+      setMessage("Hanya staff penerima tugas yang bisa mengirim submission.");
+      return;
+    }
+
+    if (!isSupabaseConfigured) {
+      setMessage("Koneksi data belum dikonfigurasi.");
+      return;
+    }
+
+    if (!note.trim() && !file && !task.submissionFileUrl) {
+      setMessage("Isi catatan atau upload file bukti pekerjaan.");
+      return;
+    }
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      setMessage("Session login belum aktif. Silakan logout lalu login ulang.");
+      return;
+    }
+
+    setSaving(true);
+    let submissionFileUrl = task.submissionFileUrl || "";
+    let submissionFileName = task.submissionFileName || "";
+
+    if (file) {
+      const extension = file.name.includes(".") ? file.name.split(".").pop() : "file";
+      const path = `${task.id}/${Date.now()}.${extension}`;
+      const { error: uploadError } = await supabase.storage.from("task-submissions").upload(path, file, { upsert: true });
+
+      if (uploadError) {
+        setMessage(uploadError.message.includes("Bucket not found") ? "Bucket storage task-submissions belum dibuat. Jalankan SQL schema terbaru di Supabase." : uploadError.message);
+        setSaving(false);
+        return;
+      }
+
+      const { data } = supabase.storage.from("task-submissions").getPublicUrl(path);
+      submissionFileUrl = data.publicUrl;
+      submissionFileName = file.name;
+    }
+
+    const history = [
+      ...(task.history || []),
+      `${user?.name || "Staff"} mengirim hasil pekerjaan untuk approval${note ? ` - ${note}` : ""}`,
+    ];
+
+    const { error } = await supabase
+      .from("tasks")
+      .update({
+        progress: 100,
+        status: "Menunggu Approval",
+        approval: "Menunggu Approval",
+        submission_note: note,
+        submission_file_url: submissionFileUrl,
+        submission_file_name: submissionFileName,
+        submitted_at: new Date().toISOString(),
+        history,
+      })
+      .eq("id", task.id);
+
+    if (error) {
+      const isPolicyError = error.message.toLowerCase().includes("row-level security");
+      setMessage(isPolicyError ? "Akses kirim submission belum aktif. Jalankan SQL write policy lalu login ulang." : error.message);
+      setSaving(false);
+      return;
+    }
+
+    await supabase.from("activity_logs").insert({
+      actor: user?.name || "Staff",
+      division_id: task.divisionId,
+      action: `mengirim hasil pekerjaan "${task.title}" untuk approval`,
+      time: new Date().toISOString().slice(0, 16).replace("T", " "),
+      severity: "info",
+    });
+
+    setSaving(false);
+    setFile(null);
+    onSaved();
+    setMessage("Submission berhasil dikirim dan menunggu approval.");
+  }
+
+  return (
+    <form onSubmit={submit}>
+      <h2 className="font-semibold text-slate-900">Kirim untuk Approval</h2>
+      <div className="mt-4 space-y-4">
+        {message && <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">{message}</div>}
+        <textarea className="w-full rounded-lg border border-slate-200 px-3 py-2" placeholder="Catatan hasil pekerjaan" value={note} onChange={(event) => setNote(event.target.value)} />
+        <input className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" type="file" onChange={(event) => setFile(event.target.files?.[0] || null)} />
+        {task.submissionFileUrl && (
+          <a className="text-sm font-semibold text-navy-700 hover:underline" href={task.submissionFileUrl} target="_blank" rel="noreferrer">
+            File terkirim: {task.submissionFileName || "Bukti pekerjaan"}
+          </a>
+        )}
+        <button disabled={saving || !canSubmit} className="w-full rounded-lg bg-emerald-600 px-4 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70">
+          {saving ? "Mengirim..." : "Kirim dan Tunggu Approval"}
+        </button>
+      </div>
+    </form>
   );
 }
 

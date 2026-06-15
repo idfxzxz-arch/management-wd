@@ -43,6 +43,12 @@ create table if not exists tasks (
   approval text,
   progress integer not null default 0,
   note text,
+  submission_note text,
+  submission_file_url text,
+  submission_file_name text,
+  submitted_at timestamptz,
+  approved_at timestamptz,
+  approved_by text,
   history jsonb not null default '[]'::jsonb,
   created_at timestamptz not null default now()
 );
@@ -182,3 +188,15 @@ create policy "authenticated delete reports" on reports for delete to authentica
 create policy "authenticated insert weekly_reports" on weekly_reports for insert to authenticated with check (true);
 create policy "authenticated update weekly_reports" on weekly_reports for update to authenticated using (true) with check (true);
 create policy "authenticated delete weekly_reports" on weekly_reports for delete to authenticated using (true);
+
+insert into storage.buckets (id, name, public)
+values ('task-submissions', 'task-submissions', true)
+on conflict (id) do nothing;
+
+create policy "authenticated upload task submissions"
+on storage.objects for insert to authenticated
+with check (bucket_id = 'task-submissions');
+
+create policy "public read task submissions"
+on storage.objects for select
+using (bucket_id = 'task-submissions');

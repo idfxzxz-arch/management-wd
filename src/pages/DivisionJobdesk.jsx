@@ -80,6 +80,13 @@ function JobdeskForm({ divisions, employees, user, onSaved }) {
     }
 
     setSaving(true);
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      setMessage("Session login belum aktif. Silakan logout lalu login ulang.");
+      setSaving(false);
+      return;
+    }
+
     const payload = {
       division_id: form.divisionId,
       assignee_id: Number(form.assigneeId),
@@ -100,7 +107,8 @@ function JobdeskForm({ divisions, employees, user, onSaved }) {
     const { error } = await supabase.from("tasks").insert(payload);
 
     if (error) {
-      setMessage(error.message);
+      const isPolicyError = error.message.toLowerCase().includes("row-level security");
+      setMessage(isPolicyError ? "Akses simpan belum aktif. Jalankan SQL write policy lalu login ulang." : error.message);
       setSaving(false);
       return;
     }

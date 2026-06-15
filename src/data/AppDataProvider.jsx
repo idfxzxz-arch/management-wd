@@ -152,6 +152,12 @@ function mapTask(row) {
     approval: row.approval,
     progress: row.progress || 0,
     note: row.note || "",
+    submissionNote: row.submission_note || "",
+    submissionFileUrl: row.submission_file_url || "",
+    submissionFileName: row.submission_file_name || "",
+    submittedAt: row.submitted_at,
+    approvedAt: row.approved_at,
+    approvedBy: row.approved_by || "",
     history: row.history || [],
   };
 }

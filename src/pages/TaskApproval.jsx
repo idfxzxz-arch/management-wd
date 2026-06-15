@@ -11,7 +11,7 @@ export default function TaskApproval() {
   const { tasks, divisionName, employeeName, scopedByDivision, loading, error, reload } = useAppData();
   const [savingId, setSavingId] = useState(null);
   const [message, setMessage] = useState("");
-  const rows = scopedByDivision(tasks, user).filter((task) => task.approval !== "Approved");
+  const rows = scopedByDivision(tasks, user).filter((task) => task.approval === "Menunggu Approval");
 
   async function updateApproval(task, approval) {
     setMessage("");
@@ -41,6 +41,8 @@ export default function TaskApproval() {
         approval,
         status: nextStatus,
         note: nextNote,
+        approved_at: approval === "Approved" ? new Date().toISOString() : null,
+        approved_by: approval === "Approved" ? user?.name || "User" : null,
         history,
       })
       .eq("id", task.id);
@@ -78,6 +80,8 @@ export default function TaskApproval() {
           { key: "divisionId", header: "Divisi", render: (row) => divisionName(row.divisionId) },
           { key: "assignedBy", header: "Dari", render: (row) => <Badge>{row.assignedBy}</Badge> },
           { key: "approval", header: "Status Approval", render: (row) => <Badge>{row.approval}</Badge> },
+          { key: "submissionNote", header: "Catatan Staff", render: (row) => <span className="block max-w-sm whitespace-normal">{row.submissionNote || "-"}</span> },
+          { key: "submissionFileUrl", header: "Bukti", render: (row) => row.submissionFileUrl ? <a className="font-semibold text-navy-700 hover:underline" href={row.submissionFileUrl} target="_blank" rel="noreferrer">{row.submissionFileName || "Lihat file"}</a> : "-" },
           { key: "note", header: "Catatan Revisi", render: (row) => <span className="block max-w-sm whitespace-normal">{row.note}</span> },
           { key: "actions", header: "Aksi", render: (row) => (
             <div className="flex gap-2">
