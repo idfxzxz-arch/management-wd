@@ -31,19 +31,19 @@ export default function AppRoutes() {
       <Route element={<ProtectedRoute roles={["Owner", "Kepala Divisi", "Staff", "Administrator"]} />}>
         <Route element={<DashboardLayout />}>
           <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route element={<ProtectedRoute roles={["Owner"]} />}>
+          <Route element={<ProtectedRoute roles={["Owner", "Administrator"]} />}>
             <Route path="/owner" element={<OwnerDashboard />} />
             <Route path="/divisions" element={<Divisions />} />
             <Route path="/activity-log" element={<ActivityLog />} />
             <Route path="/users" element={<UserManagement />} />
           </Route>
-          <Route element={<ProtectedRoute roles={["Kepala Divisi"]} />}>
+          <Route element={<ProtectedRoute roles={["Kepala Divisi", "Administrator"]} />}>
             <Route path="/head" element={<HeadDashboard />} />
           </Route>
           <Route element={<ProtectedRoute roles={["Staff"]} />}>
             <Route path="/staff" element={<StaffDashboard />} />
           </Route>
-          <Route element={<ProtectedRoute roles={["Owner", "Kepala Divisi"]} />}>
+          <Route element={<ProtectedRoute roles={["Owner", "Kepala Divisi", "Administrator"]} />}>
             <Route path="/employees" element={<Employees />} />
             <Route path="/division-jobdesk" element={<DivisionJobdesk />} />
             <Route path="/approval" element={<TaskApproval />} />

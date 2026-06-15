@@ -15,7 +15,7 @@ export default function Settings() {
     { icon: Building2, key: "company_name", title: "Nama Perusahaan", value: valueByKey.company_name || "WD Group Company" },
     { icon: Palette, key: "theme", title: "Tema Aplikasi", value: valueByKey.theme || "Biru tua, putih, abu-abu muda" },
     { icon: Bell, key: "notifications", title: "Notifikasi", value: valueByKey.notifications || "Email, dashboard alert, dan reminder deadline aktif" },
-    { icon: Shield, key: "roles", title: "Pengaturan Role", value: valueByKey.roles || "Owner, Kepala Divisi, Staff" },
+    { icon: Shield, key: "roles", title: "Pengaturan Role", value: valueByKey.roles || "Owner, Kepala Divisi, Staff, Administrator" },
   ];
 
   async function saveSetting(key, value) {

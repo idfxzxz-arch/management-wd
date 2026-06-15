@@ -5,6 +5,10 @@ drop policy if exists "authenticated insert tasks" on tasks;
 drop policy if exists "authenticated update tasks" on tasks;
 drop policy if exists "authenticated delete tasks" on tasks;
 
+drop policy if exists "authenticated insert task_submissions" on task_submissions;
+drop policy if exists "authenticated update task_submissions" on task_submissions;
+drop policy if exists "authenticated delete task_submissions" on task_submissions;
+
 drop policy if exists "authenticated insert activity_logs" on activity_logs;
 drop policy if exists "authenticated update activity_logs" on activity_logs;
 drop policy if exists "authenticated delete activity_logs" on activity_logs;
@@ -46,6 +50,10 @@ drop policy if exists "public read company documents" on storage.objects;
 create policy "authenticated insert tasks" on tasks for insert to authenticated with check (true);
 create policy "authenticated update tasks" on tasks for update to authenticated using (true) with check (true);
 create policy "authenticated delete tasks" on tasks for delete to authenticated using (true);
+
+create policy "authenticated insert task_submissions" on task_submissions for insert to authenticated with check (true);
+create policy "authenticated update task_submissions" on task_submissions for update to authenticated using (true) with check (true);
+create policy "authenticated delete task_submissions" on task_submissions for delete to authenticated using (true);
 
 create policy "authenticated insert activity_logs" on activity_logs for insert to authenticated with check (true);
 create policy "authenticated update activity_logs" on activity_logs for update to authenticated using (true) with check (true);

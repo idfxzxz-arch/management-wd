@@ -140,6 +140,7 @@ function UserForm({ selected, divisions, actor, onSaved }) {
           <option>Owner</option>
           <option>Kepala Divisi</option>
           <option>Staff</option>
+          <option>Administrator</option>
         </select>
         <select className="rounded border border-slate-200 px-3 py-2" value={form.divisionId} onChange={(event) => updateField("divisionId", event.target.value)}>
           <option value="all">Semua Divisi</option>

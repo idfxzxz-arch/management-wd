@@ -8,6 +8,9 @@ create table if not exists app_settings (
   updated_at timestamptz not null default now()
 );
 
+alter table app_users drop constraint if exists app_users_role_check;
+alter table app_users add constraint app_users_role_check check (role in ('Owner', 'Kepala Divisi', 'Staff', 'Administrator'));
+
 alter table tasks add column if not exists submission_note text;
 alter table tasks add column if not exists submission_file_url text;
 alter table tasks add column if not exists submission_file_name text;
@@ -168,7 +171,7 @@ insert into app_settings (setting_key, setting_value) values
   ('company_name', 'WD Group Company'),
   ('theme', 'Biru tua, putih, abu-abu muda'),
   ('notifications', 'Email, dashboard alert, dan reminder deadline aktif'),
-  ('roles', 'Owner, Kepala Divisi, Staff')
+  ('roles', 'Owner, Kepala Divisi, Staff, Administrator')
 on conflict (setting_key) do update set
   setting_value = excluded.setting_value,
   updated_at = now();

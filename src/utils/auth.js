@@ -53,6 +53,6 @@ export function getCurrentUser() {
 export function dashboardPath(role) {
   if (role === "Owner") return "/owner";
   if (role === "Kepala Divisi") return "/head";
-  if (role === "Administrator") return "/reviews";
+  if (role === "Administrator") return "/owner";
   return "/staff";
 }

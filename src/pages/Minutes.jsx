@@ -13,7 +13,7 @@ export default function Minutes() {
   const { minutes, divisions, divisionName, scopedByDivision, loading, error, reload } = useAppData();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
-  const canManage = user?.role === "Owner" || user?.role === "Kepala Divisi";
+  const canManage = user?.role === "Owner" || user?.role === "Kepala Divisi" || user?.role === "Administrator";
   const rows = useMemo(() => scopedByDivision(minutes, user).filter((item) => contains(Object.values(item).join(" "), query)), [query, user]);
 
   return (
@@ -50,7 +50,7 @@ function MinuteForm({ divisions, user, onSaved }) {
     title: "",
     date: "",
     time: "",
-    divisionId: user?.role === "Owner" ? "all" : user?.divisionId || "all",
+    divisionId: user?.role === "Owner" || user?.role === "Administrator" ? "all" : user?.divisionId || "all",
     leader: user?.name || "",
     participants: "",
     discussion: "",
@@ -112,7 +112,7 @@ function MinuteForm({ divisions, user, onSaved }) {
       division_id: form.divisionId,
       action: `menambahkan notulen rapat "${form.title}"`,
       time: new Date().toISOString().slice(0, 16).replace("T", " "),
-      severity: user?.role === "Owner" ? "owner" : "info",
+      severity: user?.role === "Owner" || user?.role === "Administrator" ? "owner" : "info",
     });
 
     setSaving(false);

@@ -1,7 +1,7 @@
 export const roleAccess = {
-  Owner: ["Owner"],
-  Head: ["Owner", "Kepala Divisi"],
-  Staff: ["Owner", "Kepala Divisi", "Staff"],
+  Owner: ["Owner", "Administrator"],
+  Head: ["Owner", "Kepala Divisi", "Administrator"],
+  Staff: ["Owner", "Kepala Divisi", "Staff", "Administrator"],
 };
 
 export function divisionName(id) {
@@ -14,7 +14,7 @@ export function employeeName(id) {
 }
 
 export function scopedByDivision(items, user) {
-  if (!user || user.role === "Owner" || user.divisionId === "all") return items;
+  if (!user || user.role === "Owner" || user.role === "Administrator" || user.divisionId === "all") return items;
   return items.filter((item) => item.divisionId === user.divisionId || item.divisionId === "all");
 }
 
