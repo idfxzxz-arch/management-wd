@@ -6,6 +6,7 @@ const emptyData = {
   divisions: [],
   employees: [],
   tasks: [],
+  taskSubmissions: [],
   meetings: [],
   minutes: [],
   reports: [],
@@ -14,6 +15,7 @@ const emptyData = {
   documents: [],
   activityLogs: [],
   sops: [],
+  settings: [],
 };
 
 const tableMap = [
@@ -21,6 +23,7 @@ const tableMap = [
   ["divisions", "divisions", mapDivision],
   ["employees", "employees", mapEmployee],
   ["tasks", "tasks", mapTask],
+  ["taskSubmissions", "task_submissions", mapTaskSubmission],
   ["meetings", "meetings", mapMeeting],
   ["minutes", "minutes", mapMinute],
   ["reports", "reports", mapReport],
@@ -29,6 +32,7 @@ const tableMap = [
   ["documents", "documents", mapDocument],
   ["activityLogs", "activity_logs", mapActivityLog],
   ["sops", "sops", mapSop],
+  ["settings", "app_settings", mapSetting],
 ];
 
 const AppDataContext = createContext({
@@ -94,7 +98,7 @@ export function AppDataProvider({ children }) {
     }
 
     function scopedByDivision(items, user) {
-      if (!user || user.role === "Owner" || user.divisionId === "all") return items;
+      if (!user || user.role === "Owner" || user.role === "Administrator" || user.divisionId === "all") return items;
       return items.filter((item) => item.divisionId === user.divisionId || item.divisionId === "all");
     }
 
@@ -152,7 +156,36 @@ function mapTask(row) {
     approval: row.approval,
     progress: row.progress || 0,
     note: row.note || "",
+    submissionNote: row.submission_note || "",
+    submissionFileUrl: row.submission_file_url || "",
+    submissionFileName: row.submission_file_name || "",
+    submittedAt: row.submitted_at,
+    approvedAt: row.approved_at,
+    approvedBy: row.approved_by || "",
     history: row.history || [],
+  };
+}
+
+function mapTaskSubmission(row) {
+  return {
+    id: row.id,
+    taskId: row.task_id,
+    taskTitle: row.task_title,
+    taskDescription: row.task_description || "",
+    staffName: row.staff_name,
+    staffRole: row.staff_role,
+    divisionId: row.division_id,
+    deadline: row.deadline,
+    driveLink: row.drive_link,
+    submissionNote: row.submission_note || "",
+    submittedAt: row.submitted_at,
+    status: row.status,
+    headFeedback: row.head_feedback || "",
+    reviewerName: row.reviewed_by || "",
+    reviewerRole: row.reviewer_role || "",
+    reviewedAt: row.reviewed_at,
+    revisionCount: row.revision_count || 0,
+    revisionHistory: row.revision_history || [],
   };
 }
 
@@ -205,7 +238,17 @@ function mapAnnouncement(row) {
 }
 
 function mapDocument(row) {
-  return { id: row.id, name: row.name, category: row.category, divisionId: row.division_id, uploadedAt: row.uploaded_at, type: row.type };
+  return {
+    id: row.id,
+    name: row.name,
+    category: row.category,
+    divisionId: row.division_id,
+    uploadedAt: row.uploaded_at,
+    type: row.type,
+    fileUrl: row.file_url || "",
+    fileName: row.file_name || "",
+    filePath: row.file_path || "",
+  };
 }
 
 function mapActivityLog(row) {
@@ -214,4 +257,8 @@ function mapActivityLog(row) {
 
 function mapSop(row) {
   return { id: row.id, title: row.title, divisionId: row.division_id, description: row.description || "", updatedAt: row.updated_at, status: row.status };
+}
+
+function mapSetting(row) {
+  return { key: row.setting_key, value: row.setting_value, updatedAt: row.updated_at };
 }

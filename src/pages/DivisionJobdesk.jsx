@@ -50,7 +50,7 @@ function JobdeskForm({ divisions, employees, user, onSaved }) {
     description: "",
     divisionId: divisions[0]?.id || "it",
     assigneeId: employees.find((employee) => employee.role === "Staff" || employee.role === "Magang")?.id || "",
-    assignedBy: user?.role === "Owner" ? "Owner" : "Kepala Divisi",
+    assignedBy: user?.role === "Owner" || user?.role === "Administrator" ? "Owner" : "Kepala Divisi",
     target: "",
     priority: "Sedang",
     deadline: "",
@@ -80,6 +80,13 @@ function JobdeskForm({ divisions, employees, user, onSaved }) {
     }
 
     setSaving(true);
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      setMessage("Session login belum aktif. Silakan logout lalu login ulang.");
+      setSaving(false);
+      return;
+    }
+
     const payload = {
       division_id: form.divisionId,
       assignee_id: Number(form.assigneeId),
@@ -100,7 +107,8 @@ function JobdeskForm({ divisions, employees, user, onSaved }) {
     const { error } = await supabase.from("tasks").insert(payload);
 
     if (error) {
-      setMessage(error.message);
+      const isPolicyError = error.message.toLowerCase().includes("row-level security");
+      setMessage(isPolicyError ? "Akses simpan belum aktif. Jalankan SQL write policy lalu login ulang." : error.message);
       setSaving(false);
       return;
     }
@@ -110,7 +118,7 @@ function JobdeskForm({ divisions, employees, user, onSaved }) {
       division_id: form.divisionId,
       action: `membuat jobdesk "${form.title}"`,
       time: new Date().toISOString().slice(0, 16).replace("T", " "),
-      severity: user?.role === "Owner" ? "owner" : "info",
+      severity: user?.role === "Owner" || user?.role === "Administrator" ? "owner" : "info",
     });
 
     setSaving(false);

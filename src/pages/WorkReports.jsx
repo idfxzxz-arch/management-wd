@@ -9,10 +9,11 @@ import { Page } from "./Divisions";
 import StatCard from "../components/StatCard";
 import ProgressBar from "../components/ProgressBar";
 import { useAppData } from "../data/AppDataProvider";
+import { supabase, isSupabaseConfigured } from "../lib/supabase";
 
 export default function WorkReports() {
   const user = getCurrentUser();
-  const { reports, weeklyReports, divisionName, scopedByDivision, loading, error } = useAppData();
+  const { reports, weeklyReports, divisionName, scopedByDivision, loading, error, reload } = useAppData();
   const [open, setOpen] = useState(false);
   const rows = user.role === "Staff" && user.divisionId !== "all" ? reports.filter((report) => report.staff === user.name) : scopedByDivision(reports, user);
   const weeklyRows = user.role === "Staff" && user.divisionId !== "all" ? weeklyReports.filter((report) => report.staff === user.name) : scopedByDivision(weeklyReports, user);
@@ -118,16 +119,128 @@ export default function WorkReports() {
       />
       </section>
       <Modal open={open} title="Form Laporan Kerja" onClose={() => setOpen(false)}>
-        <div className="grid gap-3">
-          <select className="rounded-lg border border-slate-200 px-3 py-2"><option>Laporan Harian</option><option>Laporan Mingguan</option></select>
-          <input className="rounded-lg border border-slate-200 px-3 py-2" placeholder="Target tugas minggu ini" />
-          <input className="rounded-lg border border-slate-200 px-3 py-2" placeholder="Tugas selesai" />
-          <textarea className="rounded-lg border border-slate-200 px-3 py-2" placeholder="Pekerjaan yang sudah dilakukan" />
-          <textarea className="rounded-lg border border-slate-200 px-3 py-2" placeholder="Kendala" />
-          <textarea className="rounded-lg border border-slate-200 px-3 py-2" placeholder="Rencana berikutnya" />
-          <button className="rounded-lg bg-navy-800 px-4 py-2 font-semibold text-white">Kirim</button>
-        </div>
+        <ReportForm user={user} onSaved={() => { setOpen(false); reload(); }} />
       </Modal>
     </Page>
+  );
+}
+
+function ReportForm({ user, onSaved }) {
+  const [type, setType] = useState("daily");
+  const [form, setForm] = useState({
+    targetTasks: "",
+    completedTasks: "",
+    averageProgress: "",
+    lateTasks: "0",
+    revisionTasks: "0",
+    done: "",
+    blockers: "",
+    next: "",
+    week: "",
+    period: "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+
+  function updateField(key, value) {
+    setForm((current) => ({ ...current, [key]: value }));
+  }
+
+  async function submit(event) {
+    event.preventDefault();
+    setMessage("");
+
+    if (!isSupabaseConfigured) {
+      setMessage("Koneksi data belum dikonfigurasi.");
+      return;
+    }
+
+    if (!form.done.trim()) {
+      setMessage("Isi pekerjaan yang sudah dilakukan.");
+      return;
+    }
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      setMessage("Session login belum aktif. Silakan logout lalu login ulang.");
+      return;
+    }
+
+    setSaving(true);
+    const today = new Date().toISOString().slice(0, 10);
+    const staff = user?.name || "Staff";
+    const divisionId = user?.divisionId || "all";
+    const table = type === "daily" ? "reports" : "weekly_reports";
+    const payload = type === "daily" ? {
+      staff,
+      division_id: divisionId,
+      done: form.done,
+      blockers: form.blockers,
+      next: form.next,
+      date: today,
+      status: "Dikirim",
+    } : {
+      week: form.week || `Minggu ${today}`,
+      period: form.period,
+      staff,
+      division_id: divisionId,
+      completed_tasks: Number(form.completedTasks) || 0,
+      target_tasks: Number(form.targetTasks) || 0,
+      average_progress: Number(form.averageProgress) || 0,
+      late_tasks: Number(form.lateTasks) || 0,
+      revision_tasks: Number(form.revisionTasks) || 0,
+      summary: form.done,
+      blocker: form.blockers,
+      next_plan: form.next,
+      head_note: "",
+      status: "Dikirim",
+    };
+
+    const { error } = await supabase.from(table).insert(payload);
+
+    if (error) {
+      const isPolicyError = error.message.toLowerCase().includes("row-level security");
+      setMessage(isPolicyError ? "Akses kirim laporan belum aktif. Jalankan SQL write policy lalu login ulang." : error.message);
+      setSaving(false);
+      return;
+    }
+
+    await supabase.from("activity_logs").insert({
+      actor: staff,
+      division_id: divisionId,
+      action: `mengirim ${type === "daily" ? "laporan harian" : "laporan mingguan"}`,
+      time: new Date().toISOString().slice(0, 16).replace("T", " "),
+      severity: "info",
+    });
+
+    setSaving(false);
+    onSaved();
+  }
+
+  return (
+    <form className="grid gap-3" onSubmit={submit}>
+      {message && <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">{message}</div>}
+      <select className="rounded-lg border border-slate-200 px-3 py-2" value={type} onChange={(event) => setType(event.target.value)}>
+        <option value="daily">Laporan Harian</option>
+        <option value="weekly">Laporan Mingguan</option>
+      </select>
+      {type === "weekly" && (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <input className="rounded-lg border border-slate-200 px-3 py-2" placeholder="Minggu laporan" value={form.week} onChange={(event) => updateField("week", event.target.value)} />
+          <input className="rounded-lg border border-slate-200 px-3 py-2" placeholder="Periode" value={form.period} onChange={(event) => updateField("period", event.target.value)} />
+          <input className="rounded-lg border border-slate-200 px-3 py-2" type="number" min="0" placeholder="Target tugas" value={form.targetTasks} onChange={(event) => updateField("targetTasks", event.target.value)} />
+          <input className="rounded-lg border border-slate-200 px-3 py-2" type="number" min="0" placeholder="Tugas selesai" value={form.completedTasks} onChange={(event) => updateField("completedTasks", event.target.value)} />
+          <input className="rounded-lg border border-slate-200 px-3 py-2" type="number" min="0" max="100" placeholder="Rata-rata progress" value={form.averageProgress} onChange={(event) => updateField("averageProgress", event.target.value)} />
+          <input className="rounded-lg border border-slate-200 px-3 py-2" type="number" min="0" placeholder="Tugas terlambat" value={form.lateTasks} onChange={(event) => updateField("lateTasks", event.target.value)} />
+          <input className="rounded-lg border border-slate-200 px-3 py-2" type="number" min="0" placeholder="Tugas revisi" value={form.revisionTasks} onChange={(event) => updateField("revisionTasks", event.target.value)} />
+        </div>
+      )}
+      <textarea className="rounded-lg border border-slate-200 px-3 py-2" placeholder="Pekerjaan yang sudah dilakukan" value={form.done} onChange={(event) => updateField("done", event.target.value)} />
+      <textarea className="rounded-lg border border-slate-200 px-3 py-2" placeholder="Kendala" value={form.blockers} onChange={(event) => updateField("blockers", event.target.value)} />
+      <textarea className="rounded-lg border border-slate-200 px-3 py-2" placeholder="Rencana berikutnya" value={form.next} onChange={(event) => updateField("next", event.target.value)} />
+      <button disabled={saving} className="rounded-lg bg-navy-800 px-4 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70">
+        {saving ? "Mengirim..." : "Kirim"}
+      </button>
+    </form>
   );
 }

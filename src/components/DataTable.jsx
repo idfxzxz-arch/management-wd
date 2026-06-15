@@ -7,18 +7,18 @@ const wrapKeys = ["description", "content", "discussion", "decision", "followUp"
 export default function DataTable({ columns, rows, empty = "Data tidak ditemukan" }) {
   return (
     <div className="overflow-hidden rounded-lg border border-slate-200 bg-white/95 shadow-sm shadow-slate-200/60">
-      <div className="grid gap-3 p-3 md:hidden">
+      <div className="grid gap-3 p-2.5 sm:p-3 md:hidden">
         {rows.length === 0 && <div className="rounded-lg border border-dashed border-slate-200 p-6 text-center text-sm text-slate-500">{empty}</div>}
         {rows.map((row, index) => (
-          <article key={row.id || index} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="space-y-3">
+          <article key={row.id || index} className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
+            <div className="space-y-2.5">
               {columns.map((column) => {
                 const value = column.render ? column.render(row) : row[column.key];
 
                 return (
-                  <div key={column.key} className="grid grid-cols-[110px_1fr] gap-3 text-sm">
-                    <p className="text-xs font-bold uppercase text-slate-400">{column.header}</p>
-                    <div className="min-w-0 text-slate-700">{value}</div>
+                  <div key={column.key} className="rounded-lg bg-slate-50/80 p-3 text-sm sm:grid sm:grid-cols-[120px_minmax(0,1fr)] sm:gap-3 sm:bg-transparent sm:p-0">
+                    <p className="mb-1 text-[11px] font-bold uppercase tracking-wide text-slate-400 sm:mb-0 sm:text-xs">{column.header}</p>
+                    <div className="min-w-0 break-words text-slate-700">{value}</div>
                   </div>
                 );
               })}

@@ -4,9 +4,10 @@ import ProgressBar from "../components/ProgressBar";
 import Badge from "../components/Badge";
 import { detectPerformance } from "../utils/helpers";
 import { useAppData } from "../data/AppDataProvider";
+import { buildSubmissionRows, submissionStats } from "../utils/submissions";
 
 export default function OwnerDashboard() {
-  const { divisions, employees, tasks, minutes, activityLogs, weeklyReports, loading, error } = useAppData();
+  const { divisions, employees, tasks, taskSubmissions, minutes, activityLogs, weeklyReports, employeeName, loading, error } = useAppData();
   const done = tasks.filter((task) => task.status === "Selesai").length;
   const late = tasks.filter((task) => task.status === "Terlambat").length;
   const active = tasks.length - done;
@@ -23,6 +24,8 @@ export default function OwnerDashboard() {
     { completed: 0, target: 0, late: 0, revision: 0, progress: 0 }
   );
   const weeklyAverage = weeklyReports.length ? Math.round(weeklyTotals.progress / weeklyReports.length) : 0;
+  const employeeRole = (id) => employees.find((employee) => String(employee.id) === String(id))?.role || "Staff";
+  const reviewStats = submissionStats(buildSubmissionRows(tasks, taskSubmissions, { employeeName, employeeRole }));
   const weeklyPerformance = detectPerformance({
     averageProgress: weeklyAverage,
     completedTasks: weeklyTotals.completed,
@@ -69,6 +72,14 @@ export default function OwnerDashboard() {
         <StatCard title="Total Notulen" value={minutes.length} icon={FileText} tone="slate" />
         <StatCard title="Progress Perusahaan" value={`${progress}%`} icon={Activity} tone="green" />
         <StatCard title="Kinerja Mingguan" value={weeklyPerformance.label} icon={Activity} tone={weeklyPerformance.tone} />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
+        <StatCard title="Menunggu Review" value={reviewStats.waitingReview} icon={Clock} tone="yellow" />
+        <StatCard title="Approved" value={reviewStats.approved} icon={CheckCircle2} tone="green" />
+        <StatCard title="Revisi" value={reviewStats.revision} icon={FileText} tone="red" />
+        <StatCard title="Terlambat" value={reviewStats.late} icon={XCircle} tone="red" />
+        <StatCard title="Revisi Dikirim Ulang" value={reviewStats.resentRevision} icon={Activity} tone="blue" />
+        <StatCard title="Selesai Bulan Ini" value={reviewStats.doneThisMonth} icon={CheckCircle2} tone="green" />
       </div>
       <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
         <section className="surface-panel p-5">
