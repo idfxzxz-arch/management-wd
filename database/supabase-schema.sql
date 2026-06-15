@@ -200,6 +200,14 @@ create policy "authenticated insert weekly_reports" on weekly_reports for insert
 create policy "authenticated update weekly_reports" on weekly_reports for update to authenticated using (true) with check (true);
 create policy "authenticated delete weekly_reports" on weekly_reports for delete to authenticated using (true);
 
+create policy "authenticated insert meetings" on meetings for insert to authenticated with check (true);
+create policy "authenticated update meetings" on meetings for update to authenticated using (true) with check (true);
+create policy "authenticated delete meetings" on meetings for delete to authenticated using (true);
+
+create policy "authenticated insert minutes" on minutes for insert to authenticated with check (true);
+create policy "authenticated update minutes" on minutes for update to authenticated using (true) with check (true);
+create policy "authenticated delete minutes" on minutes for delete to authenticated using (true);
+
 create policy "authenticated update app_users" on app_users for update to authenticated using (true) with check (true);
 
 create policy "authenticated insert documents" on documents for insert to authenticated with check (true);
