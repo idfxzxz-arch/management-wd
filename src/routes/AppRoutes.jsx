@@ -11,6 +11,7 @@ import DivisionJobdesk from "../pages/DivisionJobdesk";
 import IndividualJobdesk from "../pages/IndividualJobdesk";
 import JobdeskDetail from "../pages/JobdeskDetail";
 import TaskApproval from "../pages/TaskApproval";
+import ReviewTasks from "../pages/ReviewTasks";
 import MeetingAgenda from "../pages/MeetingAgenda";
 import Minutes from "../pages/Minutes";
 import MinuteDetail from "../pages/MinuteDetail";
@@ -27,7 +28,7 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route element={<ProtectedRoute roles={["Owner", "Kepala Divisi", "Staff"]} />}>
+      <Route element={<ProtectedRoute roles={["Owner", "Kepala Divisi", "Staff", "Administrator"]} />}>
         <Route element={<DashboardLayout />}>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route element={<ProtectedRoute roles={["Owner"]} />}>
@@ -46,6 +47,9 @@ export default function AppRoutes() {
             <Route path="/employees" element={<Employees />} />
             <Route path="/division-jobdesk" element={<DivisionJobdesk />} />
             <Route path="/approval" element={<TaskApproval />} />
+          </Route>
+          <Route element={<ProtectedRoute roles={["Owner", "Kepala Divisi", "Staff", "Administrator"]} />}>
+            <Route path="/reviews" element={<ReviewTasks />} />
           </Route>
           <Route path="/individual-jobdesk" element={<IndividualJobdesk />} />
           <Route path="/jobdesk/:id" element={<JobdeskDetail />} />

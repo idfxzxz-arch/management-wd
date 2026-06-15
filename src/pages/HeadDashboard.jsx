@@ -4,13 +4,16 @@ import ProgressBar from "../components/ProgressBar";
 import Badge from "../components/Badge";
 import { getCurrentUser } from "../utils/auth";
 import { useAppData } from "../data/AppDataProvider";
+import { buildSubmissionRows, submissionStats } from "../utils/submissions";
 
 export default function HeadDashboard() {
   const user = getCurrentUser();
-  const { employees, tasks, minutes, divisionName, employeeName, scopedByDivision, loading, error } = useAppData();
+  const { employees, tasks, taskSubmissions, minutes, divisionName, employeeName, scopedByDivision, loading, error } = useAppData();
   const divisionTasks = scopedByDivision(tasks, user);
   const members = scopedByDivision(employees, user).filter((employee) => employee.role !== "Owner");
   const latestMinutes = scopedByDivision(minutes, user).slice(0, 3);
+  const employeeRole = (id) => employees.find((employee) => String(employee.id) === String(id))?.role || "Staff";
+  const reviewStats = submissionStats(buildSubmissionRows(divisionTasks, taskSubmissions, { employeeName, employeeRole }));
 
   return (
     <div className="space-y-6">
@@ -26,6 +29,14 @@ export default function HeadDashboard() {
         <StatCard title="Selesai" value={divisionTasks.filter((task) => task.status === "Selesai").length} icon={CheckCircle2} tone="green" />
         <StatCard title="Pending" value={divisionTasks.filter((task) => task.status !== "Selesai" && task.status !== "Terlambat").length} icon={Clock} tone="yellow" />
         <StatCard title="Terlambat" value={divisionTasks.filter((task) => task.status === "Terlambat").length} icon={XCircle} tone="red" />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
+        <StatCard title="Menunggu Review" value={reviewStats.waitingReview} icon={Clock} tone="yellow" />
+        <StatCard title="Approved" value={reviewStats.approved} icon={CheckCircle2} tone="green" />
+        <StatCard title="Revisi" value={reviewStats.revision} icon={FileText} tone="red" />
+        <StatCard title="Terlambat" value={reviewStats.late} icon={XCircle} tone="red" />
+        <StatCard title="Revisi Dikirim Ulang" value={reviewStats.resentRevision} icon={FileText} tone="blue" />
+        <StatCard title="Selesai Bulan Ini" value={reviewStats.doneThisMonth} icon={CheckCircle2} tone="green" />
       </div>
       <div className="grid gap-4 xl:grid-cols-2">
         <section className="rounded border border-slate-200 bg-white p-5 shadow-sm">

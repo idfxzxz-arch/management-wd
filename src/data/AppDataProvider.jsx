@@ -6,6 +6,7 @@ const emptyData = {
   divisions: [],
   employees: [],
   tasks: [],
+  taskSubmissions: [],
   meetings: [],
   minutes: [],
   reports: [],
@@ -22,6 +23,7 @@ const tableMap = [
   ["divisions", "divisions", mapDivision],
   ["employees", "employees", mapEmployee],
   ["tasks", "tasks", mapTask],
+  ["taskSubmissions", "task_submissions", mapTaskSubmission],
   ["meetings", "meetings", mapMeeting],
   ["minutes", "minutes", mapMinute],
   ["reports", "reports", mapReport],
@@ -161,6 +163,29 @@ function mapTask(row) {
     approvedAt: row.approved_at,
     approvedBy: row.approved_by || "",
     history: row.history || [],
+  };
+}
+
+function mapTaskSubmission(row) {
+  return {
+    id: row.id,
+    taskId: row.task_id,
+    taskTitle: row.task_title,
+    taskDescription: row.task_description || "",
+    staffName: row.staff_name,
+    staffRole: row.staff_role,
+    divisionId: row.division_id,
+    deadline: row.deadline,
+    driveLink: row.drive_link,
+    submissionNote: row.submission_note || "",
+    submittedAt: row.submitted_at,
+    status: row.status,
+    headFeedback: row.head_feedback || "",
+    reviewerName: row.reviewed_by || "",
+    reviewerRole: row.reviewer_role || "",
+    reviewedAt: row.reviewed_at,
+    revisionCount: row.revision_count || 0,
+    revisionHistory: row.revision_history || [],
   };
 }
 

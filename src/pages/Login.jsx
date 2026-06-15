@@ -8,6 +8,7 @@ const demos = [
   ["Owner", "owner@wdgroup.com"],
   ["Kepala Divisi", "head@wdgroup.com"],
   ["Staff", "staff@wdgroup.com"],
+  ["Administrator", "admin@wdgroup.com"],
 ];
 
 export default function Login() {

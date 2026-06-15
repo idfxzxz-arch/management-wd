@@ -15,6 +15,14 @@ alter table tasks add column if not exists submitted_at timestamptz;
 alter table tasks add column if not exists approved_at timestamptz;
 alter table tasks add column if not exists approved_by text;
 
+alter table task_submissions add column if not exists task_description text;
+alter table task_submissions add column if not exists deadline date;
+alter table task_submissions add column if not exists reviewer_role text;
+alter table task_submissions add column if not exists revision_count integer not null default 0;
+alter table task_submissions add column if not exists revision_history jsonb not null default '[]'::jsonb;
+alter table task_submissions drop constraint if exists task_submissions_status_check;
+alter table task_submissions add constraint task_submissions_status_check check (status in ('Belum Dikumpulkan', 'Menunggu Review', 'Diterima', 'Revisi', 'Terlambat', 'Revisi Dikirim Ulang'));
+
 alter table documents add column if not exists file_url text;
 alter table documents add column if not exists file_name text;
 alter table documents add column if not exists file_path text;
@@ -29,6 +37,7 @@ truncate table
   weekly_reports,
   sops,
   app_settings,
+  task_submissions,
   tasks,
   employees,
   divisions,
@@ -38,7 +47,8 @@ restart identity cascade;
 insert into app_users (id, name, email, role, division_id, status) values
   ('owner-general', 'Arman Wijaya', 'owner@wdgroup.com', 'Owner', 'all', 'Aktif'),
   ('head-general', 'Kepala Divisi WD Group', 'head@wdgroup.com', 'Kepala Divisi', 'all', 'Aktif'),
-  ('staff-general', 'Staff WD Group', 'staff@wdgroup.com', 'Staff', 'all', 'Aktif');
+  ('staff-general', 'Staff WD Group', 'staff@wdgroup.com', 'Staff', 'all', 'Aktif'),
+  ('admin-general', 'Administrator WD Group', 'admin@wdgroup.com', 'Administrator', 'all', 'Aktif');
 
 insert into divisions (id, name, head, members, description, performance) values
   ('it', 'Information Technology', 'Nadia Prameswari', 6, 'Mengelola sistem, infrastruktur, keamanan data, dan otomasi operasional.', 'Sangat Baik'),
@@ -49,6 +59,7 @@ insert into divisions (id, name, head, members, description, performance) values
 
 insert into employees (id, name, email, position, division_id, role, status, joined_at) values
   (1, 'Arman Wijaya', 'owner@wdgroup.com', 'Founder & Owner', 'all', 'Owner', 'Aktif', '2020-01-10'),
+  (18, 'Administrator WD Group', 'admin@wdgroup.com', 'System Administrator', 'all', 'Administrator', 'Aktif', '2020-02-01'),
   (2, 'Nadia Prameswari', 'headit@wdgroup.com', 'Head of IT', 'it', 'Kepala Divisi', 'Aktif', '2021-03-15'),
   (3, 'Raka Mahendra', 'staffit@wdgroup.com', 'Frontend Developer', 'it', 'Staff', 'Aktif', '2022-07-04'),
   (4, 'Fajar Nugroho', 'fajar@wdgroup.com', 'System Analyst', 'it', 'Staff', 'Aktif', '2022-09-12'),
@@ -78,6 +89,33 @@ insert into tasks (id, division_id, assignee_id, assigned_by, assigned_by_name, 
   (109, 'it', 15, 'Kepala Divisi', 'Nadia Prameswari', 'Input data inventory dari spreadsheet', 'Memindahkan data inventory sementara dari Google Spreadsheet ke format arsip internal.', 'Data inventory rapi', 'Sedang', '2026-06-23', 'Proses', 'Menunggu', 35, 'Cek ulang nama barang dan serial number.', '["Spreadsheet diterima","Input data berjalan"]'),
   (110, 'marketing', 16, 'Owner', 'Arman Wijaya', 'Rekap leads campaign dari spreadsheet', 'Membersihkan dan mengelompokkan data leads campaign dari Google Spreadsheet.', 'Leads siap follow up', 'Tinggi', '2026-06-21', 'Belum Mulai', 'Draft', 5, 'Pisahkan leads panas dan leads follow up.', '["Brief diberikan oleh Owner"]'),
   (111, 'finance', 17, 'Kepala Divisi', 'Bima Santoso', 'Validasi lampiran petty cash', 'Mengecek kelengkapan lampiran petty cash dari spreadsheet finance.', 'Lampiran tervalidasi', 'Rendah', '2026-06-27', 'Proses', 'Menunggu', 40, 'Tandai transaksi yang belum punya bukti.', '["Data finance dibagikan","Validasi batch pertama"]');
+
+insert into task_submissions (
+  id,
+  task_id,
+  task_title,
+  task_description,
+  staff_name,
+  staff_role,
+  division_id,
+  deadline,
+  drive_link,
+  submission_note,
+  submitted_at,
+  status,
+  head_feedback,
+  reviewed_at,
+  reviewed_by,
+  reviewer_role,
+  revision_count,
+  revision_history
+) values
+  (1, 102, 'Audit akses dokumen', 'Mengecek struktur folder dokumen dan hak akses.', 'Fajar Nugroho', 'Staf', 'it', '2026-06-18', 'https://drive.google.com/drive/folders/wd-audit-akses-dokumen', 'Matriks akses dan bukti folder sudah saya susun.', '2026-06-17 15:15+07', 'Diterima', 'Sudah rapi dan bisa masuk arsip.', '2026-06-17 17:00+07', 'Nadia Prameswari', 'Kepala Divisi', 0, '[]'),
+  (2, 101, 'Redesign dashboard internal', 'Merapikan tampilan dashboard dan komponen statistik.', 'Raka Mahendra', 'Staf', 'it', '2026-06-20', 'https://drive.google.com/drive/folders/wd-redesign-dashboard', 'Link berisi screenshot desktop dan mobile terbaru.', '2026-06-16 10:40+07', 'Menunggu Review', '', null, null, null, 0, '[]'),
+  (3, 104, 'Rekap reimbursement Mei', 'Validasi klaim dan lampiran bukti transaksi.', 'Dimas Kurnia', 'Staf', 'finance', '2026-06-12', 'https://drive.google.com/drive/folders/wd-reimbursement-mei', 'Rekap awal sudah selesai, beberapa bukti saya tandai.', '2026-06-13 18:30+07', 'Revisi', 'Bukti transaksi nomor 14, 18, dan 23 belum valid. Lengkapi bukti scan yang jelas.', '2026-06-14 09:00+07', 'Bima Santoso', 'Kepala Divisi', 1, '[{"link":"https://drive.google.com/drive/folders/wd-reimbursement-mei-v1","note":"Rekap awal sudah selesai.","feedback":"Bukti transaksi nomor 14, 18, dan 23 belum valid.","reviewer":"Bima Santoso","reviewedAt":"2026-06-14T02:00:00.000Z"}]'),
+  (4, 106, 'Standarisasi vendor logistik', 'Membuat checklist evaluasi vendor operasional.', 'Rizky Ramadhan', 'Staf', 'operations', '2026-06-30', 'https://drive.google.com/drive/folders/wd-vendor-logistik-v2', 'Saya kirim ulang format checklist yang lebih ringkas.', '2026-06-15 14:20+07', 'Revisi Dikirim Ulang', '', null, null, null, 1, '[{"oldLink":"https://drive.google.com/drive/folders/wd-vendor-logistik-v1","newLink":"https://drive.google.com/drive/folders/wd-vendor-logistik-v2","note":"Saya kirim ulang format checklist yang lebih ringkas.","feedback":"Format checklist perlu disederhanakan.","sentAt":"2026-06-15T07:20:00.000Z"}]'),
+  (5, 108, 'Monitoring engagement campaign', 'Membuat rekap performa engagement kampanye berjalan.', 'Aulia Rahma', 'Staf', 'marketing', '2026-06-19', 'https://drive.google.com/drive/folders/wd-engagement-campaign', 'Report performa campaign sudah dikumpulkan.', '2026-06-20 11:10+07', 'Terlambat', '', null, null, null, 0, '[]'),
+  (6, 109, 'Input data inventory dari spreadsheet', 'Memindahkan data inventory sementara dari Google Spreadsheet ke format arsip internal.', 'Putri Maharani', 'Anak Magang', 'it', '2026-06-23', 'https://drive.google.com/drive/folders/wd-inventory-intern', 'Batch pertama data inventory sudah saya rapikan.', '2026-06-22 16:35+07', 'Diterima', 'Bagus. Lanjutkan pola penamaan yang sama untuk batch berikutnya.', '2026-06-22 18:00+07', 'Arman Wijaya', 'Owner', 0, '[]');
 
 insert into meetings (id, date, time, division_id, topic, participants, status) values
   (1, '2026-06-17', '09:00', 'it', 'Sprint review platform internal', '["Nadia","Raka","Fajar"]', 'Terjadwal'),
@@ -137,6 +175,7 @@ on conflict (setting_key) do update set
 
 select setval(pg_get_serial_sequence('employees', 'id'), coalesce(max(id), 1)) from employees;
 select setval(pg_get_serial_sequence('tasks', 'id'), coalesce(max(id), 1)) from tasks;
+select setval(pg_get_serial_sequence('task_submissions', 'id'), coalesce(max(id), 1)) from task_submissions;
 select setval(pg_get_serial_sequence('meetings', 'id'), coalesce(max(id), 1)) from meetings;
 select setval(pg_get_serial_sequence('minutes', 'id'), coalesce(max(id), 1)) from minutes;
 select setval(pg_get_serial_sequence('reports', 'id'), coalesce(max(id), 1)) from reports;

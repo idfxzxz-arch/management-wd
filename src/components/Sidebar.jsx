@@ -10,6 +10,7 @@ import {
   ClipboardList,
   FileText,
   Gauge,
+  MessageSquareText,
   Settings,
   ShieldCheck,
   Users,
@@ -27,6 +28,7 @@ const menus = [
   { to: "/division-jobdesk", label: "Jobdesk Divisi", icon: Briefcase, roles: ["Owner", "Kepala Divisi"] },
   { to: "/individual-jobdesk", label: "Jobdesk Individu", icon: CheckSquare, roles: ["Owner", "Kepala Divisi", "Staff"] },
   { to: "/approval", label: "Approval Tugas", icon: ShieldCheck, roles: ["Owner", "Kepala Divisi"] },
+  { to: "/reviews", label: "Review Tugas", staffLabel: "Feedback Tugas", icon: MessageSquareText, roles: ["Owner", "Kepala Divisi", "Staff", "Administrator"] },
   { to: "/minutes", label: "Notulen Rapat", icon: ClipboardList, roles: ["Owner", "Kepala Divisi", "Staff"] },
   { to: "/agenda", label: "Agenda Rapat", icon: CalendarDays, roles: ["Owner", "Kepala Divisi", "Staff"] },
   { to: "/reports", label: "Laporan Kerja", icon: FileText, roles: ["Owner", "Kepala Divisi", "Staff"] },
@@ -59,7 +61,7 @@ export default function Sidebar({ user, open, onClose }) {
           </button>
         </div>
         <nav className="h-[calc(100vh-4rem)] space-y-1 overflow-y-auto p-3">
-          {available.map(({ to, label, icon: Icon }) => (
+          {available.map(({ to, label, staffLabel, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
@@ -69,7 +71,7 @@ export default function Sidebar({ user, open, onClose }) {
               }
             >
               <Icon size={18} />
-              <span>{label}</span>
+              <span>{user?.role === "Staff" && staffLabel ? staffLabel : label}</span>
             </NavLink>
           ))}
         </nav>
