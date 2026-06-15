@@ -14,6 +14,7 @@ const emptyData = {
   documents: [],
   activityLogs: [],
   sops: [],
+  settings: [],
 };
 
 const tableMap = [
@@ -29,6 +30,7 @@ const tableMap = [
   ["documents", "documents", mapDocument],
   ["activityLogs", "activity_logs", mapActivityLog],
   ["sops", "sops", mapSop],
+  ["settings", "app_settings", mapSetting],
 ];
 
 const AppDataContext = createContext({
@@ -211,7 +213,17 @@ function mapAnnouncement(row) {
 }
 
 function mapDocument(row) {
-  return { id: row.id, name: row.name, category: row.category, divisionId: row.division_id, uploadedAt: row.uploaded_at, type: row.type };
+  return {
+    id: row.id,
+    name: row.name,
+    category: row.category,
+    divisionId: row.division_id,
+    uploadedAt: row.uploaded_at,
+    type: row.type,
+    fileUrl: row.file_url || "",
+    fileName: row.file_name || "",
+    filePath: row.file_path || "",
+  };
 }
 
 function mapActivityLog(row) {
@@ -220,4 +232,8 @@ function mapActivityLog(row) {
 
 function mapSop(row) {
   return { id: row.id, title: row.title, divisionId: row.division_id, description: row.description || "", updatedAt: row.updated_at, status: row.status };
+}
+
+function mapSetting(row) {
+  return { key: row.setting_key, value: row.setting_value, updatedAt: row.updated_at };
 }

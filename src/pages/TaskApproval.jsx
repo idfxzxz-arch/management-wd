@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Badge from "../components/Badge";
 import DataTable from "../components/DataTable";
+import Modal from "../components/Modal";
 import { getCurrentUser } from "../utils/auth";
 import { useAppData } from "../data/AppDataProvider";
 import { Page } from "./Divisions";
@@ -11,9 +12,11 @@ export default function TaskApproval() {
   const { tasks, divisionName, employeeName, scopedByDivision, loading, error, reload } = useAppData();
   const [savingId, setSavingId] = useState(null);
   const [message, setMessage] = useState("");
+  const [revisionTask, setRevisionTask] = useState(null);
+  const [revisionNote, setRevisionNote] = useState("");
   const rows = scopedByDivision(tasks, user).filter((task) => task.approval === "Menunggu Approval");
 
-  async function updateApproval(task, approval) {
+  async function updateApproval(task, approval, customNote = "") {
     setMessage("");
 
     if (!isSupabaseConfigured) {
@@ -29,10 +32,10 @@ export default function TaskApproval() {
 
     setSavingId(task.id);
     const nextStatus = approval === "Approved" && task.progress === 100 ? "Selesai" : approval === "Revisi" ? "Revisi" : task.status;
-    const nextNote = approval === "Revisi" ? "Perlu revisi dari approver." : task.note;
+    const nextNote = approval === "Revisi" ? customNote || "Perlu revisi dari approver." : task.note;
     const history = [
       ...(task.history || []),
-      `${user?.name || "User"} ${approval === "Approved" ? "approve" : "meminta revisi"} tugas`,
+      `${user?.name || "User"} ${approval === "Approved" ? "approve" : "meminta revisi"} tugas${approval === "Revisi" && nextNote ? ` - ${nextNote}` : ""}`,
     ];
 
     const { error: updateError } = await supabase
@@ -63,8 +66,20 @@ export default function TaskApproval() {
     });
 
     setSavingId(null);
+    setRevisionTask(null);
+    setRevisionNote("");
     setMessage(`Tugas berhasil di${approval === "Approved" ? "approve" : "revisi"}.`);
     reload();
+  }
+
+  function requestRevision(event) {
+    event.preventDefault();
+    if (!revisionTask) return;
+    if (!revisionNote.trim()) {
+      setMessage("Catatan revisi wajib diisi.");
+      return;
+    }
+    updateApproval(revisionTask, "Revisi", revisionNote.trim());
   }
 
   return (
@@ -86,11 +101,19 @@ export default function TaskApproval() {
           { key: "actions", header: "Aksi", render: (row) => (
             <div className="flex gap-2">
               <button disabled={savingId === row.id} onClick={() => updateApproval(row, "Approved")} className="rounded bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60">Approve</button>
-              <button disabled={savingId === row.id} onClick={() => updateApproval(row, "Revisi")} className="rounded bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60">Revisi</button>
+              <button disabled={savingId === row.id} onClick={() => { setRevisionTask(row); setRevisionNote(row.note || ""); setMessage(""); }} className="rounded bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60">Revisi</button>
             </div>
           ) },
         ]}
       />
+      <Modal open={Boolean(revisionTask)} title="Catatan Revisi" onClose={() => { setRevisionTask(null); setRevisionNote(""); }}>
+        <form className="grid gap-3" onSubmit={requestRevision}>
+          <textarea className="min-h-[120px] rounded-lg border border-slate-200 px-3 py-2" placeholder="Tulis catatan revisi untuk staff" value={revisionNote} onChange={(event) => setRevisionNote(event.target.value)} />
+          <button disabled={savingId === revisionTask?.id} className="rounded-lg bg-amber-500 px-4 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70">
+            {savingId === revisionTask?.id ? "Mengirim..." : "Kirim Revisi"}
+          </button>
+        </form>
+      </Modal>
     </Page>
   );
 }

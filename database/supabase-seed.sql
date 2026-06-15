@@ -11,6 +11,7 @@ truncate table
   reports,
   weekly_reports,
   sops,
+  app_settings,
   tasks,
   employees,
   divisions,
@@ -89,11 +90,11 @@ insert into announcements (title, content, author, date, target, priority) value
   ('Update SOP Dokumen', 'Setiap dokumen internal wajib diberi kategori dan pemilik dokumen.', 'Nadia Prameswari', '2026-06-11', 'IT, HR', 'Sedang'),
   ('Pengingat Laporan Mingguan', 'Laporan mingguan dikirim maksimal Jumat pukul 16.00.', 'Clara Anindita', '2026-06-09', 'Semua Divisi', 'Sedang');
 
-insert into documents (name, category, division_id, uploaded_at, type) values
-  ('Panduan Akses Sistem Internal', 'Teknis', 'it', '2026-06-04', 'PDF'),
-  ('Template Laporan Mingguan', 'Administrasi', 'all', '2026-05-29', 'DOCX'),
-  ('Rekap Budget Q2', 'Keuangan', 'finance', '2026-06-02', 'XLSX'),
-  ('Brand Guideline WD Group', 'Marketing', 'marketing', '2026-05-20', 'PDF');
+insert into documents (name, category, division_id, uploaded_at, type, file_url, file_name, file_path) values
+  ('Panduan Akses Sistem Internal', 'Teknis', 'it', '2026-06-04', 'PDF', '', '', ''),
+  ('Template Laporan Mingguan', 'Administrasi', 'all', '2026-05-29', 'DOCX', '', '', ''),
+  ('Rekap Budget Q2', 'Keuangan', 'finance', '2026-06-02', 'XLSX', '', '', ''),
+  ('Brand Guideline WD Group', 'Marketing', 'marketing', '2026-05-20', 'PDF', '', '', '');
 
 insert into activity_logs (actor, division_id, action, time, severity) values
   ('Raka Mahendra', 'it', 'menyelesaikan tugas audit komponen dashboard', '2026-06-13 15:20', 'success'),
@@ -107,6 +108,15 @@ insert into sops (title, division_id, description, updated_at, status) values
   ('SOP Laporan Mingguan', 'all', 'Format dan jadwal pengiriman laporan kerja setiap divisi.', '2026-05-25', 'Aktif'),
   ('SOP Reimbursement', 'finance', 'Ketentuan klaim, dokumen pendukung, dan proses validasi finance.', '2026-06-06', 'Aktif'),
   ('SOP Publikasi Konten', 'marketing', 'Standar review, approval, dan arsip konten marketing.', '2026-05-18', 'Draft');
+
+insert into app_settings (setting_key, setting_value) values
+  ('company_name', 'WD Group Company'),
+  ('theme', 'Biru tua, putih, abu-abu muda'),
+  ('notifications', 'Email, dashboard alert, dan reminder deadline aktif'),
+  ('roles', 'Owner, Kepala Divisi, Staff')
+on conflict (setting_key) do update set
+  setting_value = excluded.setting_value,
+  updated_at = now();
 
 select setval(pg_get_serial_sequence('employees', 'id'), coalesce(max(id), 1)) from employees;
 select setval(pg_get_serial_sequence('tasks', 'id'), coalesce(max(id), 1)) from tasks;

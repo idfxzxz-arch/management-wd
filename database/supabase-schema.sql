@@ -122,7 +122,16 @@ create table if not exists documents (
   category text,
   division_id text not null default 'all',
   uploaded_at date,
-  type text
+  type text,
+  file_url text,
+  file_name text,
+  file_path text
+);
+
+create table if not exists app_settings (
+  setting_key text primary key,
+  setting_value text not null,
+  updated_at timestamptz not null default now()
 );
 
 create table if not exists activity_logs (
@@ -155,6 +164,7 @@ alter table announcements enable row level security;
 alter table documents enable row level security;
 alter table activity_logs enable row level security;
 alter table sops enable row level security;
+alter table app_settings enable row level security;
 
 create policy "authenticated read app_users" on app_users for select to authenticated using (true);
 create policy "public read divisions" on divisions for select using (true);
@@ -168,6 +178,7 @@ create policy "public read announcements" on announcements for select using (tru
 create policy "public read documents" on documents for select using (true);
 create policy "public read activity_logs" on activity_logs for select using (true);
 create policy "public read sops" on sops for select using (true);
+create policy "public read app_settings" on app_settings for select using (true);
 
 create policy "authenticated insert tasks" on tasks for insert to authenticated with check (true);
 create policy "authenticated update tasks" on tasks for update to authenticated using (true) with check (true);
@@ -189,8 +200,21 @@ create policy "authenticated insert weekly_reports" on weekly_reports for insert
 create policy "authenticated update weekly_reports" on weekly_reports for update to authenticated using (true) with check (true);
 create policy "authenticated delete weekly_reports" on weekly_reports for delete to authenticated using (true);
 
+create policy "authenticated update app_users" on app_users for update to authenticated using (true) with check (true);
+
+create policy "authenticated insert documents" on documents for insert to authenticated with check (true);
+create policy "authenticated update documents" on documents for update to authenticated using (true) with check (true);
+create policy "authenticated delete documents" on documents for delete to authenticated using (true);
+
+create policy "authenticated insert app_settings" on app_settings for insert to authenticated with check (true);
+create policy "authenticated update app_settings" on app_settings for update to authenticated using (true) with check (true);
+
 insert into storage.buckets (id, name, public)
 values ('task-submissions', 'task-submissions', true)
+on conflict (id) do nothing;
+
+insert into storage.buckets (id, name, public)
+values ('company-documents', 'company-documents', true)
 on conflict (id) do nothing;
 
 create policy "authenticated upload task submissions"
@@ -200,3 +224,11 @@ with check (bucket_id = 'task-submissions');
 create policy "public read task submissions"
 on storage.objects for select
 using (bucket_id = 'task-submissions');
+
+create policy "authenticated upload company documents"
+on storage.objects for insert to authenticated
+with check (bucket_id = 'company-documents');
+
+create policy "public read company documents"
+on storage.objects for select
+using (bucket_id = 'company-documents');
