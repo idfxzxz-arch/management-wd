@@ -12,11 +12,20 @@ body {
   color: #0f172a;
 }
 
+a,
+p,
+span,
+td,
+div {
+  overflow-wrap: anywhere;
+}
+
 button,
 input,
 select,
 textarea {
   font: inherit;
+  min-width: 0;
 }
 
 .table-scroll {

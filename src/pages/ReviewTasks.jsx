@@ -142,7 +142,7 @@ export default function ReviewTasks() {
         <Metric label="Selesai Bulan Ini" value={stats.doneThisMonth} />
       </div>
 
-      <div className="surface-panel grid gap-3 p-4 lg:grid-cols-[1.3fr_repeat(4,1fr)]">
+      <div className="surface-panel grid gap-3 p-3 sm:p-4 lg:grid-cols-[1.3fr_repeat(4,1fr)]">
         <Search value={query} setValue={setQuery} placeholder="Cari nama staf atau judul tugas" />
         <FilterSelect value={divisionFilter} onChange={setDivisionFilter} disabled={user?.role === "Kepala Divisi" && user.divisionId !== "all"}>
           <option value="all">Semua divisi</option>
@@ -175,15 +175,15 @@ export default function ReviewTasks() {
           { key: "punctuality", header: "Ket.", render: (row) => <Badge>{row.isLate ? "Terlambat" : row.punctuality}</Badge> },
           { key: "headFeedback", header: "Feedback", wrap: true, render: (row) => row.headFeedback || "-" },
           { key: "actions", header: "Aksi", render: (row) => (
-            <div className="flex flex-wrap gap-2">
-              <button onClick={() => { setSelected(row); setFeedback(row.headFeedback || ""); setMessage(""); }} className="inline-flex items-center gap-1 rounded bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white">
+            <div className="grid gap-2 min-[420px]:grid-cols-2 md:flex md:flex-wrap">
+              <button onClick={() => { setSelected(row); setFeedback(row.headFeedback || ""); setMessage(""); }} className="inline-flex items-center justify-center gap-1 rounded bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white">
                 <Eye size={14} /> Detail
               </button>
-              {row.driveLink && <a className="inline-flex items-center gap-1 rounded bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white" href={row.driveLink} target="_blank" rel="noreferrer"><ExternalLink size={14} /> Drive</a>}
+              {row.driveLink && <a className="inline-flex items-center justify-center gap-1 rounded bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white" href={row.driveLink} target="_blank" rel="noreferrer"><ExternalLink size={14} /> Drive</a>}
               {canReview(row) && row.driveLink && row.status !== "Diterima" && (
                 <>
-                  <button disabled={saving} onClick={() => updateReview(row, "Diterima")} className="inline-flex items-center gap-1 rounded bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"><ShieldCheck size={14} /> Approve</button>
-                  <button disabled={saving} onClick={() => { setSelected(row); setFeedback(row.headFeedback || ""); }} className="inline-flex items-center gap-1 rounded bg-red-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"><RotateCcw size={14} /> Revisi</button>
+                  <button disabled={saving} onClick={() => updateReview(row, "Diterima")} className="inline-flex items-center justify-center gap-1 rounded bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"><ShieldCheck size={14} /> Approve</button>
+                  <button disabled={saving} onClick={() => { setSelected(row); setFeedback(row.headFeedback || ""); }} className="inline-flex items-center justify-center gap-1 rounded bg-red-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"><RotateCcw size={14} /> Revisi</button>
                 </>
               )}
             </div>
@@ -224,7 +224,7 @@ export default function ReviewTasks() {
             {canReview(selected) && selected.driveLink && selected.status !== "Diterima" && (
               <div className="space-y-3">
                 <textarea className="min-h-[110px] w-full rounded-lg border border-slate-200 px-3 py-2" placeholder="Catatan feedback reviewer" value={feedback} onChange={(event) => setFeedback(event.target.value)} />
-                <div className="flex flex-wrap gap-2">
+                <div className="grid gap-2 sm:flex sm:flex-wrap">
                   <button disabled={saving} onClick={() => updateReview(selected, "Diterima")} className="rounded-lg bg-emerald-600 px-4 py-2 font-semibold text-white disabled:opacity-60">Approve / Diterima</button>
                   <button disabled={saving} onClick={() => updateReview(selected, "Revisi")} className="rounded-lg bg-red-600 px-4 py-2 font-semibold text-white disabled:opacity-60">Kirim Revisi</button>
                 </div>
@@ -239,16 +239,16 @@ export default function ReviewTasks() {
 
 function Metric({ label, value }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-      <p className="text-xs font-bold uppercase text-slate-400">{label}</p>
-      <p className="mt-2 text-2xl font-bold text-slate-900">{value}</p>
+    <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
+      <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400 sm:text-xs">{label}</p>
+      <p className="mt-2 text-xl font-bold text-slate-900 sm:text-2xl">{value}</p>
     </div>
   );
 }
 
 function FilterSelect({ value, onChange, children, disabled = false }) {
   return (
-    <select disabled={disabled} className="rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm font-medium text-slate-700 disabled:bg-slate-100" value={value} onChange={(event) => onChange(event.target.value)}>
+    <select disabled={disabled} className="min-w-0 rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm font-medium text-slate-700 disabled:bg-slate-100" value={value} onChange={(event) => onChange(event.target.value)}>
       {children}
     </select>
   );
@@ -258,7 +258,7 @@ function Info({ label, value, wide = false }) {
   return (
     <div className={`rounded-lg border border-slate-200 bg-white p-3 ${wide ? "sm:col-span-2" : ""}`}>
       <p className="text-xs font-bold uppercase text-slate-400">{label}</p>
-      <div className="mt-1 text-sm font-semibold text-slate-800">{value}</div>
+      <div className="mt-1 min-w-0 break-words text-sm font-semibold text-slate-800">{value}</div>
     </div>
   );
 }

@@ -47,7 +47,7 @@ export default function Sidebar({ user, open, onClose }) {
   return (
     <>
       <div className={`fixed inset-0 z-40 bg-slate-950/50 backdrop-blur-sm lg:hidden ${open ? "block" : "hidden"}`} onClick={onClose} />
-      <aside className={`fixed inset-y-0 left-0 z-50 w-72 border-r border-white/10 bg-[linear-gradient(180deg,#081a32_0%,#0b1f3a_55%,#10294a_100%)] text-white shadow-2xl shadow-slate-950/20 transition-transform lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:shadow-none ${open ? "translate-x-0" : "-translate-x-full"}`}>
+      <aside className={`fixed inset-y-0 left-0 z-50 w-[min(18rem,calc(100vw-1rem))] border-r border-white/10 bg-[linear-gradient(180deg,#081a32_0%,#0b1f3a_55%,#10294a_100%)] text-white shadow-2xl shadow-slate-950/20 transition-transform lg:sticky lg:top-0 lg:h-screen lg:w-72 lg:translate-x-0 lg:shadow-none ${open ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="flex h-16 items-center justify-between border-b border-white/10 px-5">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-sm font-black text-navy-900">WD</div>
