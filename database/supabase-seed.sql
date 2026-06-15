@@ -2,6 +2,23 @@
 -- This fills public tables for testing. Create matching Auth users separately in
 -- Supabase Dashboard > Authentication > Users using the same emails.
 
+create table if not exists app_settings (
+  setting_key text primary key,
+  setting_value text not null,
+  updated_at timestamptz not null default now()
+);
+
+alter table tasks add column if not exists submission_note text;
+alter table tasks add column if not exists submission_file_url text;
+alter table tasks add column if not exists submission_file_name text;
+alter table tasks add column if not exists submitted_at timestamptz;
+alter table tasks add column if not exists approved_at timestamptz;
+alter table tasks add column if not exists approved_by text;
+
+alter table documents add column if not exists file_url text;
+alter table documents add column if not exists file_name text;
+alter table documents add column if not exists file_path text;
+
 truncate table
   activity_logs,
   announcements,
