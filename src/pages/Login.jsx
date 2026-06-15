@@ -44,7 +44,16 @@ export default function Login() {
       <div className="grid min-h-screen bg-slate-50 lg:grid-cols-[1.05fr_0.95fr]">
         <section className="flex flex-col justify-between bg-[linear-gradient(135deg,#071a33_0%,#0b1f3a_52%,#12305a_100%)] p-6 text-white sm:p-8 lg:p-12">
           <div>
-            <div className="inline-flex rounded-lg bg-white/10 px-3 py-1 text-sm font-semibold text-blue-100 ring-1 ring-white/10">Prototype Internal Company</div>
+            <div className="flex items-center gap-4">
+              <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl bg-white shadow-lg shadow-slate-950/20 ring-1 ring-white/20 sm:h-20 sm:w-20">
+                <img className="h-full w-full object-cover" src="/wd-group-logo.jpeg" alt="Logo WD Group" />
+              </div>
+              <div>
+                <p className="text-lg font-bold">WD Group Company</p>
+                <p className="text-sm text-blue-100">Internal Management</p>
+              </div>
+            </div>
+            <div className="mt-6 inline-flex rounded-lg bg-white/10 px-3 py-1 text-sm font-semibold text-blue-100 ring-1 ring-white/10">Prototype Internal Company</div>
             <h1 className="mt-7 max-w-2xl text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">WD Group Internal Management System</h1>
             <p className="mt-5 max-w-xl text-sm leading-7 text-blue-100 sm:text-base">
               Sistem untuk mengelola divisi, karyawan, jobdesk, approval, notulen, laporan, SOP, dokumen, dan aktivitas internal berdasarkan role user.
@@ -67,6 +76,15 @@ export default function Login() {
         </section>
         <section className="app-bg flex items-center justify-center p-4 sm:p-6">
           <form onSubmit={submit} className="w-full max-w-md rounded-lg border border-slate-200 bg-white/92 p-5 shadow-soft backdrop-blur sm:p-6">
+            <div className="mb-5 flex items-center gap-3">
+              <div className="h-12 w-12 overflow-hidden rounded-lg border border-slate-200 bg-white">
+                <img className="h-full w-full object-cover" src="/wd-group-logo.jpeg" alt="Logo WD Group" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-900">WD Group Company</p>
+                <p className="text-xs text-slate-500">Internal Management</p>
+              </div>
+            </div>
             <h2 className="text-2xl font-bold text-slate-900">Login</h2>
             <p className="mt-2 text-sm text-slate-500">Masuk menggunakan akun demo yang tersedia.</p>
             {error && <div className="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}

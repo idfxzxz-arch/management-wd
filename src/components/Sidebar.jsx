@@ -50,7 +50,9 @@ export default function Sidebar({ user, open, onClose }) {
       <aside className={`fixed inset-y-0 left-0 z-50 w-[min(18rem,calc(100vw-1rem))] border-r border-white/10 bg-[linear-gradient(180deg,#081a32_0%,#0b1f3a_55%,#10294a_100%)] text-white shadow-2xl shadow-slate-950/20 transition-transform lg:sticky lg:top-0 lg:h-screen lg:w-72 lg:translate-x-0 lg:shadow-none ${open ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="flex h-16 items-center justify-between border-b border-white/10 px-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-sm font-black text-navy-900">WD</div>
+            <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg bg-white ring-1 ring-white/20">
+              <img className="h-full w-full object-cover" src="/wd-group-logo.jpeg" alt="Logo WD Group" />
+            </div>
             <div>
             <p className="text-base font-bold">WD Group</p>
             <p className="text-xs text-blue-100">Internal Management</p>
