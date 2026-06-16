@@ -9,14 +9,14 @@ export default function StatCard({ title, value, icon: Icon, tone = "blue" }) {
   };
 
   return (
-    <div className="group rounded-lg border border-slate-200 bg-white/95 p-4 shadow-sm shadow-slate-200/70 transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <p className="text-sm font-medium text-slate-500">{title}</p>
-          <p className="mt-2 break-words text-2xl font-bold text-slate-900">{value}</p>
+    <div className="group min-h-[112px] rounded-lg border border-slate-200 bg-white/95 p-4 shadow-sm shadow-slate-200/70 transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md">
+      <div className="flex h-full items-center justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-sm font-medium leading-5 text-slate-500">{title}</p>
+          <p className="mt-2 break-words text-2xl font-bold leading-tight text-slate-900">{value}</p>
         </div>
         {Icon && (
-          <div className={`rounded-lg p-3 transition group-hover:scale-105 ${tones[tone]}`}>
+          <div className={`shrink-0 rounded-lg p-3 transition group-hover:scale-105 ${tones[tone]}`}>
             <Icon size={22} />
           </div>
         )}

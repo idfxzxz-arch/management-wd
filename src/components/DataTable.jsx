@@ -18,7 +18,7 @@ export default function DataTable({ columns, rows, empty = "Data tidak ditemukan
                 return (
                   <div key={column.key} className="rounded-lg bg-slate-50/80 p-3 text-sm sm:grid sm:grid-cols-[120px_minmax(0,1fr)] sm:gap-3 sm:bg-transparent sm:p-0">
                     <p className="mb-1 text-[11px] font-bold uppercase tracking-wide text-slate-400 sm:mb-0 sm:text-xs">{column.header}</p>
-                    <div className="min-w-0 break-words text-slate-700">{value}</div>
+                    <div className="min-w-0 break-words leading-6 text-slate-700">{value || "-"}</div>
                   </div>
                 );
               })}
@@ -35,7 +35,7 @@ export default function DataTable({ columns, rows, empty = "Data tidak ditemukan
                   key={column.key}
                   style={{ width: column.width }}
                   className={joinClass(
-                    "whitespace-nowrap px-4 py-3.5 text-left text-xs font-bold uppercase text-slate-500",
+                    "whitespace-nowrap px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-500",
                     "first:pl-5 last:pr-5",
                     column.headerClassName
                   )}
@@ -62,7 +62,7 @@ export default function DataTable({ columns, rows, empty = "Data tidak ditemukan
                   <td
                     key={column.key}
                     className={joinClass(
-                      "border-b border-slate-100 px-4 py-3.5 align-top text-slate-700 first:pl-5 last:pr-5",
+                      "border-b border-slate-100 px-4 py-3 align-top text-slate-700 first:pl-5 last:pr-5",
                       shouldWrap ? "min-w-[190px] whitespace-normal leading-6" : "whitespace-nowrap",
                       column.cellClassName
                     )}
