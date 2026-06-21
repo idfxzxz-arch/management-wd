@@ -22,12 +22,17 @@ npm run dev
 
 ```bash
 VITE_SUPABASE_URL=...
-VITE_SUPABASE_ANON_KEY=...
+VITE_SUPABASE_PUBLISHABLE_KEY=...
 ```
+
+Legacy `VITE_SUPABASE_ANON_KEY` tetap didukung. Jangan pernah menaruh `service_role`, `sb_secret_...`, database password, atau connection string pada variable `VITE_*` karena seluruh variable tersebut masuk ke bundle browser.
+
 
 3. Buka Supabase SQL Editor, lalu jalankan `database/supabase-schema.sql`.
 4. Untuk data testing, jalankan `database/supabase-seed.sql`.
-5. Buat user login di Supabase Auth dengan email yang sama seperti tabel `app_users`.
+5. Jalankan `database/supabase-role-policies.sql` untuk mengaktifkan pembatasan role, divisi, akun aktif, dan storage privat.
+6. Buat user login di Supabase Auth dengan email yang sama seperti tabel `app_users`.
+7. Setelah migrasi, logout lalu login kembali agar `employee_id` tersimpan pada session aplikasi.
 
 Data aplikasi sekarang dibaca dari Supabase. File `src/data/*.js` hanya fallback kosong.
 
@@ -36,5 +41,6 @@ Testing login yang sesuai seed:
 - `owner@wdgroup.com`
 - `head@wdgroup.com`
 - `staff@wdgroup.com`
+- `admin@wdgroup.com`
 
 Password ditentukan saat membuat user di Supabase Auth.

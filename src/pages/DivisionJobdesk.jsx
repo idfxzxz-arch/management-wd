@@ -45,11 +45,12 @@ export default function DivisionJobdesk() {
 }
 
 function JobdeskForm({ divisions, employees, user, onSaved }) {
+  const managedDivisionId = user?.role === "Kepala Divisi" && user.divisionId !== "all" ? user.divisionId : divisions[0]?.id || "it";
   const [form, setForm] = useState({
     title: "",
     description: "",
-    divisionId: divisions[0]?.id || "it",
-    assigneeId: employees.find((employee) => employee.role === "Staff" || employee.role === "Magang")?.id || "",
+    divisionId: managedDivisionId,
+    assigneeId: employees.find((employee) => (employee.role === "Staff" || employee.role === "Magang") && (user?.role !== "Kepala Divisi" || user.divisionId === "all" || employee.divisionId === user.divisionId))?.id || "",
     assignedBy: user?.role === "Owner" || user?.role === "Administrator" ? "Owner" : "Kepala Divisi",
     target: "",
     priority: "Sedang",
@@ -59,7 +60,11 @@ function JobdeskForm({ divisions, employees, user, onSaved }) {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
-  const assignees = employees.filter((employee) => employee.role === "Staff" || employee.role === "Magang");
+  const assignees = employees.filter((employee) =>
+    (employee.role === "Staff" || employee.role === "Magang") &&
+    employee.divisionId === form.divisionId &&
+    (user?.role !== "Kepala Divisi" || user.divisionId === "all" || employee.divisionId === user.divisionId)
+  );
 
   function updateField(key, value) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -76,6 +81,11 @@ function JobdeskForm({ divisions, employees, user, onSaved }) {
 
     if (!form.title || !form.description || !form.target || !form.deadline || !form.assigneeId) {
       setMessage("Lengkapi judul, deskripsi, target, deadline, dan penerima tugas.");
+      return;
+    }
+    const assignee = assignees.find((employee) => String(employee.id) === String(form.assigneeId));
+    if (!assignee || assignee.divisionId !== form.divisionId) {
+      setMessage("Penerima tugas harus berasal dari divisi yang dipilih.");
       return;
     }
 
@@ -108,7 +118,7 @@ function JobdeskForm({ divisions, employees, user, onSaved }) {
 
     if (error) {
       const isPolicyError = error.message.toLowerCase().includes("row-level security");
-      setMessage(isPolicyError ? "Akses simpan belum aktif. Jalankan SQL write policy lalu login ulang." : error.message);
+      setMessage(isPolicyError ? "Anda hanya dapat membuat tugas untuk divisi yang dikelola." : error.message);
       setSaving(false);
       return;
     }
@@ -131,7 +141,7 @@ function JobdeskForm({ divisions, employees, user, onSaved }) {
       <input className="rounded-lg border border-slate-200 px-3 py-2" placeholder="Judul tugas" value={form.title} onChange={(event) => updateField("title", event.target.value)} />
       <textarea className="rounded-lg border border-slate-200 px-3 py-2" placeholder="Deskripsi singkat" value={form.description} onChange={(event) => updateField("description", event.target.value)} />
       <div className="grid gap-3 sm:grid-cols-2">
-        <select className="rounded-lg border border-slate-200 px-3 py-2" value={form.divisionId} onChange={(event) => updateField("divisionId", event.target.value)}>
+        <select disabled={user?.role === "Kepala Divisi" && user.divisionId !== "all"} className="rounded-lg border border-slate-200 px-3 py-2 disabled:bg-slate-100" value={form.divisionId} onChange={(event) => setForm((current) => ({ ...current, divisionId: event.target.value, assigneeId: "" }))}>
           {divisions.map((division) => <option key={division.id} value={division.id}>{division.name}</option>)}
         </select>
         <select className="rounded-lg border border-slate-200 px-3 py-2" value={form.assigneeId} onChange={(event) => updateField("assigneeId", event.target.value)}>
@@ -140,7 +150,7 @@ function JobdeskForm({ divisions, employees, user, onSaved }) {
         </select>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
-        <select className="rounded-lg border border-slate-200 px-3 py-2" value={form.assignedBy} onChange={(event) => updateField("assignedBy", event.target.value)}>
+        <select disabled className="rounded-lg border border-slate-200 bg-slate-100 px-3 py-2" value={form.assignedBy} onChange={(event) => updateField("assignedBy", event.target.value)}>
           <option>Owner</option>
           <option>Kepala Divisi</option>
         </select>

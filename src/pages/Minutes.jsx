@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useMemo, useState } from "react";
+import { Pencil, Trash2 } from "lucide-react";
 import DataTable from "../components/DataTable";
 import Modal from "../components/Modal";
 import { getCurrentUser } from "../utils/auth";
@@ -13,8 +14,46 @@ export default function Minutes() {
   const { minutes, divisions, divisionName, scopedByDivision, loading, error, reload } = useAppData();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [deleting, setDeleting] = useState(null);
+  const [deletingNow, setDeletingNow] = useState(false);
+  const [message, setMessage] = useState("");
   const canManage = user?.role === "Owner" || user?.role === "Kepala Divisi" || user?.role === "Administrator";
   const rows = useMemo(() => scopedByDivision(minutes, user).filter((item) => contains(Object.values(item).join(" "), query)), [query, user]);
+
+  async function deleteMinute() {
+    if (!deleting || !canManage) return;
+    setMessage("");
+    if (!isSupabaseConfigured) {
+      setMessage("Koneksi data belum dikonfigurasi.");
+      return;
+    }
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      setMessage("Session login belum aktif. Silakan logout lalu login ulang.");
+      return;
+    }
+
+    setDeletingNow(true);
+    const { error: deleteError } = await supabase.from("minutes").delete().eq("id", deleting.id);
+    if (deleteError) {
+      setMessage(deleteError.message.toLowerCase().includes("row-level security") ? "Role Anda tidak memiliki akses menghapus notulen ini." : deleteError.message);
+      setDeletingNow(false);
+      return;
+    }
+
+    await supabase.from("activity_logs").insert({
+      actor: user?.name || "User",
+      division_id: deleting.divisionId,
+      action: `menghapus notulen rapat "${deleting.title}"`,
+      time: new Date().toISOString().slice(0, 16).replace("T", " "),
+      severity: "warning",
+    });
+    setDeletingNow(false);
+    setDeleting(null);
+    setMessage("Notulen berhasil dihapus.");
+    reload();
+  }
 
   return (
     <Page
@@ -24,6 +63,7 @@ export default function Minutes() {
     >
       {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data...</div>}
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
+      {message && <div className={`rounded-lg border p-4 text-sm ${message.includes("berhasil") ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-red-200 bg-red-50 text-red-700"}`}>{message}</div>}
       <Search value={query} setValue={setQuery} placeholder="Cari notulen rapat" />
       <DataTable
         rows={rows}
@@ -36,27 +76,63 @@ export default function Minutes() {
           { key: "participants", header: "Peserta", render: (row) => row.participants.join(", ") },
           { key: "decision", header: "Keputusan", render: (row) => <span className="block max-w-md whitespace-normal">{row.decision}</span> },
           { key: "followUp", header: "Tindak Lanjut", render: (row) => <span className="block max-w-md whitespace-normal">{row.followUp}</span> },
+          ...(canManage ? [{ key: "actions", header: "Aksi", render: (row) => (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                title="Edit notulen"
+                aria-label={`Edit notulen ${row.title}`}
+                onClick={() => { setEditing(row); setMessage(""); }}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              >
+                <Pencil size={16} />
+              </button>
+              <button
+                type="button"
+                title="Hapus notulen"
+                aria-label={`Hapus notulen ${row.title}`}
+                onClick={() => { setDeleting(row); setMessage(""); }}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-700 transition hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-300"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+          ) }] : []),
         ]}
       />
       <Modal open={open} title="Tambah Notulen Rapat" onClose={() => setOpen(false)}>
         <MinuteForm divisions={divisions} user={user} onSaved={() => { setOpen(false); reload(); }} />
       </Modal>
+      <Modal open={Boolean(editing)} title="Edit Notulen Rapat" onClose={() => setEditing(null)}>
+        {editing && <MinuteForm minute={editing} divisions={divisions} user={user} onSaved={() => { setEditing(null); setMessage("Notulen berhasil diperbarui."); reload(); }} />}
+      </Modal>
+      <Modal open={Boolean(deleting)} title="Hapus Notulen" onClose={() => !deletingNow && setDeleting(null)}>
+        {deleting && (
+          <div>
+            <p className="text-sm leading-6 text-slate-600">Notulen <span className="font-semibold text-slate-900">{deleting.title}</span> akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.</p>
+            <div className="mt-5 flex justify-end gap-2">
+              <button disabled={deletingNow} onClick={() => setDeleting(null)} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 disabled:opacity-60">Batal</button>
+              <button disabled={deletingNow} onClick={deleteMinute} className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-60">{deletingNow ? "Menghapus..." : "Ya, Hapus"}</button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </Page>
   );
 }
 
-function MinuteForm({ divisions, user, onSaved }) {
+function MinuteForm({ minute = null, divisions, user, onSaved }) {
   const [form, setForm] = useState({
-    title: "",
-    date: "",
-    time: "",
-    divisionId: user?.role === "Owner" || user?.role === "Administrator" ? "all" : user?.divisionId || "all",
-    leader: user?.name || "",
-    participants: "",
-    discussion: "",
-    decision: "",
-    followUp: "",
-    actionDeadline: "",
+    title: minute?.title || "",
+    date: minute?.date || "",
+    time: minute?.time?.slice(0, 5) || "",
+    divisionId: minute?.divisionId || (user?.role === "Owner" || user?.role === "Administrator" ? "all" : user?.divisionId || "all"),
+    leader: minute?.leader || user?.name || "",
+    participants: minute?.participants?.join(", ") || "",
+    discussion: minute?.discussion || "",
+    decision: minute?.decision || "",
+    followUp: minute?.followUp || "",
+    actionDeadline: minute?.actionDeadline || "",
   });
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -87,7 +163,7 @@ function MinuteForm({ divisions, user, onSaved }) {
 
     setSaving(true);
     const participants = form.participants.split(",").map((item) => item.trim()).filter(Boolean);
-    const { error } = await supabase.from("minutes").insert({
+    const payload = {
       title: form.title,
       date: form.date,
       time: form.time,
@@ -98,11 +174,15 @@ function MinuteForm({ divisions, user, onSaved }) {
       decision: form.decision,
       follow_up: form.followUp,
       action_deadline: form.actionDeadline || null,
-    });
+    };
+    const request = minute
+      ? supabase.from("minutes").update(payload).eq("id", minute.id)
+      : supabase.from("minutes").insert(payload);
+    const { error } = await request;
 
     if (error) {
       const isPolicyError = error.message.toLowerCase().includes("row-level security");
-      setMessage(isPolicyError ? "Akses tambah notulen belum aktif. Jalankan SQL write policy lalu login ulang." : error.message);
+      setMessage(isPolicyError ? `Role Anda tidak memiliki akses ${minute ? "mengedit" : "menambah"} notulen ini.` : error.message);
       setSaving(false);
       return;
     }
@@ -110,7 +190,7 @@ function MinuteForm({ divisions, user, onSaved }) {
     await supabase.from("activity_logs").insert({
       actor: user?.name || "User",
       division_id: form.divisionId,
-      action: `menambahkan notulen rapat "${form.title}"`,
+      action: `${minute ? "memperbarui" : "menambahkan"} notulen rapat "${form.title}"`,
       time: new Date().toISOString().slice(0, 16).replace("T", " "),
       severity: user?.role === "Owner" || user?.role === "Administrator" ? "owner" : "info",
     });
@@ -127,7 +207,7 @@ function MinuteForm({ divisions, user, onSaved }) {
         <input className="rounded border border-slate-200 px-3 py-2" type="date" value={form.date} onChange={(event) => updateField("date", event.target.value)} />
         <input className="rounded border border-slate-200 px-3 py-2" type="time" value={form.time} onChange={(event) => updateField("time", event.target.value)} />
       </div>
-      <select className="rounded border border-slate-200 px-3 py-2" value={form.divisionId} onChange={(event) => updateField("divisionId", event.target.value)}>
+      <select disabled={user?.role === "Kepala Divisi" && user?.divisionId !== "all"} className="rounded border border-slate-200 px-3 py-2 disabled:bg-slate-100" value={form.divisionId} onChange={(event) => updateField("divisionId", event.target.value)}>
         <option value="all">Semua Divisi</option>
         {divisions.map((division) => <option key={division.id} value={division.id}>{division.name}</option>)}
       </select>
@@ -138,7 +218,7 @@ function MinuteForm({ divisions, user, onSaved }) {
       <textarea className="rounded border border-slate-200 px-3 py-2" placeholder="Tindak lanjut / action plan" value={form.followUp} onChange={(event) => updateField("followUp", event.target.value)} />
       <input className="rounded border border-slate-200 px-3 py-2" type="date" value={form.actionDeadline} onChange={(event) => updateField("actionDeadline", event.target.value)} />
       <button disabled={saving} className="rounded bg-navy-800 px-4 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70">
-        {saving ? "Menyimpan..." : "Simpan Notulen"}
+        {saving ? "Menyimpan..." : minute ? "Simpan Perubahan" : "Simpan Notulen"}
       </button>
     </form>
   );

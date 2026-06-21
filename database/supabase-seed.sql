@@ -26,6 +26,10 @@ alter table task_submissions add column if not exists revision_history jsonb not
 alter table task_submissions drop constraint if exists task_submissions_status_check;
 alter table task_submissions add constraint task_submissions_status_check check (status in ('Belum Dikumpulkan', 'Menunggu Review', 'Diterima', 'Revisi', 'Terlambat', 'Revisi Dikirim Ulang'));
 
+alter table app_users add column if not exists employee_id bigint references employees(id) on delete set null;
+alter table reports add column if not exists employee_id bigint references employees(id) on delete set null;
+alter table weekly_reports add column if not exists employee_id bigint references employees(id) on delete set null;
+
 alter table documents add column if not exists file_url text;
 alter table documents add column if not exists file_name text;
 alter table documents add column if not exists file_path text;
@@ -50,14 +54,14 @@ restart identity cascade;
 insert into app_users (id, name, email, role, division_id, status) values
   ('owner-general', 'Arman Wijaya', 'owner@wdgroup.com', 'Owner', 'all', 'Aktif'),
   ('head-general', 'Kepala Divisi WD Group', 'head@wdgroup.com', 'Kepala Divisi', 'all', 'Aktif'),
-  ('staff-general', 'Staff WD Group', 'staff@wdgroup.com', 'Staff', 'all', 'Aktif'),
+  ('staff-general', 'Staf WD Group', 'staff@wdgroup.com', 'Staff', 'all', 'Aktif'),
   ('admin-general', 'Administrator WD Group', 'admin@wdgroup.com', 'Administrator', 'all', 'Aktif');
 
 insert into divisions (id, name, head, members, description, performance) values
   ('it', 'Information Technology', 'Nadia Prameswari', 6, 'Mengelola sistem, infrastruktur, keamanan data, dan otomasi operasional.', 'Sangat Baik'),
   ('marketing', 'Marketing', 'Maya Salsabila', 8, 'Menyusun strategi kampanye, brand awareness, dan pertumbuhan kanal digital.', 'Baik'),
   ('finance', 'Finance', 'Bima Santoso', 5, 'Mengelola anggaran, laporan keuangan, audit internal, dan arus kas.', 'Perlu Perhatian'),
-  ('hr', 'Human Resource', 'Clara Anindita', 4, 'Mengurus rekrutmen, administrasi karyawan, performa, dan budaya perusahaan.', 'Baik'),
+  ('hr', 'Human Resource', 'Clara Anindita', 4, 'Mengurus rekrutmen, administrasi staf, performa, dan budaya perusahaan.', 'Baik'),
   ('operations', 'Operations', 'Yoga Pratama', 7, 'Memastikan proses layanan, vendor, dan pemenuhan kebutuhan operasional berjalan rapi.', 'Sangat Baik');
 
 insert into employees (id, name, email, position, division_id, role, status, joined_at) values
@@ -144,7 +148,7 @@ insert into weekly_reports (week, period, staff, division_id, completed_tasks, t
   ('Minggu 2 Juni 2026', '2026-06-08 s/d 2026-06-14', 'Putri Maharani', 'it', 1, 3, 35, 0, 0, 'Input data inventory dari spreadsheet sudah mulai, masih dalam tahap pembersihan data.', 'Perlu arahan format serial number dan kategori barang.', 'Merapikan batch data inventory pertama.', 'Magang perlu pendampingan, progres masih wajar.', 'Pendampingan');
 
 insert into announcements (title, content, author, date, target, priority) values
-  ('Town Hall Bulanan', 'Seluruh karyawan wajib mengikuti town hall WD Group minggu depan.', 'Arman Wijaya', '2026-06-13', 'Semua Divisi', 'Tinggi'),
+  ('Town Hall Bulanan', 'Seluruh staf wajib mengikuti town hall WD Group minggu depan.', 'Arman Wijaya', '2026-06-13', 'Semua Divisi', 'Tinggi'),
   ('Update SOP Dokumen', 'Setiap dokumen internal wajib diberi kategori dan pemilik dokumen.', 'Nadia Prameswari', '2026-06-11', 'IT, HR', 'Sedang'),
   ('Pengingat Laporan Mingguan', 'Laporan mingguan dikirim maksimal Jumat pukul 16.00.', 'Clara Anindita', '2026-06-09', 'Semua Divisi', 'Sedang');
 
@@ -169,12 +173,26 @@ insert into sops (title, division_id, description, updated_at, status) values
 
 insert into app_settings (setting_key, setting_value) values
   ('company_name', 'WD Group Company'),
-  ('theme', 'Biru tua, putih, abu-abu muda'),
+  ('theme', 'navy'),
   ('notifications', 'Email, dashboard alert, dan reminder deadline aktif'),
   ('roles', 'Owner, Kepala Divisi, Staff, Administrator')
 on conflict (setting_key) do update set
   setting_value = excluded.setting_value,
   updated_at = now();
+
+-- Keep the canonical Owner identity consistent across seeded records.
+update app_users set name = 'Wildan Deni Fahrezi, S.Pd., M.Pd.' where role = 'Owner';
+update employees set name = 'Wildan Deni Fahrezi, S.Pd., M.Pd.' where role = 'Owner';
+update tasks set assigned_by_name = 'Wildan Deni Fahrezi, S.Pd., M.Pd.' where assigned_by = 'Owner';
+update task_submissions set reviewed_by = 'Wildan Deni Fahrezi, S.Pd., M.Pd.' where reviewer_role = 'Owner';
+update announcements set author = 'Wildan Deni Fahrezi, S.Pd., M.Pd.' where author = 'Arman Wijaya';
+update activity_logs set actor = 'Wildan Deni Fahrezi, S.Pd., M.Pd.' where severity = 'owner' and actor = 'Arman Wijaya';
+update app_users set employee_id = 1, division_id = 'all' where role = 'Owner';
+update app_users set employee_id = 18, division_id = 'all' where role = 'Administrator';
+update app_users set employee_id = 2, name = 'Kepala Divisi WD Group', division_id = 'it' where id = 'head-general';
+update app_users set employee_id = 3, name = 'Staf WD Group', division_id = 'it' where id = 'staff-general';
+update reports r set employee_id = e.id from employees e where lower(r.staff) = lower(e.name);
+update weekly_reports r set employee_id = e.id from employees e where lower(r.staff) = lower(e.name);
 
 select setval(pg_get_serial_sequence('employees', 'id'), coalesce(max(id), 1)) from employees;
 select setval(pg_get_serial_sequence('tasks', 'id'), coalesce(max(id), 1)) from tasks;

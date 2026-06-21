@@ -10,6 +10,8 @@ import { useAppData } from "../data/AppDataProvider";
 import { supabase, isSupabaseConfigured } from "../lib/supabase";
 import { REVIEW_STATUSES, buildSubmissionRows, submissionStats } from "../utils/submissions";
 
+const READY_FOR_REVIEW = ["Menunggu Review", "Revisi Dikirim Ulang", "Terlambat"];
+
 export default function ReviewTasks() {
   const user = getCurrentUser();
   const { tasks, taskSubmissions, employees, divisions, divisionName, employeeName, scopedByDivision, loading, error, reload } = useAppData();
@@ -29,6 +31,7 @@ export default function ReviewTasks() {
     if (user?.role === "Kepala Divisi") return user.divisionId === "all" || row.divisionId === user.divisionId;
     return false;
   };
+  const canTakeReviewAction = (row) => canReview(row) && Boolean(row.driveLink) && READY_FOR_REVIEW.includes(row.status);
   const rows = useMemo(() => {
     return allRows.filter((row) => {
       const matchQuery = contains(`${row.taskTitle} ${row.staffName}`, query);
@@ -48,6 +51,10 @@ export default function ReviewTasks() {
     setMessage("");
     if (!canReview(row)) {
       setMessage("Anda tidak memiliki akses review untuk tugas ini.");
+      return;
+    }
+    if (!canTakeReviewAction(row)) {
+      setMessage("Tugas ini belum siap direview atau sudah selesai direview.");
       return;
     }
     if (status === "Revisi" && !feedback.trim()) {
@@ -100,9 +107,10 @@ export default function ReviewTasks() {
       .update({
         approval: status === "Diterima" ? "Approved" : "Revisi",
         status: status === "Diterima" ? "Selesai" : "Revisi",
+        progress: status === "Diterima" ? 100 : row.task?.progress,
         note: status === "Revisi" ? feedback.trim() : row.task?.note,
-        approved_at: reviewedAt,
-        approved_by: user?.name || "Reviewer",
+        approved_at: status === "Diterima" ? reviewedAt : null,
+        approved_by: status === "Diterima" ? user?.name || "Reviewer" : null,
         history,
       })
       .eq("id", row.taskId);
@@ -133,7 +141,15 @@ export default function ReviewTasks() {
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       {message && <div className={`rounded-lg border p-4 text-sm ${message.includes("berhasil") || message.includes("approve") ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-red-200 bg-red-50 text-red-700"}`}>{message}</div>}
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+      {(user?.role === "Owner" || user?.role === "Kepala Divisi") && (
+        <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+          {user.role === "Owner"
+            ? "Anda dapat mereview kiriman staf dari seluruh divisi. Buka Drive, lalu pilih Approve atau Revisi."
+            : "Anda dapat mereview kiriman staf di divisi Anda. Buka Drive, lalu pilih Approve atau Revisi."}
+        </div>
+      )}
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
         <Metric label="Menunggu Review" value={stats.waitingReview} />
         <Metric label="Approved" value={stats.approved} />
         <Metric label="Revisi" value={stats.revision} />
@@ -165,25 +181,77 @@ export default function ReviewTasks() {
       <DataTable
         rows={rows}
         columns={[
-          { key: "taskTitle", header: "Tugas", width: "230px", render: (row) => <span className="font-semibold text-slate-800">{row.taskTitle}</span> },
-          { key: "staffName", header: "Staf" },
-          { key: "divisionId", header: "Divisi", render: (row) => divisionName(row.divisionId) },
-          { key: "driveLink", header: "Link Drive", render: (row) => row.driveLink ? <DriveLink href={row.driveLink} /> : "-" },
-          { key: "status", header: "Status", render: (row) => <Badge>{row.status}</Badge> },
-          { key: "submittedAt", header: "Submit", render: (row) => formatDateTime(row.submittedAt) },
-          { key: "deadline", header: "Deadline" },
-          { key: "punctuality", header: "Ket.", render: (row) => <Badge>{row.isLate ? "Terlambat" : row.punctuality}</Badge> },
-          { key: "headFeedback", header: "Feedback", wrap: true, render: (row) => row.headFeedback || "-" },
-          { key: "actions", header: "Aksi", render: (row) => (
-            <div className="grid gap-2 min-[420px]:grid-cols-2 md:flex md:flex-wrap">
-              <button onClick={() => { setSelected(row); setFeedback(row.headFeedback || ""); setMessage(""); }} className="inline-flex items-center justify-center gap-1 rounded bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white">
-                <Eye size={14} /> Detail
+          {
+            key: "taskTitle",
+            header: "Tugas & Staf",
+            width: "250px",
+            wrap: true,
+            render: (row) => (
+              <div className="min-w-[200px]">
+                <p className="font-semibold leading-5 text-slate-900">{row.taskTitle}</p>
+                <p className="mt-1 text-xs text-slate-500">{row.staffName}</p>
+              </div>
+            ),
+          },
+          { key: "divisionId", header: "Divisi", width: "145px", render: (row) => <span className="font-medium">{divisionName(row.divisionId)}</span> },
+          {
+            key: "submission",
+            header: "Pengumpulan",
+            width: "165px",
+            render: (row) => row.driveLink ? (
+              <div className="space-y-2">
+                <DriveLink href={row.driveLink} />
+                <p className="text-xs text-slate-400">{formatDateTime(row.submittedAt)}</p>
+              </div>
+            ) : <span className="text-slate-400">Belum dikumpulkan</span>,
+          },
+          {
+            key: "reviewStatus",
+            header: "Status & Deadline",
+            width: "220px",
+            render: (row) => (
+              <div className="min-w-[190px] space-y-2">
+                <div className="flex flex-wrap gap-2">
+                  <Badge>{row.status}</Badge>
+                  <Badge>{row.isLate ? "Terlambat" : row.punctuality}</Badge>
+                </div>
+                <p className="text-xs text-slate-500">Deadline: <span className="font-semibold text-slate-700">{row.deadline || "-"}</span></p>
+              </div>
+            ),
+          },
+          { key: "actions", header: "Aksi", width: "150px", render: (row) => (
+            <div className="flex min-w-[128px] gap-2">
+              <button
+                type="button"
+                title="Lihat detail"
+                aria-label={`Lihat detail tugas ${row.taskTitle}`}
+                onClick={() => { setSelected(row); setFeedback(row.headFeedback || ""); setMessage(""); }}
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300"
+              >
+                <Eye size={16} />
               </button>
-              {row.driveLink && <a className="inline-flex items-center justify-center gap-1 rounded bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white" href={row.driveLink} target="_blank" rel="noreferrer"><ExternalLink size={14} /> Drive</a>}
-              {canReview(row) && row.driveLink && row.status !== "Diterima" && (
+              {canTakeReviewAction(row) && (
                 <>
-                  <button disabled={saving} onClick={() => updateReview(row, "Diterima")} className="inline-flex items-center justify-center gap-1 rounded bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"><ShieldCheck size={14} /> Approve</button>
-                  <button disabled={saving} onClick={() => { setSelected(row); setFeedback(row.headFeedback || ""); }} className="inline-flex items-center justify-center gap-1 rounded bg-red-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"><RotateCcw size={14} /> Revisi</button>
+                  <button
+                    type="button"
+                    title="Approve tugas"
+                    aria-label={`Approve tugas ${row.taskTitle}`}
+                    disabled={saving}
+                    onClick={() => updateReview(row, "Diterima")}
+                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-sm transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-300 disabled:opacity-60"
+                  >
+                    <ShieldCheck size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    title="Minta revisi"
+                    aria-label={`Minta revisi tugas ${row.taskTitle}`}
+                    disabled={saving}
+                    onClick={() => { setSelected(row); setFeedback(row.headFeedback || ""); }}
+                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-700 transition hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-300 disabled:opacity-60"
+                  >
+                    <RotateCcw size={16} />
+                  </button>
                 </>
               )}
             </div>
@@ -221,7 +289,7 @@ export default function ReviewTasks() {
                 ))}
               </div>
             </section>
-            {canReview(selected) && selected.driveLink && selected.status !== "Diterima" && (
+            {canTakeReviewAction(selected) && (
               <div className="space-y-3">
                 <textarea className="min-h-[110px] w-full rounded-lg border border-slate-200 px-3 py-2" placeholder="Catatan feedback reviewer" value={feedback} onChange={(event) => setFeedback(event.target.value)} />
                 <div className="grid gap-2 sm:flex sm:flex-wrap">
@@ -265,7 +333,7 @@ function Info({ label, value, wide = false }) {
 
 function DriveLink({ href }) {
   return (
-    <a className="inline-flex items-center gap-1 font-semibold text-navy-700 hover:underline" href={href} target="_blank" rel="noreferrer">
+    <a className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-blue-50 px-3 text-xs font-semibold text-blue-700 ring-1 ring-blue-200 transition hover:bg-blue-100" href={href} target="_blank" rel="noreferrer">
       <ExternalLink size={14} /> Buka Drive
     </a>
   );

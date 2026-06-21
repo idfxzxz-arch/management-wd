@@ -12,7 +12,6 @@ import {
   Gauge,
   MessageSquareText,
   Settings,
-  ShieldCheck,
   Users,
   UserCog,
   UserCircle,
@@ -20,14 +19,14 @@ import {
 } from "lucide-react";
 
 const menus = [
-  { to: "/owner", label: "Dashboard Owner", icon: Gauge, roles: ["Owner", "Administrator"] },
-  { to: "/head", label: "Dashboard Divisi", icon: Gauge, roles: ["Kepala Divisi", "Administrator"] },
+  { to: "/owner", label: "Dashboard Owner", icon: Gauge, roles: ["Owner"] },
+  { to: "/admin", label: "Dashboard Admin", icon: Gauge, roles: ["Administrator"] },
+  { to: "/head", label: "Dashboard Divisi", icon: Gauge, roles: ["Kepala Divisi"] },
   { to: "/staff", label: "Dashboard Staff", icon: Gauge, roles: ["Staff"] },
   { to: "/divisions", label: "Divisi", icon: Building2, roles: ["Owner", "Administrator"] },
-  { to: "/employees", label: "Karyawan", icon: Users, roles: ["Owner", "Kepala Divisi", "Administrator"] },
+  { to: "/employees", label: "Staf", icon: Users, roles: ["Owner", "Kepala Divisi", "Administrator"] },
   { to: "/division-jobdesk", label: "Jobdesk Divisi", icon: Briefcase, roles: ["Owner", "Kepala Divisi", "Administrator"] },
   { to: "/individual-jobdesk", label: "Jobdesk Individu", icon: CheckSquare, roles: ["Owner", "Kepala Divisi", "Staff", "Administrator"] },
-  { to: "/approval", label: "Approval Tugas", icon: ShieldCheck, roles: ["Owner", "Kepala Divisi", "Administrator"] },
   { to: "/reviews", label: "Review Tugas", staffLabel: "Feedback Tugas", icon: MessageSquareText, roles: ["Owner", "Kepala Divisi", "Staff", "Administrator"] },
   { to: "/minutes", label: "Notulen Rapat", icon: ClipboardList, roles: ["Owner", "Kepala Divisi", "Staff", "Administrator"] },
   { to: "/agenda", label: "Agenda Rapat", icon: CalendarDays, roles: ["Owner", "Kepala Divisi", "Staff", "Administrator"] },
@@ -38,7 +37,7 @@ const menus = [
   { to: "/activity-log", label: "Activity Log", icon: Activity, roles: ["Owner", "Administrator"] },
   { to: "/users", label: "User Management", icon: UserCog, roles: ["Owner", "Administrator"] },
   { to: "/profile", label: "Profile", icon: UserCircle, roles: ["Owner", "Kepala Divisi", "Staff", "Administrator"] },
-  { to: "/settings", label: "Settings", icon: Settings, roles: ["Owner", "Kepala Divisi", "Staff", "Administrator"] },
+  { to: "/settings", label: "Settings", icon: Settings, roles: ["Owner"] },
 ];
 
 export default function Sidebar({ user, open, onClose }) {
@@ -47,7 +46,7 @@ export default function Sidebar({ user, open, onClose }) {
   return (
     <>
       <div className={`fixed inset-0 z-40 bg-slate-950/50 backdrop-blur-sm lg:hidden ${open ? "block" : "hidden"}`} onClick={onClose} />
-      <aside className={`fixed inset-y-0 left-0 z-50 w-[min(18rem,calc(100vw-1rem))] border-r border-white/10 bg-[linear-gradient(180deg,#081a32_0%,#0b1f3a_55%,#10294a_100%)] text-white shadow-2xl shadow-slate-950/20 transition-transform lg:sticky lg:top-0 lg:h-screen lg:w-72 lg:translate-x-0 lg:shadow-none ${open ? "translate-x-0" : "-translate-x-full"}`}>
+      <aside className={`sidebar-theme fixed inset-y-0 left-0 z-50 h-dvh w-[min(18rem,calc(100vw-1rem))] border-r border-white/10 text-white shadow-2xl shadow-slate-950/20 transition-transform lg:w-64 lg:translate-x-0 lg:shadow-none ${open ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="flex h-16 items-center justify-between border-b border-white/10 px-5">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg bg-white ring-1 ring-white/20">
@@ -62,7 +61,7 @@ export default function Sidebar({ user, open, onClose }) {
             <X size={18} />
           </button>
         </div>
-        <nav className="h-[calc(100vh-4rem)] space-y-1 overflow-y-auto p-3">
+        <nav className="h-[calc(100dvh-4rem)] space-y-1 overflow-y-auto p-3">
           {available.map(({ to, label, staffLabel, icon: Icon }) => (
             <NavLink
               key={to}

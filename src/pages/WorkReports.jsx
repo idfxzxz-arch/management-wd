@@ -15,8 +15,8 @@ export default function WorkReports() {
   const user = getCurrentUser();
   const { reports, weeklyReports, divisionName, scopedByDivision, loading, error, reload } = useAppData();
   const [open, setOpen] = useState(false);
-  const rows = user.role === "Staff" && user.divisionId !== "all" ? reports.filter((report) => report.staff === user.name) : scopedByDivision(reports, user);
-  const weeklyRows = user.role === "Staff" && user.divisionId !== "all" ? weeklyReports.filter((report) => report.staff === user.name) : scopedByDivision(weeklyReports, user);
+  const rows = user.role === "Staff" ? reports.filter((report) => String(report.employeeId) === String(user.employeeId)) : scopedByDivision(reports, user);
+  const weeklyRows = user.role === "Staff" ? weeklyReports.filter((report) => String(report.employeeId) === String(user.employeeId)) : scopedByDivision(weeklyReports, user);
   const totals = weeklyRows.reduce(
     (acc, report) => {
       acc.completed += report.completedTasks;
@@ -39,7 +39,7 @@ export default function WorkReports() {
   });
 
   return (
-    <Page title="Laporan Kerja" subtitle="Laporan harian, laporan mingguan, statistik, dan deteksi kinerja otomatis." action={<button onClick={() => setOpen(true)} className="rounded-lg bg-navy-800 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-navy-900">Kirim Laporan</button>}>
+    <Page title="Laporan Kerja" subtitle="Laporan harian, laporan mingguan, statistik, dan deteksi kinerja otomatis." action={user.role === "Staff" && <button onClick={() => setOpen(true)} className="rounded-lg bg-navy-800 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-navy-900">Kirim Laporan</button>}>
       {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data...</div>}
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
@@ -118,7 +118,7 @@ export default function WorkReports() {
         ]}
       />
       </section>
-      <Modal open={open} title="Form Laporan Kerja" onClose={() => setOpen(false)}>
+      <Modal open={user.role === "Staff" && open} title="Form Laporan Kerja" onClose={() => setOpen(false)}>
         <ReportForm user={user} onSaved={() => { setOpen(false); reload(); }} />
       </Modal>
     </Page>
@@ -172,6 +172,7 @@ function ReportForm({ user, onSaved }) {
     const divisionId = user?.divisionId || "all";
     const table = type === "daily" ? "reports" : "weekly_reports";
     const payload = type === "daily" ? {
+      employee_id: user?.employeeId,
       staff,
       division_id: divisionId,
       done: form.done,
@@ -180,6 +181,7 @@ function ReportForm({ user, onSaved }) {
       date: today,
       status: "Dikirim",
     } : {
+      employee_id: user?.employeeId,
       week: form.week || `Minggu ${today}`,
       period: form.period,
       staff,
@@ -200,7 +202,7 @@ function ReportForm({ user, onSaved }) {
 
     if (error) {
       const isPolicyError = error.message.toLowerCase().includes("row-level security");
-      setMessage(isPolicyError ? "Akses kirim laporan belum aktif. Jalankan SQL write policy lalu login ulang." : error.message);
+      setMessage(isPolicyError ? "Hanya akun Staf yang dapat mengirim laporan miliknya sendiri." : error.message);
       setSaving(false);
       return;
     }

@@ -42,7 +42,7 @@ export default function Login() {
   return (
     <AuthLayout>
       <div className="grid min-h-screen bg-slate-50 lg:grid-cols-[1.05fr_0.95fr]">
-        <section className="flex flex-col justify-between bg-[linear-gradient(135deg,#071a33_0%,#0b1f3a_52%,#12305a_100%)] p-6 text-white sm:p-8 lg:p-12">
+        <section className="login-hero flex flex-col justify-between p-6 text-white sm:p-8 lg:p-12">
           <div>
             <div className="flex items-center gap-4">
               <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl bg-white shadow-lg shadow-slate-950/20 ring-1 ring-white/20 sm:h-20 sm:w-20">
@@ -56,7 +56,7 @@ export default function Login() {
             <div className="mt-6 inline-flex rounded-lg bg-white/10 px-3 py-1 text-sm font-semibold text-blue-100 ring-1 ring-white/10">Prototype Internal Company</div>
             <h1 className="mt-7 max-w-2xl text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">WD Group Internal Management System</h1>
             <p className="mt-5 max-w-xl text-sm leading-7 text-blue-100 sm:text-base">
-              Sistem untuk mengelola divisi, karyawan, jobdesk, approval, notulen, laporan, SOP, dokumen, dan aktivitas internal berdasarkan role user.
+              Sistem untuk mengelola divisi, staf, jobdesk, approval, notulen, laporan, SOP, dokumen, dan aktivitas internal berdasarkan role user.
             </p>
           </div>
           <div className="mt-10 grid gap-3 sm:grid-cols-3">

@@ -1,5 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { useState } from "react";
+import { ExternalLink, FolderOpen } from "lucide-react";
 import Badge from "../components/Badge";
 import ProgressBar from "../components/ProgressBar";
 import { useAppData } from "../data/AppDataProvider";
@@ -11,8 +12,11 @@ import { buildSubmissionRows } from "../utils/submissions";
 export default function JobdeskDetail() {
   const { id } = useParams();
   const user = getCurrentUser();
-  const { tasks, taskSubmissions, employees, divisionName, employeeName, loading, error, reload } = useAppData();
-  const task = tasks.find((item) => String(item.id) === id);
+  const { tasks, taskSubmissions, employees, divisionName, employeeName, scopedByDivision, loading, error, reload } = useAppData();
+  const visibleTasks = user?.role === "Staff"
+    ? tasks.filter((item) => String(item.assigneeId) === String(user.employeeId))
+    : scopedByDivision(tasks, user);
+  const task = visibleTasks.find((item) => String(item.id) === id);
   const employeeRole = (employeeId) => employees.find((employee) => String(employee.id) === String(employeeId))?.role || "Staff";
   const submissionRow = task ? buildSubmissionRows([task], taskSubmissions, { employeeName, employeeRole })[0] : null;
 
@@ -40,9 +44,9 @@ export default function JobdeskDetail() {
           <p className="mt-5 rounded bg-amber-50 px-4 py-3 text-sm text-amber-800">Catatan: {task.note}</p>
           {(submissionRow?.submissionNote || submissionRow?.driveLink) && (
             <div className="mt-5 rounded border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-              <p className="font-semibold">Pengumpulan Staff</p>
+              <p className="font-semibold">Pengumpulan Staf</p>
               {submissionRow.submissionNote && <p className="mt-1">{submissionRow.submissionNote}</p>}
-              {submissionRow.driveLink && (
+              {submissionRow.driveLink && user?.role !== "Owner" && (
                 <a className="mt-2 inline-flex font-semibold text-navy-700 hover:underline" href={submissionRow.driveLink} target="_blank" rel="noreferrer">
                   Buka link Google Drive
                 </a>
@@ -53,14 +57,18 @@ export default function JobdeskDetail() {
           )}
         </section>
         <div className="space-y-4">
-          {user?.role !== "Staff" && (
-            <section className="rounded border border-slate-200 bg-white p-5 shadow-sm">
-              <ProgressUpdate task={task} user={user} onSaved={reload} />
-            </section>
+          {user?.role === "Staff" ? (
+            <>
+              <section className="rounded border border-slate-200 bg-white p-5 shadow-sm">
+                <ProgressUpdate task={task} submission={submissionRow} user={user} onSaved={reload} />
+              </section>
+              <section className="rounded border border-slate-200 bg-white p-5 shadow-sm">
+                <SubmissionForm task={task} submission={submissionRow} user={user} employeeName={employeeName} employeeRole={employeeRole} onSaved={reload} />
+              </section>
+            </>
+          ) : (
+            <DriveAccess submission={submissionRow} />
           )}
-          <section className="rounded border border-slate-200 bg-white p-5 shadow-sm">
-            <SubmissionForm task={task} submission={submissionRow} user={user} employeeName={employeeName} employeeRole={employeeRole} onSaved={reload} />
-          </section>
           <section className="rounded border border-slate-200 bg-white p-5 shadow-sm">
             <h2 className="font-semibold text-slate-900">Riwayat Update</h2>
             <div className="mt-4 space-y-3">
@@ -78,13 +86,47 @@ export default function JobdeskDetail() {
   );
 }
 
+function DriveAccess({ submission }) {
+  return (
+    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+        <FolderOpen size={22} />
+      </div>
+      <h2 className="mt-4 font-semibold text-slate-900">Hasil Pekerjaan Staf</h2>
+      <p className="mt-1 text-sm leading-6 text-slate-500">
+        Buka folder Google Drive untuk melihat file yang telah dikumpulkan.
+      </p>
+      {submission?.driveLink ? (
+        <a
+          className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-navy-800 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-navy-900"
+          href={submission.driveLink}
+          target="_blank"
+          rel="noreferrer"
+        >
+          Buka Google Drive
+          <ExternalLink size={17} />
+        </a>
+      ) : (
+        <div className="mt-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+          Staf belum mengirimkan link Google Drive.
+        </div>
+      )}
+      {submission?.submittedAt && (
+        <p className="mt-3 text-xs text-slate-400">
+          Dikirim {new Date(submission.submittedAt).toLocaleString("id-ID")}
+        </p>
+      )}
+    </section>
+  );
+}
+
 function SubmissionForm({ task, submission, user, employeeName, employeeRole, onSaved }) {
   const [note, setNote] = useState(submission?.submissionNote || "");
   const [driveLink, setDriveLink] = useState(submission?.driveLink || "");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState("");
-  const isAssignee = String(user?.id) === String(task.assigneeId) || user?.divisionId === "all";
+  const isAssignee = String(user?.employeeId) === String(task.assigneeId);
   const canSubmit = user?.role === "Staff" && isAssignee && (!submission?.status || ["Belum Dikumpulkan", "Revisi", "Terlambat"].includes(submission.status));
   const alreadySubmitted = submission?.status === "Menunggu Review" || submission?.status === "Revisi Dikirim Ulang";
   const approved = submission?.status === "Diterima";
@@ -109,8 +151,15 @@ function SubmissionForm({ task, submission, user, employeeName, employeeRole, on
       return;
     }
 
-    if (!driveLink.trim().startsWith("https://")) {
-      setMessage("Link Google Drive harus diawali dengan https://");
+    let driveUrl;
+    try {
+      driveUrl = new URL(driveLink.trim());
+    } catch {
+      setMessage("Format link Google Drive tidak valid.");
+      return;
+    }
+    if (driveUrl.protocol !== "https:" || !["drive.google.com", "docs.google.com"].includes(driveUrl.hostname)) {
+      setMessage("Gunakan link resmi Google Drive atau Google Docs dengan HTTPS.");
       return;
     }
 
@@ -175,7 +224,6 @@ function SubmissionForm({ task, submission, user, employeeName, employeeRole, on
     const { error } = await supabase
       .from("tasks")
       .update({
-        progress: 100,
         status: nextStatus,
         approval: "Menunggu Review",
         submission_note: note.trim(),
@@ -188,7 +236,7 @@ function SubmissionForm({ task, submission, user, employeeName, employeeRole, on
 
     if (error) {
       const isPolicyError = error.message.toLowerCase().includes("row-level security");
-      setMessage(isPolicyError ? "Akses kirim submission belum aktif. Jalankan SQL write policy lalu login ulang." : error.message);
+      setMessage(isPolicyError ? "Anda hanya dapat mengirim tugas yang ditugaskan kepada akun Staf ini." : error.message);
       setSaving(false);
       return;
     }
@@ -209,6 +257,7 @@ function SubmissionForm({ task, submission, user, employeeName, employeeRole, on
   return (
     <form onSubmit={submit}>
       <h2 className="font-semibold text-slate-900">Kumpulkan Tugas</h2>
+      <p className="mt-1 text-sm leading-6 text-slate-500">Kirim link hasil pekerjaan untuk direview. Progres tidak otomatis menjadi 100%.</p>
       <div className="mt-4 space-y-4">
         {message && <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{message}</div>}
         {success && <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{success}</div>}
@@ -233,19 +282,14 @@ function Info({ label, value }) {
   return <div className="rounded bg-slate-50 p-3"><p className="text-xs font-semibold uppercase text-slate-500">{label}</p><div className="mt-1 text-sm font-semibold text-slate-800">{value}</div></div>;
 }
 
-function ProgressUpdate({ task, user, onSaved }) {
-  const [progress, setProgress] = useState(task.progress || 0);
-  const [status, setStatus] = useState(task.status || "Belum Mulai");
+function ProgressUpdate({ task, submission, user, onSaved }) {
+  const [progress, setProgress] = useState(Math.min(task.progress || 0, 95));
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
-
-  function handleProgressChange(value) {
-    const nextProgress = Number(value);
-    setProgress(nextProgress);
-    if (nextProgress === 100) setStatus("Selesai");
-    if (nextProgress > 0 && nextProgress < 100 && status === "Belum Mulai") setStatus("Proses");
-  }
+  const isAssignee = String(user?.employeeId) === String(task.assigneeId);
+  const reviewLocked = ["Menunggu Review", "Revisi Dikirim Ulang", "Diterima"].includes(submission?.status);
+  const canUpdate = isAssignee && !reviewLocked;
 
   async function submit(event) {
     event.preventDefault();
@@ -256,6 +300,13 @@ function ProgressUpdate({ task, user, onSaved }) {
       return;
     }
 
+    if (!canUpdate) {
+      setMessage("Progress dikunci selama tugas sedang direview.");
+      return;
+    }
+
+    const nextStatus = task.status === "Terlambat" ? "Terlambat" : progress > 0 ? "Proses" : "Belum Mulai";
+
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData.session) {
       setMessage("Session login belum aktif. Silakan logout lalu login ulang.");
@@ -265,14 +316,14 @@ function ProgressUpdate({ task, user, onSaved }) {
     setSaving(true);
     const history = [
       ...(task.history || []),
-      `${user?.name || "User"} mengubah progress menjadi ${progress}% (${status})${note ? ` - ${note}` : ""}`,
+      `${user?.name || "Staf"} mengubah progress menjadi ${progress}% (${nextStatus})${note ? ` - ${note}` : ""}`,
     ];
 
     const { error } = await supabase
       .from("tasks")
       .update({
         progress,
-        status,
+        status: nextStatus,
         note: note || task.note,
         history,
       })
@@ -280,17 +331,17 @@ function ProgressUpdate({ task, user, onSaved }) {
 
     if (error) {
       const isPolicyError = error.message.toLowerCase().includes("row-level security");
-      setMessage(isPolicyError ? "Akses update belum aktif. Jalankan SQL write policy lalu login ulang." : error.message);
+      setMessage(isPolicyError ? "Anda hanya dapat memperbarui progres tugas milik sendiri." : error.message);
       setSaving(false);
       return;
     }
 
     await supabase.from("activity_logs").insert({
-      actor: user?.name || "User",
+      actor: user?.name || "Staf",
       division_id: task.divisionId,
       action: `mengubah progress "${task.title}" menjadi ${progress}%`,
       time: new Date().toISOString().slice(0, 16).replace("T", " "),
-      severity: progress === 100 ? "success" : "info",
+      severity: "info",
     });
 
     setSaving(false);
@@ -302,24 +353,19 @@ function ProgressUpdate({ task, user, onSaved }) {
   return (
     <form onSubmit={submit}>
       <h2 className="font-semibold text-slate-900">Update Progress</h2>
+      <p className="mt-1 text-sm leading-6 text-slate-500">Perbarui progres pengerjaan. Nilai 100% diberikan otomatis setelah tugas disetujui reviewer.</p>
       <div className="mt-4 space-y-4">
-        {message && <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{message}</div>}
+        {message && <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-700">{message}</div>}
+        {reviewLocked && <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">Progress dikunci karena tugas sedang direview.</div>}
         <div>
           <div className="mb-2 flex items-center justify-between text-sm">
             <span className="font-medium text-slate-700">Progress</span>
             <span className="font-bold text-slate-900">{progress}%</span>
           </div>
-          <input className="w-full accent-emerald-600" type="range" min="0" max="100" step="5" value={progress} onChange={(event) => handleProgressChange(event.target.value)} />
+          <input disabled={!canUpdate} className="w-full accent-emerald-600 disabled:cursor-not-allowed disabled:opacity-60" type="range" min="0" max="95" step="5" value={progress} onChange={(event) => setProgress(Number(event.target.value))} />
         </div>
-        <select className="w-full rounded-lg border border-slate-200 px-3 py-2" value={status} onChange={(event) => setStatus(event.target.value)}>
-          <option>Belum Mulai</option>
-          <option>Proses</option>
-          <option>Revisi</option>
-          <option>Selesai</option>
-          <option>Terlambat</option>
-        </select>
-        <textarea className="w-full rounded-lg border border-slate-200 px-3 py-2" placeholder="Catatan update progress" value={note} onChange={(event) => setNote(event.target.value)} />
-        <button disabled={saving} className="w-full rounded-lg bg-navy-800 px-4 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70">
+        <textarea disabled={!canUpdate} className="w-full rounded-lg border border-slate-200 px-3 py-2 disabled:bg-slate-50" placeholder="Catatan update progress" value={note} onChange={(event) => setNote(event.target.value)} />
+        <button disabled={saving || !canUpdate} className="w-full rounded-lg bg-navy-800 px-4 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70">
           {saving ? "Menyimpan..." : "Simpan Progress"}
         </button>
       </div>

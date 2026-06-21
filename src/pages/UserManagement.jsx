@@ -30,7 +30,7 @@ export default function UserManagement() {
     const { error: updateError } = await supabase.from("app_users").update({ status }).eq("id", row.id);
     if (updateError) {
       const isPolicyError = updateError.message.toLowerCase().includes("row-level security");
-      setMessage(isPolicyError ? "Akses update user belum aktif. Jalankan SQL write policy lalu login ulang." : updateError.message);
+      setMessage(isPolicyError ? "Hanya Owner atau Administrator aktif yang dapat mengubah user." : updateError.message);
       return;
     }
 
@@ -104,7 +104,6 @@ function UserForm({ selected, divisions, actor, onSaved }) {
       .from("app_users")
       .update({
         name: form.name,
-        email: form.email,
         role: form.role,
         division_id: form.divisionId,
         status: form.status,
@@ -113,7 +112,7 @@ function UserForm({ selected, divisions, actor, onSaved }) {
 
     if (error) {
       const isPolicyError = error.message.toLowerCase().includes("row-level security");
-      setMessage(isPolicyError ? "Akses update user belum aktif. Jalankan SQL write policy lalu login ulang." : error.message);
+      setMessage(isPolicyError ? "Hanya Owner atau Administrator aktif yang dapat mengubah user." : error.message);
       setSaving(false);
       return;
     }
@@ -134,7 +133,10 @@ function UserForm({ selected, divisions, actor, onSaved }) {
     <form className="grid gap-3" onSubmit={submit}>
       {message && <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">{message}</div>}
       <input className="rounded border border-slate-200 px-3 py-2" value={form.name} onChange={(event) => updateField("name", event.target.value)} />
-      <input className="rounded border border-slate-200 px-3 py-2" type="email" value={form.email} onChange={(event) => updateField("email", event.target.value)} />
+      <div>
+        <input disabled className="rounded border border-slate-200 bg-slate-100 px-3 py-2 text-slate-500" type="email" value={form.email} />
+        <p className="mt-1 text-xs text-slate-500">Email login dikelola melalui Supabase Authentication agar akun tidak terputus.</p>
+      </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <select className="rounded border border-slate-200 px-3 py-2" value={form.role} onChange={(event) => updateField("role", event.target.value)}>
           <option>Owner</option>

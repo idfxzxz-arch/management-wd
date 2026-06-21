@@ -1,9 +1,10 @@
-import { Bell, Building2, Palette, Shield } from "lucide-react";
+import { Bell, Building2, Check, Palette, Shield } from "lucide-react";
 import { useState } from "react";
 import { Page } from "./Divisions";
 import { useAppData } from "../data/AppDataProvider";
 import { getCurrentUser } from "../utils/auth";
 import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import { APP_THEMES, validTheme } from "../utils/themes";
 
 export default function Settings() {
   const user = getCurrentUser();
@@ -13,10 +14,10 @@ export default function Settings() {
   const valueByKey = Object.fromEntries(settings.map((setting) => [setting.key, setting.value]));
   const items = [
     { icon: Building2, key: "company_name", title: "Nama Perusahaan", value: valueByKey.company_name || "WD Group Company" },
-    { icon: Palette, key: "theme", title: "Tema Aplikasi", value: valueByKey.theme || "Biru tua, putih, abu-abu muda" },
     { icon: Bell, key: "notifications", title: "Notifikasi", value: valueByKey.notifications || "Email, dashboard alert, dan reminder deadline aktif" },
     { icon: Shield, key: "roles", title: "Pengaturan Role", value: valueByKey.roles || "Owner, Kepala Divisi, Staff, Administrator" },
   ];
+  const selectedTheme = validTheme(valueByKey.theme);
 
   async function saveSetting(key, value) {
     setMessage("");
@@ -39,7 +40,7 @@ export default function Settings() {
 
     if (upsertError) {
       const isPolicyError = upsertError.message.toLowerCase().includes("row-level security");
-      setMessage(isPolicyError ? "Akses simpan settings belum aktif. Jalankan SQL write policy lalu login ulang." : upsertError.message);
+      setMessage(isPolicyError ? "Hanya Owner yang dapat mengubah Settings." : upsertError.message);
       setSavingKey("");
       return;
     }
@@ -62,12 +63,55 @@ export default function Settings() {
       {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data...</div>}
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       {message && <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">{message}</div>}
+      <ThemePicker
+        selected={selectedTheme}
+        saving={savingKey === "theme"}
+        onSelect={(theme) => {
+          document.documentElement.dataset.theme = theme;
+          saveSetting("theme", theme);
+        }}
+      />
       <div className="grid gap-4 md:grid-cols-2">
         {items.map(({ icon: Icon, key, title, value }) => (
           <SettingCard key={key} icon={Icon} title={title} settingKey={key} value={value} savingKey={savingKey} onSave={saveSetting} />
         ))}
       </div>
     </Page>
+  );
+}
+
+function ThemePicker({ selected, saving, onSelect }) {
+  return (
+    <section className="surface-panel p-5 sm:p-6">
+      <div className="flex items-start gap-4">
+        <div className="rounded-xl bg-navy-50 p-3 text-navy-700"><Palette size={22} /></div>
+        <div>
+          <h2 className="font-semibold text-slate-900">Tema Warna Aplikasi</h2>
+          <p className="mt-1 text-sm text-slate-500">Pilih warna utama untuk seluruh tampilan WD Management.</p>
+        </div>
+      </div>
+      <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        {APP_THEMES.map((theme) => {
+          const active = selected === theme.id;
+          return (
+            <button
+              key={theme.id}
+              type="button"
+              disabled={saving}
+              onClick={() => onSelect(theme.id)}
+              className={`relative rounded-xl border p-3 text-left transition hover:-translate-y-0.5 hover:shadow-md disabled:opacity-60 ${active ? "border-slate-900 ring-2 ring-slate-900/10" : "border-slate-200"}`}
+            >
+              <span className="block h-12 rounded-lg" style={{ background: `linear-gradient(135deg, ${theme.color}, ${theme.soft})` }} />
+              <span className="mt-3 flex items-center justify-between text-sm font-semibold text-slate-800">
+                {theme.label}
+                {active && <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-900 text-white"><Check size={12} /></span>}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      {saving && <p className="mt-3 text-sm text-slate-500">Menyimpan tema...</p>}
+    </section>
   );
 }
 
