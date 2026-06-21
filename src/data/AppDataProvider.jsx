@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import { displayPersonName } from "../utils/company";
+import { getCurrentUser, logout } from "../utils/auth";
 
 const emptyData = {
   users: [],
@@ -58,6 +60,14 @@ export function AppDataProvider({ children }) {
       return;
     }
 
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      setData(emptyData);
+      setLoading(false);
+      setError("");
+      return;
+    }
+
     setLoading(true);
     setError("");
     const nextData = { ...emptyData };
@@ -70,6 +80,16 @@ export function AppDataProvider({ children }) {
       } else {
         nextData[key] = (rows || []).map(mapper);
       }
+    }
+
+    const currentUser = getCurrentUser();
+    const currentProfile = nextData.users.find((item) => item.email?.toLowerCase() === currentUser?.email?.toLowerCase());
+    if (currentProfile && currentProfile.status !== "Aktif") {
+      logout();
+      setData(emptyData);
+      setLoading(false);
+      setError("Akun Anda telah dinonaktifkan.");
+      return;
     }
 
     setData(nextData);
@@ -98,7 +118,7 @@ export function AppDataProvider({ children }) {
     }
 
     function scopedByDivision(items, user) {
-      if (!user || user.role === "Owner" || user.role === "Administrator" || user.divisionId === "all") return items;
+      if (!user || user.role === "Owner" || user.role === "Administrator") return items;
       return items.filter((item) => item.divisionId === user.divisionId || item.divisionId === "all");
     }
 
@@ -115,10 +135,11 @@ export function useAppData() {
 function mapUser(row) {
   return {
     id: row.id,
-    name: row.name,
+    name: displayPersonName(row.name, row.role),
     email: row.email,
     role: row.role,
     divisionId: row.division_id,
+    employeeId: row.employee_id,
     status: row.status,
   };
 }
@@ -130,7 +151,7 @@ function mapDivision(row) {
 function mapEmployee(row) {
   return {
     id: row.id,
-    name: row.name,
+    name: displayPersonName(row.name, row.role),
     email: row.email,
     position: row.position,
     divisionId: row.division_id,
@@ -146,7 +167,7 @@ function mapTask(row) {
     divisionId: row.division_id,
     assigneeId: row.assignee_id,
     assignedBy: row.assigned_by,
-    assignedByName: row.assigned_by_name,
+    assignedByName: displayPersonName(row.assigned_by_name, row.assigned_by),
     title: row.title,
     description: row.description,
     target: row.target,
@@ -181,7 +202,7 @@ function mapTaskSubmission(row) {
     submittedAt: row.submitted_at,
     status: row.status,
     headFeedback: row.head_feedback || "",
-    reviewerName: row.reviewed_by || "",
+    reviewerName: displayPersonName(row.reviewed_by || "", row.reviewer_role),
     reviewerRole: row.reviewer_role || "",
     reviewedAt: row.reviewed_at,
     revisionCount: row.revision_count || 0,
@@ -210,12 +231,13 @@ function mapMinute(row) {
 }
 
 function mapReport(row) {
-  return { id: row.id, staff: row.staff, divisionId: row.division_id, done: row.done || "", blockers: row.blockers || "", next: row.next || "", date: row.date, status: row.status };
+  return { id: row.id, employeeId: row.employee_id, staff: row.staff, divisionId: row.division_id, done: row.done || "", blockers: row.blockers || "", next: row.next || "", date: row.date, status: row.status };
 }
 
 function mapWeeklyReport(row) {
   return {
     id: row.id,
+    employeeId: row.employee_id,
     week: row.week,
     period: row.period,
     staff: row.staff,
@@ -234,7 +256,7 @@ function mapWeeklyReport(row) {
 }
 
 function mapAnnouncement(row) {
-  return { id: row.id, title: row.title, content: row.content || "", author: row.author, date: row.date, target: row.target, priority: row.priority };
+  return { id: row.id, title: row.title, content: row.content || "", author: displayPersonName(row.author, row.author === "Arman Wijaya" ? "Owner" : ""), date: row.date, target: row.target, priority: row.priority };
 }
 
 function mapDocument(row) {
@@ -252,7 +274,7 @@ function mapDocument(row) {
 }
 
 function mapActivityLog(row) {
-  return { id: row.id, actor: row.actor, divisionId: row.division_id, action: row.action, time: row.time, severity: row.severity };
+  return { id: row.id, actor: displayPersonName(row.actor, row.severity === "owner" ? "Owner" : ""), divisionId: row.division_id, action: row.action, time: row.time, severity: row.severity };
 }
 
 function mapSop(row) {

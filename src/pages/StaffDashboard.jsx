@@ -8,7 +8,7 @@ import { useAppData } from "../data/AppDataProvider";
 export default function StaffDashboard() {
   const user = getCurrentUser();
   const { tasks, minutes, announcements, employeeName, loading, error } = useAppData();
-  const personalTasks = user.divisionId === "all" ? tasks : tasks.filter((task) => task.assigneeId === user.id);
+  const personalTasks = tasks.filter((task) => String(task.assigneeId) === String(user.employeeId));
   const nearest = [...personalTasks].sort((a, b) => new Date(a.deadline) - new Date(b.deadline))[0];
   const unreadMinutes = user.divisionId === "all" ? minutes : minutes.filter((minute) => minute.divisionId === user.divisionId);
 

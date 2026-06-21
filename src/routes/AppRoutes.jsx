@@ -10,7 +10,6 @@ import Employees from "../pages/Employees";
 import DivisionJobdesk from "../pages/DivisionJobdesk";
 import IndividualJobdesk from "../pages/IndividualJobdesk";
 import JobdeskDetail from "../pages/JobdeskDetail";
-import TaskApproval from "../pages/TaskApproval";
 import ReviewTasks from "../pages/ReviewTasks";
 import MeetingAgenda from "../pages/MeetingAgenda";
 import Minutes from "../pages/Minutes";
@@ -33,11 +32,15 @@ export default function AppRoutes() {
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route element={<ProtectedRoute roles={["Owner", "Administrator"]} />}>
             <Route path="/owner" element={<OwnerDashboard />} />
+            <Route path="/admin" element={<OwnerDashboard />} />
             <Route path="/divisions" element={<Divisions />} />
             <Route path="/activity-log" element={<ActivityLog />} />
             <Route path="/users" element={<UserManagement />} />
           </Route>
-          <Route element={<ProtectedRoute roles={["Kepala Divisi", "Administrator"]} />}>
+          <Route element={<ProtectedRoute roles={["Owner"]} />}>
+            <Route path="/settings" element={<Settings />} />
+          </Route>
+          <Route element={<ProtectedRoute roles={["Kepala Divisi"]} />}>
             <Route path="/head" element={<HeadDashboard />} />
           </Route>
           <Route element={<ProtectedRoute roles={["Staff"]} />}>
@@ -46,7 +49,7 @@ export default function AppRoutes() {
           <Route element={<ProtectedRoute roles={["Owner", "Kepala Divisi", "Administrator"]} />}>
             <Route path="/employees" element={<Employees />} />
             <Route path="/division-jobdesk" element={<DivisionJobdesk />} />
-            <Route path="/approval" element={<TaskApproval />} />
+            <Route path="/approval" element={<Navigate to="/reviews" replace />} />
           </Route>
           <Route element={<ProtectedRoute roles={["Owner", "Kepala Divisi", "Staff", "Administrator"]} />}>
             <Route path="/reviews" element={<ReviewTasks />} />
@@ -61,7 +64,6 @@ export default function AppRoutes() {
           <Route path="/sop" element={<SOP />} />
           <Route path="/documents" element={<Documents />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/settings" element={<Settings />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />

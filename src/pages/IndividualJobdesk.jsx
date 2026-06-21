@@ -12,18 +12,18 @@ export default function IndividualJobdesk() {
   const user = getCurrentUser();
   const { tasks, divisionName, employeeName, scopedByDivision, loading, error } = useAppData();
   const [query, setQuery] = useState("");
-  const base = user.role === "Staff" && user.divisionId !== "all" ? tasks.filter((task) => task.assigneeId === user.id) : scopedByDivision(tasks, user);
+  const base = user.role === "Staff" ? tasks.filter((task) => String(task.assigneeId) === String(user.employeeId)) : scopedByDivision(tasks, user);
   const rows = useMemo(() => base.filter((task) => contains(task.title + task.description + employeeName(task.assigneeId) + task.assignedByName, query)), [query, base]);
 
   return (
-    <Page title="Jobdesk Individu" subtitle="Daftar tugas per karyawan lengkap dengan catatan kepala divisi.">
+    <Page title="Jobdesk Individu" subtitle="Daftar tugas per staf lengkap dengan catatan kepala divisi.">
       {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data...</div>}
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
-      <Search value={query} setValue={setQuery} placeholder="Cari tugas, karyawan, atau catatan" />
+      <Search value={query} setValue={setQuery} placeholder="Cari tugas, staf, atau catatan" />
       <DataTable
         rows={rows}
         columns={[
-          { key: "assigneeId", header: "Karyawan", render: (row) => employeeName(row.assigneeId) },
+          { key: "assigneeId", header: "Staf", render: (row) => employeeName(row.assigneeId) },
           { key: "divisionId", header: "Divisi", render: (row) => divisionName(row.divisionId) },
           { key: "assignedBy", header: "Dari", render: (row) => <Badge>{row.assignedBy}</Badge> },
           { key: "title", header: "Judul Tugas", render: (row) => <Link className="font-semibold text-navy-700 hover:underline" to={`/jobdesk/${row.id}`}>{row.title}</Link> },

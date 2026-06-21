@@ -89,7 +89,7 @@ function MeetingForm({ divisions, user, onSaved }) {
 
     if (error) {
       const isPolicyError = error.message.toLowerCase().includes("row-level security");
-      setMessage(isPolicyError ? "Akses tambah agenda belum aktif. Jalankan SQL write policy lalu login ulang." : error.message);
+      setMessage(isPolicyError ? "Akses ditolak oleh policy role. Pastikan migrasi supabase-role-policies.sql sudah dijalankan." : error.message);
       setSaving(false);
       return;
     }

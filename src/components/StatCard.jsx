@@ -1,4 +1,4 @@
-export default function StatCard({ title, value, icon: Icon, tone = "blue" }) {
+export default function StatCard({ title, value, icon: Icon, tone = "blue", compact = false }) {
   const tones = {
     blue: "bg-blue-50 text-blue-700",
     green: "bg-emerald-50 text-emerald-700",
@@ -9,14 +9,14 @@ export default function StatCard({ title, value, icon: Icon, tone = "blue" }) {
   };
 
   return (
-    <div className="group min-h-[112px] rounded-lg border border-slate-200 bg-white/95 p-4 shadow-sm shadow-slate-200/70 transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md">
+    <div className={`group rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-200/60 transition duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-950/5 ${compact ? "min-h-[108px]" : "min-h-[124px]"}`}>
       <div className="flex h-full items-center justify-between gap-4">
         <div className="min-w-0">
           <p className="text-sm font-medium leading-5 text-slate-500">{title}</p>
-          <p className="mt-2 break-words text-2xl font-bold leading-tight text-slate-900">{value}</p>
+          <p className={`${compact ? "mt-1.5 text-xl" : "mt-2 text-2xl"} break-words font-bold leading-tight tracking-tight text-slate-950`}>{value}</p>
         </div>
         {Icon && (
-          <div className={`shrink-0 rounded-lg p-3 transition group-hover:scale-105 ${tones[tone]}`}>
+          <div className={`shrink-0 rounded-xl p-3 transition group-hover:scale-105 ${tones[tone]}`}>
             <Icon size={22} />
           </div>
         )}
