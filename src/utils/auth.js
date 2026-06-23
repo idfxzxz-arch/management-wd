@@ -31,7 +31,7 @@ export async function syncCurrentUser() {
   if (user.status !== "Aktif") {
     await supabase.auth.signOut();
     localStorage.removeItem(KEY);
-    throw new Error("Akun Anda sedang nonaktif. Hubungi Owner atau Administrator.");
+    throw new Error("Akun Anda sedang nonaktif. Hubungi Owner atau Wakil Owner.");
   }
 
   let employeeId = user.employee_id;
@@ -74,6 +74,6 @@ export function getCurrentUser() {
 export function dashboardPath(role) {
   if (role === "Owner") return "/owner";
   if (role === "Kepala Divisi") return "/head";
-  if (role === "Administrator") return "/admin";
+  if (role === "Wakil Owner") return "/admin";
   return "/staff";
 }

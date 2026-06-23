@@ -18,7 +18,7 @@ export default function Minutes() {
   const [deleting, setDeleting] = useState(null);
   const [deletingNow, setDeletingNow] = useState(false);
   const [message, setMessage] = useState("");
-  const canManage = user?.role === "Owner" || user?.role === "Kepala Divisi" || user?.role === "Administrator";
+  const canManage = user?.role === "Owner" || user?.role === "Kepala Divisi" || user?.role === "Wakil Owner";
   const rows = useMemo(() => scopedByDivision(minutes, user).filter((item) => contains(Object.values(item).join(" "), query)), [query, user]);
 
   async function deleteMinute() {
@@ -126,7 +126,7 @@ function MinuteForm({ minute = null, divisions, user, onSaved }) {
     title: minute?.title || "",
     date: minute?.date || "",
     time: minute?.time?.slice(0, 5) || "",
-    divisionId: minute?.divisionId || (user?.role === "Owner" || user?.role === "Administrator" ? "all" : user?.divisionId || "all"),
+    divisionId: minute?.divisionId || (user?.role === "Owner" || user?.role === "Wakil Owner" ? "all" : user?.divisionId || "all"),
     leader: minute?.leader || user?.name || "",
     participants: minute?.participants?.join(", ") || "",
     discussion: minute?.discussion || "",
@@ -192,7 +192,7 @@ function MinuteForm({ minute = null, divisions, user, onSaved }) {
       division_id: form.divisionId,
       action: `${minute ? "memperbarui" : "menambahkan"} notulen rapat "${form.title}"`,
       time: new Date().toISOString().slice(0, 16).replace("T", " "),
-      severity: user?.role === "Owner" || user?.role === "Administrator" ? "owner" : "info",
+      severity: user?.role === "Owner" || user?.role === "Wakil Owner" ? "owner" : "info",
     });
 
     setSaving(false);

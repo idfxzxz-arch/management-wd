@@ -118,7 +118,7 @@ export function AppDataProvider({ children }) {
     }
 
     function scopedByDivision(items, user) {
-      if (!user || user.role === "Owner" || user.role === "Administrator") return items;
+      if (!user || user.role === "Owner" || user.role === "Wakil Owner") return items;
       return items.filter((item) => item.divisionId === user.divisionId || item.divisionId === "all");
     }
 
@@ -256,7 +256,7 @@ function mapWeeklyReport(row) {
 }
 
 function mapAnnouncement(row) {
-  return { id: row.id, title: row.title, content: row.content || "", author: displayPersonName(row.author, row.author === "Arman Wijaya" ? "Owner" : ""), date: row.date, target: row.target, priority: row.priority };
+  return { id: row.id, title: row.title, content: row.content || "", author: displayPersonName(row.author, row.author === "Wildan Deni Fahrezi" ? "Owner" : ""), date: row.date, target: row.target, priority: row.priority };
 }
 
 function mapDocument(row) {

@@ -99,7 +99,7 @@ function DivisionPerformanceChart({ divisions, tasks }) {
 
 export default function OwnerDashboard() {
   const user = getCurrentUser();
-  const isAdministrator = user?.role === "Administrator";
+  const isDeputyOwner = user?.role === "Wakil Owner";
   const { divisions, employees, tasks, taskSubmissions, activityLogs, employeeName, loading, error } = useAppData();
   const done = tasks.filter((task) => task.status === "Selesai").length;
   const late = tasks.filter((task) => task.status === "Terlambat").length;
@@ -107,7 +107,7 @@ export default function OwnerDashboard() {
   const progress = tasks.length
     ? Math.round(tasks.reduce((sum, task) => sum + (Number(task.progress) || 0), 0) / tasks.length)
     : 0;
-  const totalStaff = employees.filter((employee) => !["Owner", "Administrator"].includes(employee.role)).length;
+  const totalStaff = employees.filter((employee) => !["Owner", "Wakil Owner"].includes(employee.role)).length;
   const employeeRole = (id) => employees.find((employee) => String(employee.id) === String(id))?.role || "Staff";
   const reviewStats = submissionStats(buildSubmissionRows(tasks, taskSubmissions, { employeeName, employeeRole }));
   const needsAttention = late + reviewStats.revision + reviewStats.waitingReview;
@@ -122,7 +122,7 @@ export default function OwnerDashboard() {
         <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-200">Executive overview</p>
-            <h1 className="mt-2 text-2xl font-bold sm:text-3xl">{isAdministrator ? "Dashboard Admin" : "Dashboard Owner"}</h1>
+            <h1 className="mt-2 text-2xl font-bold sm:text-3xl">{isDeputyOwner ? "Dashboard Wakil Owner" : "Dashboard Owner"}</h1>
             <p className="mt-2 max-w-xl text-sm leading-6 text-blue-100/90">Ringkasan kondisi perusahaan dan pekerjaan yang perlu perhatian Anda.</p>
           </div>
           <div className="rounded-xl bg-white/10 px-5 py-3 ring-1 ring-white/15 backdrop-blur-sm">

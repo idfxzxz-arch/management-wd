@@ -46,12 +46,20 @@ export default function DivisionJobdesk() {
 
 function JobdeskForm({ divisions, employees, user, onSaved }) {
   const managedDivisionId = user?.role === "Kepala Divisi" && user.divisionId !== "all" ? user.divisionId : divisions[0]?.id || "it";
+  const canReceiveTask = (employee, divisionId = managedDivisionId) => {
+    const allowedRoles = ["Kepala Divisi", "Staff", "Magang"];
+    return (
+      allowedRoles.includes(employee.role) &&
+      employee.divisionId === divisionId &&
+      (user?.role !== "Kepala Divisi" || user.divisionId === "all" || employee.divisionId === user.divisionId)
+    );
+  };
   const [form, setForm] = useState({
     title: "",
     description: "",
     divisionId: managedDivisionId,
-    assigneeId: employees.find((employee) => (employee.role === "Staff" || employee.role === "Magang") && (user?.role !== "Kepala Divisi" || user.divisionId === "all" || employee.divisionId === user.divisionId))?.id || "",
-    assignedBy: user?.role === "Owner" || user?.role === "Administrator" ? "Owner" : "Kepala Divisi",
+    assigneeId: employees.find((employee) => canReceiveTask(employee))?.id || "",
+    assignedBy: user?.role === "Owner" || user?.role === "Wakil Owner" ? "Owner" : "Kepala Divisi",
     target: "",
     priority: "Sedang",
     deadline: "",
@@ -60,11 +68,7 @@ function JobdeskForm({ divisions, employees, user, onSaved }) {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
-  const assignees = employees.filter((employee) =>
-    (employee.role === "Staff" || employee.role === "Magang") &&
-    employee.divisionId === form.divisionId &&
-    (user?.role !== "Kepala Divisi" || user.divisionId === "all" || employee.divisionId === user.divisionId)
-  );
+  const assignees = employees.filter((employee) => canReceiveTask(employee, form.divisionId));
 
   function updateField(key, value) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -128,7 +132,7 @@ function JobdeskForm({ divisions, employees, user, onSaved }) {
       division_id: form.divisionId,
       action: `membuat jobdesk "${form.title}"`,
       time: new Date().toISOString().slice(0, 16).replace("T", " "),
-      severity: user?.role === "Owner" || user?.role === "Administrator" ? "owner" : "info",
+      severity: user?.role === "Owner" || user?.role === "Wakil Owner" ? "owner" : "info",
     });
 
     setSaving(false);
@@ -145,8 +149,8 @@ function JobdeskForm({ divisions, employees, user, onSaved }) {
           {divisions.map((division) => <option key={division.id} value={division.id}>{division.name}</option>)}
         </select>
         <select className="rounded-lg border border-slate-200 px-3 py-2" value={form.assigneeId} onChange={(event) => updateField("assigneeId", event.target.value)}>
-          <option value="">Pilih penerima tugas</option>
-          {assignees.map((employee) => <option key={employee.id} value={employee.id}>{employee.name}</option>)}
+          <option value="">{assignees.length ? "Pilih penerima tugas" : "Tidak ada penerima di divisi ini"}</option>
+          {assignees.map((employee) => <option key={employee.id} value={employee.id}>{employee.name} - {employee.role}</option>)}
         </select>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">

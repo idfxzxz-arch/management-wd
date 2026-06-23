@@ -27,10 +27,10 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route element={<ProtectedRoute roles={["Owner", "Kepala Divisi", "Staff", "Administrator"]} />}>
+      <Route element={<ProtectedRoute roles={["Owner", "Kepala Divisi", "Staff", "Wakil Owner"]} />}>
         <Route element={<DashboardLayout />}>
           <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route element={<ProtectedRoute roles={["Owner", "Administrator"]} />}>
+          <Route element={<ProtectedRoute roles={["Owner", "Wakil Owner"]} />}>
             <Route path="/owner" element={<OwnerDashboard />} />
             <Route path="/admin" element={<OwnerDashboard />} />
             <Route path="/divisions" element={<Divisions />} />
@@ -46,12 +46,12 @@ export default function AppRoutes() {
           <Route element={<ProtectedRoute roles={["Staff"]} />}>
             <Route path="/staff" element={<StaffDashboard />} />
           </Route>
-          <Route element={<ProtectedRoute roles={["Owner", "Kepala Divisi", "Administrator"]} />}>
+          <Route element={<ProtectedRoute roles={["Owner", "Kepala Divisi", "Wakil Owner"]} />}>
             <Route path="/employees" element={<Employees />} />
             <Route path="/division-jobdesk" element={<DivisionJobdesk />} />
             <Route path="/approval" element={<Navigate to="/reviews" replace />} />
           </Route>
-          <Route element={<ProtectedRoute roles={["Owner", "Kepala Divisi", "Staff", "Administrator"]} />}>
+          <Route element={<ProtectedRoute roles={["Owner", "Kepala Divisi", "Staff", "Wakil Owner"]} />}>
             <Route path="/reviews" element={<ReviewTasks />} />
           </Route>
           <Route path="/individual-jobdesk" element={<IndividualJobdesk />} />
