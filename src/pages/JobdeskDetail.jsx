@@ -19,6 +19,7 @@ export default function JobdeskDetail() {
   const task = visibleTasks.find((item) => String(item.id) === id);
   const employeeRole = (employeeId) => employees.find((employee) => String(employee.id) === String(employeeId))?.role || "Staff";
   const submissionRow = task ? buildSubmissionRows([task], taskSubmissions, { employeeName, employeeRole })[0] : null;
+  const isCurrentAssignee = task && String(user?.employeeId) === String(task.assigneeId);
 
   if (loading) return <Page title="Detail Jobdesk"><p className="text-slate-500">Memuat data...</p></Page>;
   if (error) return <Page title="Detail Jobdesk"><p className="text-amber-700">{error}</p></Page>;
@@ -57,7 +58,7 @@ export default function JobdeskDetail() {
           )}
         </section>
         <div className="space-y-4">
-          {user?.role === "Staff" ? (
+          {isCurrentAssignee ? (
             <>
               <section className="rounded border border-slate-200 bg-white p-5 shadow-sm">
                 <ProgressUpdate task={task} submission={submissionRow} user={user} onSaved={reload} />
@@ -127,7 +128,7 @@ function SubmissionForm({ task, submission, user, employeeName, employeeRole, on
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState("");
   const isAssignee = String(user?.employeeId) === String(task.assigneeId);
-  const canSubmit = user?.role === "Staff" && isAssignee && (!submission?.status || ["Belum Dikumpulkan", "Revisi", "Terlambat"].includes(submission.status));
+  const canSubmit = isAssignee && (!submission?.status || ["Belum Dikumpulkan", "Revisi", "Terlambat"].includes(submission.status));
   const alreadySubmitted = submission?.status === "Menunggu Review" || submission?.status === "Revisi Dikirim Ulang";
   const approved = submission?.status === "Diterima";
 
@@ -137,7 +138,7 @@ function SubmissionForm({ task, submission, user, employeeName, employeeRole, on
     setSuccess("");
 
     if (!canSubmit) {
-      setMessage(approved ? "Tugas sudah diterima dan tidak bisa dikirim ulang." : "Hanya staf penerima tugas yang bisa mengumpulkan tugas.");
+      setMessage(approved ? "Tugas sudah diterima dan tidak bisa dikirim ulang." : "Hanya penerima tugas yang bisa mengumpulkan tugas.");
       return;
     }
 
@@ -236,7 +237,7 @@ function SubmissionForm({ task, submission, user, employeeName, employeeRole, on
 
     if (error) {
       const isPolicyError = error.message.toLowerCase().includes("row-level security");
-      setMessage(isPolicyError ? "Anda hanya dapat mengirim tugas yang ditugaskan kepada akun Staf ini." : error.message);
+      setMessage(isPolicyError ? "Anda hanya dapat mengirim tugas yang ditugaskan kepada akun ini." : error.message);
       setSaving(false);
       return;
     }
