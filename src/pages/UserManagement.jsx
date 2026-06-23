@@ -30,7 +30,7 @@ export default function UserManagement() {
     const { error: updateError } = await supabase.from("app_users").update({ status }).eq("id", row.id);
     if (updateError) {
       const isPolicyError = updateError.message.toLowerCase().includes("row-level security");
-      setMessage(isPolicyError ? "Hanya Owner atau Administrator aktif yang dapat mengubah user." : updateError.message);
+      setMessage(isPolicyError ? "Hanya Owner atau Wakil Owner aktif yang dapat mengubah user." : updateError.message);
       return;
     }
 
@@ -112,7 +112,7 @@ function UserForm({ selected, divisions, actor, onSaved }) {
 
     if (error) {
       const isPolicyError = error.message.toLowerCase().includes("row-level security");
-      setMessage(isPolicyError ? "Hanya Owner atau Administrator aktif yang dapat mengubah user." : error.message);
+      setMessage(isPolicyError ? "Hanya Owner atau Wakil Owner aktif yang dapat mengubah user." : error.message);
       setSaving(false);
       return;
     }
@@ -142,7 +142,7 @@ function UserForm({ selected, divisions, actor, onSaved }) {
           <option>Owner</option>
           <option>Kepala Divisi</option>
           <option>Staff</option>
-          <option>Administrator</option>
+          <option>Wakil Owner</option>
         </select>
         <select className="rounded border border-slate-200 px-3 py-2" value={form.divisionId} onChange={(event) => updateField("divisionId", event.target.value)}>
           <option value="all">Semua Divisi</option>

@@ -27,7 +27,7 @@ export default function ReviewTasks() {
   const employeeRole = (id) => employees.find((employee) => String(employee.id) === String(id))?.role || "Staff";
   const allRows = buildSubmissionRows(scopedByDivision(tasks, user), taskSubmissions, { employeeName, employeeRole });
   const canReview = (row) => {
-    if (user?.role === "Owner" || user?.role === "Administrator") return true;
+    if (user?.role === "Owner" || user?.role === "Wakil Owner") return true;
     if (user?.role === "Kepala Divisi") return user.divisionId === "all" || row.divisionId === user.divisionId;
     return false;
   };

@@ -17,7 +17,8 @@ export default function Documents() {
   const [message, setMessage] = useState("");
   const [deleting, setDeleting] = useState(null);
   const [deletingNow, setDeletingNow] = useState(false);
-  const canDelete = user?.role === "Owner" || user?.role === "Administrator";
+  const canDelete = user?.role === "Owner" || user?.role === "Wakil Owner";
+  const canUpload = user?.role === "Owner" || user?.role === "Wakil Owner" || user?.role === "Kepala Divisi";
   const rows = useMemo(() => scopedByDivision(documents, user).filter((doc) => contains(Object.values(doc).join(" "), query)), [query, user]);
 
   async function openDocument(document) {
@@ -73,7 +74,7 @@ export default function Documents() {
   }
 
   return (
-    <Page title="Arsip Dokumen" subtitle="Daftar dokumen , kategori, divisi, tanggal upload, dan tipe file." action={<button onClick={() => setOpen(true)} className="rounded bg-navy-800 px-4 py-2 text-sm font-semibold text-white">Upload Dokumen</button>}>
+    <Page title="Arsip Dokumen" subtitle="Daftar dokumen, kategori, divisi, tanggal upload, dan tipe file." action={canUpload && <button onClick={() => setOpen(true)} className="rounded bg-navy-800 px-4 py-2 text-sm font-semibold text-white">Upload Dokumen</button>}>
       {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data...</div>}
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       {message && <div className={`rounded-lg border p-4 text-sm ${message.includes("berhasil") ? "border-emerald-200 bg-emerald-50 text-emerald-700" : message.includes("tetapi") ? "border-amber-200 bg-amber-50 text-amber-700" : "border-red-200 bg-red-50 text-red-700"}`}>{message}</div>}
@@ -90,7 +91,7 @@ export default function Documents() {
           { key: "detail", header: "Aksi", render: (row) => <div className="flex items-center gap-2"><button onClick={() => setSelected(row)} className="rounded border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700">Lihat Detail</button>{canDelete && <button type="button" title="Hapus dokumen" aria-label={`Hapus dokumen ${row.name}`} onClick={() => setDeleting(row)} className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-700 transition hover:bg-red-100"><Trash2 size={15} /></button>}</div> },
         ]}
       />
-      <Modal open={open} title="Upload Dokumen" onClose={() => setOpen(false)}>
+      <Modal open={canUpload && open} title="Upload Dokumen" onClose={() => setOpen(false)}>
         <DocumentForm divisions={divisions} user={user} onSaved={() => { setOpen(false); reload(); }} />
       </Modal>
       <Modal open={Boolean(selected)} title="Detail Dokumen" onClose={() => setSelected(null)}>
@@ -208,7 +209,7 @@ function DocumentForm({ divisions, user, onSaved }) {
       {message && <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">{message}</div>}
       <input className="rounded border border-slate-200 px-3 py-2" placeholder="Nama dokumen" value={form.name} onChange={(event) => updateField("name", event.target.value)} />
       <input className="rounded border border-slate-200 px-3 py-2" placeholder="Kategori" value={form.category} onChange={(event) => updateField("category", event.target.value)} />
-      <select disabled={user?.role !== "Owner" && user?.role !== "Administrator"} className="rounded border border-slate-200 px-3 py-2 disabled:bg-slate-100" value={form.divisionId} onChange={(event) => updateField("divisionId", event.target.value)}>
+      <select disabled={user?.role !== "Owner" && user?.role !== "Wakil Owner"} className="rounded border border-slate-200 px-3 py-2 disabled:bg-slate-100" value={form.divisionId} onChange={(event) => updateField("divisionId", event.target.value)}>
         <option value="all">Semua Divisi</option>
         {divisions.map((division) => <option key={division.id} value={division.id}>{division.name}</option>)}
       </select>

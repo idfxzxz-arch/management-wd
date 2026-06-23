@@ -51,7 +51,7 @@ function JobdeskForm({ divisions, employees, user, onSaved }) {
     description: "",
     divisionId: managedDivisionId,
     assigneeId: employees.find((employee) => (employee.role === "Staff" || employee.role === "Magang") && (user?.role !== "Kepala Divisi" || user.divisionId === "all" || employee.divisionId === user.divisionId))?.id || "",
-    assignedBy: user?.role === "Owner" || user?.role === "Administrator" ? "Owner" : "Kepala Divisi",
+    assignedBy: user?.role === "Owner" || user?.role === "Wakil Owner" ? "Owner" : "Kepala Divisi",
     target: "",
     priority: "Sedang",
     deadline: "",
@@ -128,7 +128,7 @@ function JobdeskForm({ divisions, employees, user, onSaved }) {
       division_id: form.divisionId,
       action: `membuat jobdesk "${form.title}"`,
       time: new Date().toISOString().slice(0, 16).replace("T", " "),
-      severity: user?.role === "Owner" || user?.role === "Administrator" ? "owner" : "info",
+      severity: user?.role === "Owner" || user?.role === "Wakil Owner" ? "owner" : "info",
     });
 
     setSaving(false);

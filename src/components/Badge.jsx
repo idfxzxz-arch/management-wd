@@ -28,7 +28,7 @@ const styles = {
   Rendah: "bg-emerald-50 text-emerald-700 ring-emerald-200",
   Owner: "bg-violet-50 text-violet-700 ring-violet-200",
   "Kepala Divisi": "bg-blue-50 text-blue-700 ring-blue-200",
-  Administrator: "bg-indigo-50 text-indigo-700 ring-indigo-200",
+  "Wakil Owner": "bg-indigo-50 text-indigo-700 ring-indigo-200",
   Staff: "bg-slate-50 text-slate-700 ring-slate-200",
   Magang: "bg-cyan-50 text-cyan-700 ring-cyan-200",
 };

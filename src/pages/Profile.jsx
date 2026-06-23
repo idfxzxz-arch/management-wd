@@ -7,7 +7,7 @@ import { Page } from "./Divisions";
 export default function Profile() {
   const user = getCurrentUser();
   const { tasks, divisionName, employeeName, loading, error } = useAppData();
-  const myTasks = user.role === "Owner" || user.role === "Administrator"
+  const myTasks = user.role === "Owner" || user.role === "Wakil Owner"
     ? tasks.slice(0, 8)
     : user.role === "Staff"
       ? tasks.filter((task) => String(task.assigneeId) === String(user.employeeId)).slice(0, 8)
