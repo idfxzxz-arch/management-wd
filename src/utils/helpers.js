@@ -1,10 +1,18 @@
 export const roleAccess = {
   Owner: ["Owner", "Wakil Owner"],
   Head: ["Owner", "Kepala Divisi", "Wakil Owner"],
-  Staff: ["Owner", "Kepala Divisi", "Staff", "Wakil Owner"],
+  Staff: ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner"],
 };
 
-export function divisionName(id) {
+export const staffLikeRoles = ["Staff", "Magang"];
+
+export function isStaffLike(role) {
+  return staffLikeRoles.includes(role);
+}
+
+export function divisionName(id, role = "") {
+  if (role === "Owner") return "Owner";
+  if (role === "Wakil Owner") return "Wakil Owner";
   if (id === "all") return "Semua Divisi";
   return id || "-";
 }

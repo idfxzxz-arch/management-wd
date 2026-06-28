@@ -9,6 +9,8 @@ import { buildSubmissionRows, submissionStats } from "../utils/submissions";
 export default function HeadDashboard() {
   const user = getCurrentUser();
   const { employees, tasks, taskSubmissions, minutes, divisionName, employeeName, scopedByDivision, loading, error } = useAppData();
+  if (!user) return <div className="surface-panel p-4 text-sm text-slate-500">Memuat profil...</div>;
+
   const divisionTasks = scopedByDivision(tasks, user);
   const members = scopedByDivision(employees, user).filter((employee) => employee.role !== "Owner");
   const latestMinutes = scopedByDivision(minutes, user).slice(0, 3);

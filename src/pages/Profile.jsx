@@ -7,11 +7,7 @@ import { Page } from "./Divisions";
 export default function Profile() {
   const user = getCurrentUser();
   const { tasks, divisionName, employeeName, loading, error } = useAppData();
-  const myTasks = user.role === "Owner" || user.role === "Wakil Owner"
-    ? tasks.slice(0, 8)
-    : user.role === "Staff"
-      ? tasks.filter((task) => String(task.assigneeId) === String(user.employeeId)).slice(0, 8)
-      : tasks.filter((task) => task.divisionId === user.divisionId).slice(0, 8);
+  const myTasks = tasks.filter((task) => String(task.assigneeId) === String(user.employeeId)).slice(0, 8);
   return (
     <Page title="Profile" subtitle="Informasi user login dan riwayat tugas singkat.">
       {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data...</div>}
@@ -21,7 +17,7 @@ export default function Profile() {
           <Info label="Nama" value={user.name} />
           <Info label="Email" value={user.email} />
           <Info label="Role" value={<Badge>{user.role}</Badge>} />
-          <Info label="Divisi" value={divisionName(user.divisionId)} />
+          <Info label="Divisi" value={divisionName(user.divisionId, user.role)} />
         </div>
       </section>
       <DataTable

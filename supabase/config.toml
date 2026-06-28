@@ -1,0 +1,4 @@
+project_id = "management-wd"
+
+[functions.send-task-email]
+verify_jwt = true

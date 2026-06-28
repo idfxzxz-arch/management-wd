@@ -11,17 +11,18 @@ export default function StaffDashboard() {
   const personalTasks = tasks.filter((task) => String(task.assigneeId) === String(user.employeeId));
   const nearest = [...personalTasks].sort((a, b) => new Date(a.deadline) - new Date(b.deadline))[0];
   const unreadMinutes = user.divisionId === "all" ? minutes : minutes.filter((minute) => minute.divisionId === user.divisionId);
+  const roleLabel = user?.role === "Magang" ? "Magang" : "Staff";
 
   return (
     <div className="space-y-6">
       {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data...</div>}
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Dashboard Staff</h1>
-        <p className="mt-1 text-sm text-slate-500">Ringkasan pekerjaan staff umum dan informasi internal.</p>
+        <h1 className="text-2xl font-bold text-slate-900">Dashboard {roleLabel}</h1>
+        <p className="mt-1 text-sm text-slate-500">Ringkasan pekerjaan {roleLabel.toLowerCase()} dan informasi internal.</p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard title="Jobdesk Staff" value={personalTasks.length} icon={Briefcase} tone="blue" />
+        <StatCard title={`Jobdesk ${roleLabel}`} value={personalTasks.length} icon={Briefcase} tone="blue" />
         <StatCard title="Deadline Terdekat" value={nearest?.deadline || "-"} icon={CalendarClock} tone="red" />
         <StatCard title="Notulen Dibaca" value={unreadMinutes.length} icon={ClipboardList} tone="yellow" />
         <StatCard title="Pengumuman Baru" value={announcements.length} icon={Bell} tone="purple" />

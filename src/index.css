@@ -153,9 +153,25 @@ button {
   gap: 0.75rem;
 }
 
+.form-field {
+  display: grid;
+  min-width: 0;
+  gap: 0.4rem;
+}
+
+.form-label {
+  color: #475569;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.1rem;
+}
+
 .form-control {
-  border-radius: 0.5rem;
+  min-height: 2.7rem;
+  width: 100%;
+  border-radius: 0.625rem;
   border: 1px solid #cbd5e1;
+  background: #fff;
   padding: 0.625rem 0.75rem;
   font-size: 0.875rem;
   line-height: 1.5rem;
@@ -164,9 +180,50 @@ button {
   transition: border-color 160ms ease, box-shadow 160ms ease;
 }
 
+.form-control::placeholder {
+  color: #94a3b8;
+}
+
 .form-control:focus {
   border-color: var(--brand-700);
   box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.12);
+}
+
+.form-control:disabled {
+  cursor: not-allowed;
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+textarea.form-control {
+  min-height: 5.5rem;
+  resize: vertical;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 0.25rem;
+}
+
+.primary-action {
+  min-height: 2.7rem;
+  border-radius: 0.625rem;
+  background: var(--brand-800);
+  padding: 0.625rem 1rem;
+  font-weight: 700;
+  color: #fff;
+  transition: background-color 160ms ease, opacity 160ms ease;
+}
+
+.primary-action:hover {
+  background: var(--brand-900);
+}
+
+.primary-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 @media (max-width: 640px) {

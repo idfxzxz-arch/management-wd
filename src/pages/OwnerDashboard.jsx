@@ -108,6 +108,7 @@ export default function OwnerDashboard() {
     ? Math.round(tasks.reduce((sum, task) => sum + (Number(task.progress) || 0), 0) / tasks.length)
     : 0;
   const totalStaff = employees.filter((employee) => !["Owner", "Wakil Owner"].includes(employee.role)).length;
+  const limitedEmployeeAccess = (user?.role === "Owner" || user?.role === "Wakil Owner") && employees.length > 0 && employees.length < 10;
   const employeeRole = (id) => employees.find((employee) => String(employee.id) === String(id))?.role || "Staff";
   const reviewStats = submissionStats(buildSubmissionRows(tasks, taskSubmissions, { employeeName, employeeRole }));
   const needsAttention = late + reviewStats.revision + reviewStats.waitingReview;
@@ -116,6 +117,7 @@ export default function OwnerDashboard() {
     <div className="space-y-7">
       {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data...</div>}
       {error && <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
+      {limitedEmployeeAccess && <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">Data staf yang terbaca belum lengkap. Logout lalu login ulang agar role terbaru tersinkron.</div>}
 
       <section className="owner-hero relative overflow-hidden rounded-2xl px-5 py-7 text-white shadow-xl shadow-navy-900/15 sm:px-7">
         <div className="pointer-events-none absolute -right-12 -top-24 h-64 w-64 rounded-full bg-blue-400/20 blur-3xl" />

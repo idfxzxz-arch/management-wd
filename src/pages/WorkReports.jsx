@@ -15,8 +15,8 @@ export default function WorkReports() {
   const user = getCurrentUser();
   const { reports, weeklyReports, divisionName, scopedByDivision, loading, error, reload } = useAppData();
   const [open, setOpen] = useState(false);
-  const rows = user.role === "Staff" ? reports.filter((report) => String(report.employeeId) === String(user.employeeId)) : scopedByDivision(reports, user);
-  const weeklyRows = user.role === "Staff" ? weeklyReports.filter((report) => String(report.employeeId) === String(user.employeeId)) : scopedByDivision(weeklyReports, user);
+  const rows = scopedByDivision(reports, user);
+  const weeklyRows = scopedByDivision(weeklyReports, user);
   const totals = weeklyRows.reduce(
     (acc, report) => {
       acc.completed += report.completedTasks;
@@ -39,7 +39,7 @@ export default function WorkReports() {
   });
 
   return (
-    <Page title="Laporan Kerja" subtitle="Laporan harian, laporan mingguan, statistik, dan deteksi kinerja otomatis." action={user.role === "Staff" && <button onClick={() => setOpen(true)} className="rounded-lg bg-navy-800 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-navy-900">Kirim Laporan</button>}>
+    <Page title="Laporan Kerja" subtitle="Laporan harian, laporan mingguan, statistik, dan deteksi kinerja otomatis.">
       {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data...</div>}
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
@@ -118,7 +118,7 @@ export default function WorkReports() {
         ]}
       />
       </section>
-      <Modal open={user.role === "Staff" && open} title="Form Laporan Kerja" onClose={() => setOpen(false)}>
+      <Modal open={false} title="Form Laporan Kerja" onClose={() => setOpen(false)}>
         <ReportForm user={user} onSaved={() => { setOpen(false); reload(); }} />
       </Modal>
     </Page>
@@ -220,29 +220,34 @@ function ReportForm({ user, onSaved }) {
   }
 
   return (
-    <form className="grid gap-3" onSubmit={submit}>
+    <form className="form-grid" onSubmit={submit}>
       {message && <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">{message}</div>}
-      <select className="rounded-lg border border-slate-200 px-3 py-2" value={type} onChange={(event) => setType(event.target.value)}>
-        <option value="daily">Laporan Harian</option>
-        <option value="weekly">Laporan Mingguan</option>
-      </select>
+      <label className="form-field">
+        <span className="form-label">Jenis Laporan</span>
+        <select className="form-control" value={type} onChange={(event) => setType(event.target.value)}>
+          <option value="daily">Laporan Harian</option>
+          <option value="weekly">Laporan Mingguan</option>
+        </select>
+      </label>
       {type === "weekly" && (
         <div className="grid gap-3 sm:grid-cols-2">
-          <input className="rounded-lg border border-slate-200 px-3 py-2" placeholder="Minggu laporan" value={form.week} onChange={(event) => updateField("week", event.target.value)} />
-          <input className="rounded-lg border border-slate-200 px-3 py-2" placeholder="Periode" value={form.period} onChange={(event) => updateField("period", event.target.value)} />
-          <input className="rounded-lg border border-slate-200 px-3 py-2" type="number" min="0" placeholder="Target tugas" value={form.targetTasks} onChange={(event) => updateField("targetTasks", event.target.value)} />
-          <input className="rounded-lg border border-slate-200 px-3 py-2" type="number" min="0" placeholder="Tugas selesai" value={form.completedTasks} onChange={(event) => updateField("completedTasks", event.target.value)} />
-          <input className="rounded-lg border border-slate-200 px-3 py-2" type="number" min="0" max="100" placeholder="Rata-rata progress" value={form.averageProgress} onChange={(event) => updateField("averageProgress", event.target.value)} />
-          <input className="rounded-lg border border-slate-200 px-3 py-2" type="number" min="0" placeholder="Tugas terlambat" value={form.lateTasks} onChange={(event) => updateField("lateTasks", event.target.value)} />
-          <input className="rounded-lg border border-slate-200 px-3 py-2" type="number" min="0" placeholder="Tugas revisi" value={form.revisionTasks} onChange={(event) => updateField("revisionTasks", event.target.value)} />
+          <label className="form-field"><span className="form-label">Minggu Laporan</span><input className="form-control" placeholder="Minggu laporan" value={form.week} onChange={(event) => updateField("week", event.target.value)} /></label>
+          <label className="form-field"><span className="form-label">Periode</span><input className="form-control" placeholder="Periode" value={form.period} onChange={(event) => updateField("period", event.target.value)} /></label>
+          <label className="form-field"><span className="form-label">Target Tugas</span><input className="form-control" type="number" min="0" placeholder="Target tugas" value={form.targetTasks} onChange={(event) => updateField("targetTasks", event.target.value)} /></label>
+          <label className="form-field"><span className="form-label">Tugas Selesai</span><input className="form-control" type="number" min="0" placeholder="Tugas selesai" value={form.completedTasks} onChange={(event) => updateField("completedTasks", event.target.value)} /></label>
+          <label className="form-field"><span className="form-label">Rata-rata Progress</span><input className="form-control" type="number" min="0" max="100" placeholder="Rata-rata progress" value={form.averageProgress} onChange={(event) => updateField("averageProgress", event.target.value)} /></label>
+          <label className="form-field"><span className="form-label">Tugas Terlambat</span><input className="form-control" type="number" min="0" placeholder="Tugas terlambat" value={form.lateTasks} onChange={(event) => updateField("lateTasks", event.target.value)} /></label>
+          <label className="form-field"><span className="form-label">Tugas Revisi</span><input className="form-control" type="number" min="0" placeholder="Tugas revisi" value={form.revisionTasks} onChange={(event) => updateField("revisionTasks", event.target.value)} /></label>
         </div>
       )}
-      <textarea className="rounded-lg border border-slate-200 px-3 py-2" placeholder="Pekerjaan yang sudah dilakukan" value={form.done} onChange={(event) => updateField("done", event.target.value)} />
-      <textarea className="rounded-lg border border-slate-200 px-3 py-2" placeholder="Kendala" value={form.blockers} onChange={(event) => updateField("blockers", event.target.value)} />
-      <textarea className="rounded-lg border border-slate-200 px-3 py-2" placeholder="Rencana berikutnya" value={form.next} onChange={(event) => updateField("next", event.target.value)} />
-      <button disabled={saving} className="rounded-lg bg-navy-800 px-4 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70">
-        {saving ? "Mengirim..." : "Kirim"}
-      </button>
+      <label className="form-field"><span className="form-label">Pekerjaan Selesai</span><textarea className="form-control" placeholder="Pekerjaan yang sudah dilakukan" value={form.done} onChange={(event) => updateField("done", event.target.value)} /></label>
+      <label className="form-field"><span className="form-label">Kendala</span><textarea className="form-control" placeholder="Kendala" value={form.blockers} onChange={(event) => updateField("blockers", event.target.value)} /></label>
+      <label className="form-field"><span className="form-label">Rencana Berikutnya</span><textarea className="form-control" placeholder="Rencana berikutnya" value={form.next} onChange={(event) => updateField("next", event.target.value)} /></label>
+      <div className="form-actions">
+        <button disabled={saving} className="primary-action w-full sm:w-auto">
+          {saving ? "Mengirim..." : "Kirim"}
+        </button>
+      </div>
     </form>
   );
 }

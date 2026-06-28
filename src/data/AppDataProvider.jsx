@@ -108,7 +108,9 @@ export function AppDataProvider({ children }) {
   }, []);
 
   const value = useMemo(() => {
-    function divisionName(id) {
+    function divisionName(id, role = "") {
+      if (role === "Owner") return "Owner";
+      if (role === "Wakil Owner") return "Wakil Owner";
       if (id === "all") return "Semua Divisi";
       return data.divisions.find((division) => division.id === id)?.name || "-";
     }
@@ -118,8 +120,7 @@ export function AppDataProvider({ children }) {
     }
 
     function scopedByDivision(items, user) {
-      if (!user || user.role === "Owner" || user.role === "Wakil Owner") return items;
-      return items.filter((item) => item.divisionId === user.divisionId || item.divisionId === "all");
+      return items;
     }
 
     return { ...data, loading, error, reload: loadData, divisionName, employeeName, scopedByDivision };

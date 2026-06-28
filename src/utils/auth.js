@@ -35,7 +35,7 @@ export async function syncCurrentUser() {
   }
 
   let employeeId = user.employee_id;
-  if (!employeeId && user.role === "Staff") {
+  if (!employeeId) {
     const { data: employee } = await supabase.from("employees").select("id").eq("email", user.email).maybeSingle();
     employeeId = employee?.id || null;
   }
@@ -47,6 +47,8 @@ export async function syncCurrentUser() {
     divisionId: user.division_id,
     employeeId,
     status: user.status,
+    mustChangePassword: Boolean(user.must_change_password),
+    passwordSetAt: user.password_set_at,
   };
   localStorage.setItem(KEY, JSON.stringify(normalizedUser));
   return normalizedUser;
