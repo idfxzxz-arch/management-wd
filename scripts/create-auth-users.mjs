@@ -10,6 +10,7 @@ const defaultPassword = args.password || process.env.AUTH_DEFAULT_PASSWORD || "1
 const passwordByRole = {
   Owner: args["management-password"] || process.env.AUTH_MANAGEMENT_PASSWORD || defaultPassword,
   "Wakil Owner": args["management-password"] || process.env.AUTH_MANAGEMENT_PASSWORD || defaultPassword,
+  Developer: args["management-password"] || process.env.AUTH_MANAGEMENT_PASSWORD || defaultPassword,
   "Kepala Divisi": args["head-password"] || process.env.AUTH_HEAD_PASSWORD || defaultPassword,
   Staff: args["staff-password"] || process.env.AUTH_STAFF_PASSWORD || defaultPassword,
   Magang: args["staff-password"] || process.env.AUTH_STAFF_PASSWORD || defaultPassword,
