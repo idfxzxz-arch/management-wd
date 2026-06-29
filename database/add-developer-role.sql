@@ -39,3 +39,47 @@ update app_settings
 set setting_value = 'Owner, Kepala Divisi, Staff, Magang, Wakil Owner, Developer',
     updated_at = now()
 where setting_key = 'roles';
+
+-- Pastikan Developer dianggap management oleh RLS policy yang sudah ada.
+create schema if not exists private;
+
+create or replace function private.current_app_email()
+returns text language sql stable security definer set search_path = public
+as $$ select lower(coalesce(auth.jwt() ->> 'email', '')) $$;
+
+create or replace function private.current_app_role()
+returns text language sql stable security definer set search_path = public
+as $$
+  select role from app_users
+  where lower(email) = private.current_app_email() and status = 'Aktif'
+  limit 1
+$$;
+
+create or replace function private.current_app_division()
+returns text language sql stable security definer set search_path = public
+as $$
+  select division_id from app_users
+  where lower(email) = private.current_app_email() and status = 'Aktif'
+  limit 1
+$$;
+
+create or replace function private.is_management()
+returns boolean language sql stable security definer set search_path = public
+as $$ select coalesce(private.current_app_role() in ('Owner', 'Wakil Owner', 'Developer'), false) $$;
+
+drop policy if exists "role read app users" on app_users;
+create policy "role read app users" on app_users for select to authenticated
+using (private.current_app_role() is not null);
+
+drop policy if exists "management update app users" on app_users;
+create policy "management update app users" on app_users for update to authenticated
+using (private.is_management()) with check (private.is_management());
+
+drop policy if exists "scoped read employees" on employees;
+create policy "scoped read employees" on employees for select to authenticated
+using (private.current_app_role() is not null);
+
+drop policy if exists "owner insert settings" on app_settings;
+drop policy if exists "owner update settings" on app_settings;
+create policy "owner insert settings" on app_settings for insert to authenticated with check (private.current_app_role() in ('Owner', 'Developer'));
+create policy "owner update settings" on app_settings for update to authenticated using (private.current_app_role() in ('Owner', 'Developer')) with check (private.current_app_role() in ('Owner', 'Developer'));

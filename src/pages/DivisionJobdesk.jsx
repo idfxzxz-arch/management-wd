@@ -48,8 +48,33 @@ export default function DivisionJobdesk() {
   );
 }
 
+const fallbackDivisions = [
+  { id: "it", name: "Information Technology" },
+  { id: "project-content", name: "Project Manager & Konten" },
+  { id: "admin-booking", name: "Administrasi & Booking" },
+  { id: "media-production", name: "Media Production" },
+  { id: "public-relation-admin", name: "Public Relation & Admin" },
+];
+
+function buildDivisionOptions(divisions, employees) {
+  const map = new Map();
+  for (const division of divisions || []) {
+    if (division?.id && division.id !== "all") map.set(division.id, { id: division.id, name: division.name || division.id });
+  }
+  for (const employee of employees || []) {
+    if (employee?.divisionId && employee.divisionId !== "all" && !map.has(employee.divisionId)) {
+      map.set(employee.divisionId, { id: employee.divisionId, name: employee.divisionId });
+    }
+  }
+  if (!map.size) {
+    for (const division of fallbackDivisions) map.set(division.id, division);
+  }
+  return [...map.values()];
+}
+
 function JobdeskForm({ divisions, employees, user, divisionName, onNotice, onSaved }) {
-  const managedDivisionId = user?.role === "Kepala Divisi" && user.divisionId !== "all" ? user.divisionId : divisions[0]?.id || "it";
+  const divisionOptions = buildDivisionOptions(divisions, employees);
+  const managedDivisionId = user?.role === "Kepala Divisi" && user.divisionId !== "all" ? user.divisionId : divisionOptions[0]?.id || "it";
   const managementRoles = ["Owner", "Wakil Owner", "Developer"];
   const canReceiveTask = (employee, divisionId = managedDivisionId) => {
     const allowedRoles = ["Owner", "Wakil Owner", "Developer", "Kepala Divisi", "Staff", "Magang"];
@@ -184,8 +209,13 @@ function JobdeskForm({ divisions, employees, user, divisionName, onNotice, onSav
         <label className="form-field">
           <span className="form-label">Divisi</span>
           <select disabled={user?.role === "Kepala Divisi" && user.divisionId !== "all"} className="form-control" value={form.divisionId} onChange={(event) => setForm((current) => ({ ...current, divisionId: event.target.value, assigneeId: "" }))}>
-            {divisions.map((division) => <option key={division.id} value={division.id}>{division.name}</option>)}
+            {divisionOptions.map((division) => <option key={division.id} value={division.id}>{division.name}</option>)}
           </select>
+          {!divisions.length && (
+            <p className="mt-1 text-xs text-amber-600">
+              Data divisi utama belum terbaca, memakai pilihan default. Jalankan policy terbaru jika penerima tugas masih kosong.
+            </p>
+          )}
         </label>
         <label className="form-field">
           <span className="form-label">Penerima Tugas</span>
