@@ -5,7 +5,7 @@ import DataTable from "../components/DataTable";
 import Modal from "../components/Modal";
 import { Page, Search } from "./Divisions";
 import { getCurrentUser } from "../utils/auth";
-import { contains } from "../utils/helpers";
+import { contains, isStaffLike } from "../utils/helpers";
 import { useAppData } from "../data/AppDataProvider";
 import { supabase, isSupabaseConfigured } from "../lib/supabase";
 import { REVIEW_STATUSES, buildSubmissionRows, submissionStats } from "../utils/submissions";
@@ -27,7 +27,7 @@ export default function ReviewTasks() {
   const employeeRole = (id) => employees.find((employee) => String(employee.id) === String(id))?.role || "Staff";
   const allRows = buildSubmissionRows(scopedByDivision(tasks, user), taskSubmissions, { employeeName, employeeRole });
   const canReview = (row) => {
-    if (user?.role === "Owner" || user?.role === "Wakil Owner") return true;
+    if (user?.role === "Owner" || user?.role === "Wakil Owner" || user?.role === "Developer") return true;
     if (user?.role === "Kepala Divisi") return user.divisionId === "all" || row.divisionId === user.divisionId;
     return false;
   };
@@ -43,7 +43,7 @@ export default function ReviewTasks() {
     });
   }, [allRows, query, divisionFilter, statusFilter, reviewerFilter, deadlineFilter]);
   const stats = submissionStats(allRows);
-  const pageTitle = user?.role === "Staff" ? "Feedback Tugas" : "Review Tugas";
+  const pageTitle = isStaffLike(user?.role) ? "Feedback Tugas" : "Review Tugas";
   const reviewers = [...new Set(allRows.map((row) => row.reviewerName).filter(Boolean))];
   const deadlines = [...new Set(allRows.map((row) => row.deadline).filter(Boolean))].sort();
 
@@ -141,9 +141,9 @@ export default function ReviewTasks() {
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       {message && <div className={`rounded-lg border p-4 text-sm ${message.includes("berhasil") || message.includes("approve") ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-red-200 bg-red-50 text-red-700"}`}>{message}</div>}
 
-      {(user?.role === "Owner" || user?.role === "Kepala Divisi") && (
+      {(user?.role === "Owner" || user?.role === "Kepala Divisi" || user?.role === "Wakil Owner" || user?.role === "Developer") && (
         <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
-          {user.role === "Owner"
+          {user.role === "Owner" || user.role === "Wakil Owner" || user.role === "Developer"
             ? "Anda dapat mereview kiriman staf dari seluruh divisi. Buka Drive, lalu pilih Approve atau Revisi."
             : "Anda dapat mereview kiriman staf di divisi Anda. Buka Drive, lalu pilih Approve atau Revisi."}
         </div>
@@ -291,7 +291,10 @@ export default function ReviewTasks() {
             </section>
             {canTakeReviewAction(selected) && (
               <div className="space-y-3">
-                <textarea className="min-h-[110px] w-full rounded-lg border border-slate-200 px-3 py-2" placeholder="Catatan feedback reviewer" value={feedback} onChange={(event) => setFeedback(event.target.value)} />
+                <label className="form-field">
+                  <span className="form-label">Catatan Feedback</span>
+                  <textarea className="form-control min-h-[110px]" placeholder="Catatan feedback reviewer" value={feedback} onChange={(event) => setFeedback(event.target.value)} />
+                </label>
                 <div className="grid gap-2 sm:flex sm:flex-wrap">
                   <button disabled={saving} onClick={() => updateReview(selected, "Diterima")} className="rounded-lg bg-emerald-600 px-4 py-2 font-semibold text-white disabled:opacity-60">Approve / Diterima</button>
                   <button disabled={saving} onClick={() => updateReview(selected, "Revisi")} className="rounded-lg bg-red-600 px-4 py-2 font-semibold text-white disabled:opacity-60">Kirim Revisi</button>

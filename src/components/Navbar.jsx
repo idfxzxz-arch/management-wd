@@ -19,7 +19,7 @@ export default function Navbar({ user, onMenu }) {
         </button>
         <div className="min-w-0">
           <p className="max-w-[170px] truncate text-sm font-semibold text-slate-900 sm:max-w-[420px] lg:max-w-none">WD Group Internal Management System</p>
-          <p className="max-w-[170px] truncate text-xs text-slate-500 sm:max-w-[420px]">{divisionName(user?.divisionId)}</p>
+          <p className="max-w-[170px] truncate text-xs text-slate-500 sm:max-w-[420px]">{divisionName(user?.divisionId, user?.role)}</p>
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-2 sm:gap-3">

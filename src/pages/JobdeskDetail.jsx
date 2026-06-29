@@ -8,18 +8,18 @@ import { Page } from "./Divisions";
 import { supabase, isSupabaseConfigured } from "../lib/supabase";
 import { getCurrentUser } from "../utils/auth";
 import { buildSubmissionRows } from "../utils/submissions";
+import { isManagementRole, isStaffLike } from "../utils/helpers";
 
 export default function JobdeskDetail() {
   const { id } = useParams();
   const user = getCurrentUser();
   const { tasks, taskSubmissions, employees, divisionName, employeeName, scopedByDivision, loading, error, reload } = useAppData();
-  const visibleTasks = user?.role === "Staff"
-    ? tasks.filter((item) => String(item.assigneeId) === String(user.employeeId))
-    : scopedByDivision(tasks, user);
+  const visibleTasks = scopedByDivision(tasks, user);
   const task = visibleTasks.find((item) => String(item.id) === id);
   const employeeRole = (employeeId) => employees.find((employee) => String(employee.id) === String(employeeId))?.role || "Staff";
   const submissionRow = task ? buildSubmissionRows([task], taskSubmissions, { employeeName, employeeRole })[0] : null;
-  const isCurrentAssignee = task && String(user?.employeeId) === String(task.assigneeId);
+  const canEditTask = !isStaffLike(user?.role);
+  const isCurrentAssignee = canEditTask && task && String(user?.employeeId) === String(task.assigneeId);
 
   if (loading) return <Page title="Detail Jobdesk"><p className="text-slate-500">Memuat data...</p></Page>;
   if (error) return <Page title="Detail Jobdesk"><p className="text-amber-700">{error}</p></Page>;
@@ -45,9 +45,9 @@ export default function JobdeskDetail() {
           <p className="mt-5 rounded bg-amber-50 px-4 py-3 text-sm text-amber-800">Catatan: {task.note}</p>
           {(submissionRow?.submissionNote || submissionRow?.driveLink) && (
             <div className="mt-5 rounded border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-              <p className="font-semibold">Pengumpulan Staf</p>
+              <p className="font-semibold">Pengumpulan PIC</p>
               {submissionRow.submissionNote && <p className="mt-1">{submissionRow.submissionNote}</p>}
-              {submissionRow.driveLink && user?.role !== "Owner" && (
+              {submissionRow.driveLink && !isManagementRole(user?.role) && (
                 <a className="mt-2 inline-flex font-semibold text-navy-700 hover:underline" href={submissionRow.driveLink} target="_blank" rel="noreferrer">
                   Buka link Google Drive
                 </a>
@@ -93,7 +93,7 @@ function DriveAccess({ submission }) {
       <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
         <FolderOpen size={22} />
       </div>
-      <h2 className="mt-4 font-semibold text-slate-900">Hasil Pekerjaan Staf</h2>
+      <h2 className="mt-4 font-semibold text-slate-900">Hasil Pekerjaan PIC</h2>
       <p className="mt-1 text-sm leading-6 text-slate-500">
         Buka folder Google Drive untuk melihat file yang telah dikumpulkan.
       </p>
@@ -109,7 +109,7 @@ function DriveAccess({ submission }) {
         </a>
       ) : (
         <div className="mt-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-          Staf belum mengirimkan link Google Drive.
+          PIC belum mengirimkan link Google Drive.
         </div>
       )}
       {submission?.submittedAt && (
@@ -264,8 +264,14 @@ function SubmissionForm({ task, submission, user, employeeName, employeeRole, on
         {success && <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{success}</div>}
         {alreadySubmitted && <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">Status: Menunggu Review.</div>}
         {approved && <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">Status: Diterima. Pengiriman ulang ditutup.</div>}
-        <input className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" placeholder="https://drive.google.com/..." value={driveLink} onChange={(event) => setDriveLink(event.target.value)} disabled={!canSubmit} />
-        <textarea className="w-full rounded-lg border border-slate-200 px-3 py-2" placeholder="Catatan pengumpulan" value={note} onChange={(event) => setNote(event.target.value)} disabled={!canSubmit} />
+        <label className="form-field">
+          <span className="form-label">Link Google Drive</span>
+          <input className="form-control text-sm" placeholder="https://drive.google.com/..." value={driveLink} onChange={(event) => setDriveLink(event.target.value)} disabled={!canSubmit} />
+        </label>
+        <label className="form-field">
+          <span className="form-label">Catatan Pengumpulan</span>
+          <textarea className="form-control" placeholder="Catatan pengumpulan" value={note} onChange={(event) => setNote(event.target.value)} disabled={!canSubmit} />
+        </label>
         {submission?.driveLink && (
           <a className="text-sm font-semibold text-navy-700 hover:underline" href={submission.driveLink} target="_blank" rel="noreferrer">
             Link terkirim: Google Drive
@@ -365,7 +371,10 @@ function ProgressUpdate({ task, submission, user, onSaved }) {
           </div>
           <input disabled={!canUpdate} className="w-full accent-emerald-600 disabled:cursor-not-allowed disabled:opacity-60" type="range" min="0" max="95" step="5" value={progress} onChange={(event) => setProgress(Number(event.target.value))} />
         </div>
-        <textarea disabled={!canUpdate} className="w-full rounded-lg border border-slate-200 px-3 py-2 disabled:bg-slate-50" placeholder="Catatan update progress" value={note} onChange={(event) => setNote(event.target.value)} />
+        <label className="form-field">
+          <span className="form-label">Catatan Progress</span>
+          <textarea disabled={!canUpdate} className="form-control" placeholder="Catatan update progress" value={note} onChange={(event) => setNote(event.target.value)} />
+        </label>
         <button disabled={saving || !canUpdate} className="w-full rounded-lg bg-navy-800 px-4 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70">
           {saving ? "Menyimpan..." : "Simpan Progress"}
         </button>

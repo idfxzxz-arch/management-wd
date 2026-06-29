@@ -13,7 +13,7 @@ export default function Announcements() {
   const [open, setOpen] = useState(false);
 
   return (
-    <Page title="Pengumuman Internal" subtitle="Daftar pengumuman perusahaan, target divisi, dan prioritas." action={(user.role === "Owner" || user.role === "Wakil Owner") && <button onClick={() => setOpen(true)} className="rounded bg-navy-800 px-4 py-2 text-sm font-semibold text-white">Buat Pengumuman</button>}>
+    <Page title="Pengumuman Internal" subtitle="Daftar pengumuman perusahaan, target divisi, dan prioritas." action={(user.role === "Owner" || user.role === "Wakil Owner" || user.role === "Developer") && <button onClick={() => setOpen(true)} className="rounded bg-navy-800 px-4 py-2 text-sm font-semibold text-white">Buat Pengumuman</button>}>
       {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data...</div>}
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       <DataTable
@@ -94,24 +94,38 @@ function AnnouncementForm({ divisions, user, onSaved }) {
   }
 
   return (
-    <form className="grid gap-3" onSubmit={submit}>
+    <form className="form-grid" onSubmit={submit}>
       {message && <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">{message}</div>}
-      <input className="rounded border border-slate-200 px-3 py-2" placeholder="Judul pengumuman" value={form.title} onChange={(event) => updateField("title", event.target.value)} />
-      <textarea className="rounded border border-slate-200 px-3 py-2" placeholder="Isi pengumuman" value={form.content} onChange={(event) => updateField("content", event.target.value)} />
+      <label className="form-field">
+        <span className="form-label">Judul Pengumuman</span>
+        <input className="form-control" placeholder="Judul pengumuman" value={form.title} onChange={(event) => updateField("title", event.target.value)} />
+      </label>
+      <label className="form-field">
+        <span className="form-label">Isi Pengumuman</span>
+        <textarea className="form-control" placeholder="Isi pengumuman" value={form.content} onChange={(event) => updateField("content", event.target.value)} />
+      </label>
       <div className="grid gap-3 sm:grid-cols-2">
-        <select className="rounded border border-slate-200 px-3 py-2" value={form.target} onChange={(event) => updateField("target", event.target.value)}>
-          <option>Semua Divisi</option>
-          {divisions.map((division) => <option key={division.id}>{division.name}</option>)}
-        </select>
-        <select className="rounded border border-slate-200 px-3 py-2" value={form.priority} onChange={(event) => updateField("priority", event.target.value)}>
-          <option>Tinggi</option>
-          <option>Sedang</option>
-          <option>Rendah</option>
-        </select>
+        <label className="form-field">
+          <span className="form-label">Target</span>
+          <select className="form-control" value={form.target} onChange={(event) => updateField("target", event.target.value)}>
+            <option>Semua Divisi</option>
+            {divisions.map((division) => <option key={division.id}>{division.name}</option>)}
+          </select>
+        </label>
+        <label className="form-field">
+          <span className="form-label">Prioritas</span>
+          <select className="form-control" value={form.priority} onChange={(event) => updateField("priority", event.target.value)}>
+            <option>Tinggi</option>
+            <option>Sedang</option>
+            <option>Rendah</option>
+          </select>
+        </label>
       </div>
-      <button disabled={saving} className="rounded bg-navy-800 px-4 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70">
-        {saving ? "Mempublikasikan..." : "Publikasikan"}
-      </button>
+      <div className="form-actions">
+        <button disabled={saving} className="primary-action w-full sm:w-auto">
+          {saving ? "Mempublikasikan..." : "Publikasikan"}
+        </button>
+      </div>
     </form>
   );
 }

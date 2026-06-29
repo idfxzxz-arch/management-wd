@@ -29,6 +29,7 @@ const styles = {
   Owner: "bg-violet-50 text-violet-700 ring-violet-200",
   "Kepala Divisi": "bg-blue-50 text-blue-700 ring-blue-200",
   "Wakil Owner": "bg-indigo-50 text-indigo-700 ring-indigo-200",
+  Developer: "bg-slate-900 text-white ring-slate-700",
   Staff: "bg-slate-50 text-slate-700 ring-slate-200",
   Magang: "bg-cyan-50 text-cyan-700 ring-cyan-200",
 };

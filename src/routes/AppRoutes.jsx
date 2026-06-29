@@ -2,11 +2,13 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import DashboardLayout from "../layouts/DashboardLayout";
 import ProtectedRoute from "./ProtectedRoute";
 import Login from "../pages/Login";
+import SetPassword from "../pages/SetPassword";
 import OwnerDashboard from "../pages/OwnerDashboard";
 import HeadDashboard from "../pages/HeadDashboard";
 import StaffDashboard from "../pages/StaffDashboard";
 import Divisions from "../pages/Divisions";
 import Employees from "../pages/Employees";
+import Interns from "../pages/Interns";
 import DivisionJobdesk from "../pages/DivisionJobdesk";
 import IndividualJobdesk from "../pages/IndividualJobdesk";
 import JobdeskDetail from "../pages/JobdeskDetail";
@@ -23,35 +25,43 @@ import UserManagement from "../pages/UserManagement";
 import Profile from "../pages/Profile";
 import Settings from "../pages/Settings";
 
+const allRoles = ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer"];
+const managementAndAllRoles = ["Owner", "Wakil Owner", "Developer", "Kepala Divisi", "Staff", "Magang"];
+
 export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route element={<ProtectedRoute roles={["Owner", "Kepala Divisi", "Staff", "Wakil Owner"]} />}>
+      <Route element={<ProtectedRoute roles={allRoles} allowPasswordChange />}>
+        <Route path="/set-password" element={<SetPassword />} />
+      </Route>
+      <Route element={<ProtectedRoute roles={allRoles} />}>
         <Route element={<DashboardLayout />}>
           <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route element={<ProtectedRoute roles={["Owner", "Wakil Owner"]} />}>
+          <Route element={<ProtectedRoute roles={managementAndAllRoles} />}>
             <Route path="/owner" element={<OwnerDashboard />} />
             <Route path="/admin" element={<OwnerDashboard />} />
+            <Route path="/developer" element={<OwnerDashboard />} />
             <Route path="/divisions" element={<Divisions />} />
             <Route path="/activity-log" element={<ActivityLog />} />
             <Route path="/users" element={<UserManagement />} />
           </Route>
-          <Route element={<ProtectedRoute roles={["Owner"]} />}>
+          <Route element={<ProtectedRoute roles={["Owner", "Developer"]} />}>
             <Route path="/settings" element={<Settings />} />
           </Route>
           <Route element={<ProtectedRoute roles={["Kepala Divisi"]} />}>
             <Route path="/head" element={<HeadDashboard />} />
           </Route>
-          <Route element={<ProtectedRoute roles={["Staff"]} />}>
+          <Route element={<ProtectedRoute roles={["Staff", "Magang"]} />}>
             <Route path="/staff" element={<StaffDashboard />} />
           </Route>
-          <Route element={<ProtectedRoute roles={["Owner", "Kepala Divisi", "Wakil Owner"]} />}>
+          <Route element={<ProtectedRoute roles={allRoles} />}>
             <Route path="/employees" element={<Employees />} />
+            <Route path="/interns" element={<Interns />} />
             <Route path="/division-jobdesk" element={<DivisionJobdesk />} />
             <Route path="/approval" element={<Navigate to="/reviews" replace />} />
           </Route>
-          <Route element={<ProtectedRoute roles={["Owner", "Kepala Divisi", "Staff", "Wakil Owner"]} />}>
+          <Route element={<ProtectedRoute roles={allRoles} />}>
             <Route path="/reviews" element={<ReviewTasks />} />
           </Route>
           <Route path="/individual-jobdesk" element={<IndividualJobdesk />} />

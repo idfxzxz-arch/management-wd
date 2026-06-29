@@ -17,8 +17,8 @@ export default function Documents() {
   const [message, setMessage] = useState("");
   const [deleting, setDeleting] = useState(null);
   const [deletingNow, setDeletingNow] = useState(false);
-  const canDelete = user?.role === "Owner" || user?.role === "Wakil Owner";
-  const canUpload = user?.role === "Owner" || user?.role === "Wakil Owner" || user?.role === "Kepala Divisi";
+  const canDelete = user?.role === "Owner" || user?.role === "Wakil Owner" || user?.role === "Developer";
+  const canUpload = user?.role === "Owner" || user?.role === "Wakil Owner" || user?.role === "Developer" || user?.role === "Kepala Divisi";
   const rows = useMemo(() => scopedByDivision(documents, user).filter((doc) => contains(Object.values(doc).join(" "), query)), [query, user]);
 
   async function openDocument(document) {
@@ -205,18 +205,32 @@ function DocumentForm({ divisions, user, onSaved }) {
   }
 
   return (
-    <form className="grid gap-3" onSubmit={submit}>
+    <form className="form-grid" onSubmit={submit}>
       {message && <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">{message}</div>}
-      <input className="rounded border border-slate-200 px-3 py-2" placeholder="Nama dokumen" value={form.name} onChange={(event) => updateField("name", event.target.value)} />
-      <input className="rounded border border-slate-200 px-3 py-2" placeholder="Kategori" value={form.category} onChange={(event) => updateField("category", event.target.value)} />
-      <select disabled={user?.role !== "Owner" && user?.role !== "Wakil Owner"} className="rounded border border-slate-200 px-3 py-2 disabled:bg-slate-100" value={form.divisionId} onChange={(event) => updateField("divisionId", event.target.value)}>
-        <option value="all">Semua Divisi</option>
-        {divisions.map((division) => <option key={division.id} value={division.id}>{division.name}</option>)}
-      </select>
-      <input className="rounded border border-slate-200 px-3 py-2 text-sm" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" onChange={(event) => setFile(event.target.files?.[0] || null)} />
-      <button disabled={saving} className="rounded bg-navy-800 px-4 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70">
-        {saving ? "Mengupload..." : "Upload Dokumen"}
-      </button>
+      <label className="form-field">
+        <span className="form-label">Nama Dokumen</span>
+        <input className="form-control" placeholder="Nama dokumen" value={form.name} onChange={(event) => updateField("name", event.target.value)} />
+      </label>
+      <label className="form-field">
+        <span className="form-label">Kategori</span>
+        <input className="form-control" placeholder="Kategori" value={form.category} onChange={(event) => updateField("category", event.target.value)} />
+      </label>
+      <label className="form-field">
+        <span className="form-label">Divisi</span>
+        <select disabled={user?.role !== "Owner" && user?.role !== "Wakil Owner" && user?.role !== "Developer"} className="form-control" value={form.divisionId} onChange={(event) => updateField("divisionId", event.target.value)}>
+          <option value="all">Semua Divisi</option>
+          {divisions.map((division) => <option key={division.id} value={division.id}>{division.name}</option>)}
+        </select>
+      </label>
+      <label className="form-field">
+        <span className="form-label">File</span>
+        <input className="form-control text-sm" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" onChange={(event) => setFile(event.target.files?.[0] || null)} />
+      </label>
+      <div className="form-actions">
+        <button disabled={saving} className="primary-action w-full sm:w-auto">
+          {saving ? "Mengupload..." : "Upload Dokumen"}
+        </button>
+      </div>
     </form>
   );
 }

@@ -18,7 +18,7 @@ export default function Minutes() {
   const [deleting, setDeleting] = useState(null);
   const [deletingNow, setDeletingNow] = useState(false);
   const [message, setMessage] = useState("");
-  const canManage = user?.role === "Owner" || user?.role === "Kepala Divisi" || user?.role === "Wakil Owner";
+  const canManage = user?.role === "Owner" || user?.role === "Kepala Divisi" || user?.role === "Wakil Owner" || user?.role === "Developer";
   const rows = useMemo(() => scopedByDivision(minutes, user).filter((item) => contains(Object.values(item).join(" "), query)), [query, user]);
 
   async function deleteMinute() {
@@ -126,7 +126,7 @@ function MinuteForm({ minute = null, divisions, user, onSaved }) {
     title: minute?.title || "",
     date: minute?.date || "",
     time: minute?.time?.slice(0, 5) || "",
-    divisionId: minute?.divisionId || (user?.role === "Owner" || user?.role === "Wakil Owner" ? "all" : user?.divisionId || "all"),
+    divisionId: minute?.divisionId || (user?.role === "Owner" || user?.role === "Wakil Owner" || user?.role === "Developer" ? "all" : user?.divisionId || "all"),
     leader: minute?.leader || user?.name || "",
     participants: minute?.participants?.join(", ") || "",
     discussion: minute?.discussion || "",
@@ -192,7 +192,7 @@ function MinuteForm({ minute = null, divisions, user, onSaved }) {
       division_id: form.divisionId,
       action: `${minute ? "memperbarui" : "menambahkan"} notulen rapat "${form.title}"`,
       time: new Date().toISOString().slice(0, 16).replace("T", " "),
-      severity: user?.role === "Owner" || user?.role === "Wakil Owner" ? "owner" : "info",
+      severity: user?.role === "Owner" || user?.role === "Wakil Owner" || user?.role === "Developer" ? "owner" : "info",
     });
 
     setSaving(false);
@@ -200,26 +200,58 @@ function MinuteForm({ minute = null, divisions, user, onSaved }) {
   }
 
   return (
-    <form className="grid gap-3" onSubmit={submit}>
+    <form className="form-grid" onSubmit={submit}>
       {message && <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">{message}</div>}
-      <input className="rounded border border-slate-200 px-3 py-2" placeholder="Judul rapat" value={form.title} onChange={(event) => updateField("title", event.target.value)} />
+      <label className="form-field">
+        <span className="form-label">Judul Rapat</span>
+        <input className="form-control" placeholder="Judul rapat" value={form.title} onChange={(event) => updateField("title", event.target.value)} />
+      </label>
       <div className="grid gap-3 sm:grid-cols-2">
-        <input className="rounded border border-slate-200 px-3 py-2" type="date" value={form.date} onChange={(event) => updateField("date", event.target.value)} />
-        <input className="rounded border border-slate-200 px-3 py-2" type="time" value={form.time} onChange={(event) => updateField("time", event.target.value)} />
+        <label className="form-field">
+          <span className="form-label">Tanggal</span>
+          <input className="form-control" type="date" value={form.date} onChange={(event) => updateField("date", event.target.value)} />
+        </label>
+        <label className="form-field">
+          <span className="form-label">Waktu</span>
+          <input className="form-control" type="time" value={form.time} onChange={(event) => updateField("time", event.target.value)} />
+        </label>
       </div>
-      <select disabled={user?.role === "Kepala Divisi" && user?.divisionId !== "all"} className="rounded border border-slate-200 px-3 py-2 disabled:bg-slate-100" value={form.divisionId} onChange={(event) => updateField("divisionId", event.target.value)}>
-        <option value="all">Semua Divisi</option>
-        {divisions.map((division) => <option key={division.id} value={division.id}>{division.name}</option>)}
-      </select>
-      <input className="rounded border border-slate-200 px-3 py-2" placeholder="Pemimpin rapat" value={form.leader} onChange={(event) => updateField("leader", event.target.value)} />
-      <textarea className="rounded border border-slate-200 px-3 py-2" placeholder="Peserta, pisahkan dengan koma" value={form.participants} onChange={(event) => updateField("participants", event.target.value)} />
-      <textarea className="rounded border border-slate-200 px-3 py-2" placeholder="Isi pembahasan" value={form.discussion} onChange={(event) => updateField("discussion", event.target.value)} />
-      <textarea className="rounded border border-slate-200 px-3 py-2" placeholder="Keputusan rapat" value={form.decision} onChange={(event) => updateField("decision", event.target.value)} />
-      <textarea className="rounded border border-slate-200 px-3 py-2" placeholder="Tindak lanjut / action plan" value={form.followUp} onChange={(event) => updateField("followUp", event.target.value)} />
-      <input className="rounded border border-slate-200 px-3 py-2" type="date" value={form.actionDeadline} onChange={(event) => updateField("actionDeadline", event.target.value)} />
-      <button disabled={saving} className="rounded bg-navy-800 px-4 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70">
-        {saving ? "Menyimpan..." : minute ? "Simpan Perubahan" : "Simpan Notulen"}
-      </button>
+      <label className="form-field">
+        <span className="form-label">Divisi</span>
+        <select disabled={user?.role === "Kepala Divisi" && user?.divisionId !== "all"} className="form-control" value={form.divisionId} onChange={(event) => updateField("divisionId", event.target.value)}>
+          <option value="all">Semua Divisi</option>
+          {divisions.map((division) => <option key={division.id} value={division.id}>{division.name}</option>)}
+        </select>
+      </label>
+      <label className="form-field">
+        <span className="form-label">Pemimpin Rapat</span>
+        <input className="form-control" placeholder="Pemimpin rapat" value={form.leader} onChange={(event) => updateField("leader", event.target.value)} />
+      </label>
+      <label className="form-field">
+        <span className="form-label">Peserta</span>
+        <textarea className="form-control" placeholder="Peserta, pisahkan dengan koma" value={form.participants} onChange={(event) => updateField("participants", event.target.value)} />
+      </label>
+      <label className="form-field">
+        <span className="form-label">Pembahasan</span>
+        <textarea className="form-control" placeholder="Isi pembahasan" value={form.discussion} onChange={(event) => updateField("discussion", event.target.value)} />
+      </label>
+      <label className="form-field">
+        <span className="form-label">Keputusan</span>
+        <textarea className="form-control" placeholder="Keputusan rapat" value={form.decision} onChange={(event) => updateField("decision", event.target.value)} />
+      </label>
+      <label className="form-field">
+        <span className="form-label">Tindak Lanjut</span>
+        <textarea className="form-control" placeholder="Tindak lanjut / action plan" value={form.followUp} onChange={(event) => updateField("followUp", event.target.value)} />
+      </label>
+      <label className="form-field">
+        <span className="form-label">Deadline Tindak Lanjut</span>
+        <input className="form-control" type="date" value={form.actionDeadline} onChange={(event) => updateField("actionDeadline", event.target.value)} />
+      </label>
+      <div className="form-actions">
+        <button disabled={saving} className="primary-action w-full sm:w-auto">
+          {saving ? "Menyimpan..." : minute ? "Simpan Perubahan" : "Simpan Notulen"}
+        </button>
+      </div>
     </form>
   );
 }

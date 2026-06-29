@@ -1,10 +1,25 @@
+export const managementRoles = ["Owner", "Wakil Owner", "Developer"];
+
+export function isManagementRole(role) {
+  return managementRoles.includes(role);
+}
+
 export const roleAccess = {
-  Owner: ["Owner", "Wakil Owner"],
-  Head: ["Owner", "Kepala Divisi", "Wakil Owner"],
-  Staff: ["Owner", "Kepala Divisi", "Staff", "Wakil Owner"],
+  Owner: [...managementRoles],
+  Head: [...managementRoles, "Kepala Divisi"],
+  Staff: [...managementRoles, "Kepala Divisi", "Staff", "Magang"],
 };
 
-export function divisionName(id) {
+export const staffLikeRoles = ["Staff", "Magang"];
+
+export function isStaffLike(role) {
+  return staffLikeRoles.includes(role);
+}
+
+export function divisionName(id, role = "") {
+  if (role === "Owner") return "Owner";
+  if (role === "Wakil Owner") return "Wakil Owner";
+  if (role === "Developer") return "Developer";
   if (id === "all") return "Semua Divisi";
   return id || "-";
 }
@@ -14,7 +29,7 @@ export function employeeName(id) {
 }
 
 export function scopedByDivision(items, user) {
-  if (!user || user.role === "Owner" || user.role === "Wakil Owner" || user.divisionId === "all") return items;
+  if (!user || isManagementRole(user.role) || user.divisionId === "all") return items;
   return items.filter((item) => item.divisionId === user.divisionId || item.divisionId === "all");
 }
 

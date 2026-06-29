@@ -21,23 +21,25 @@ import {
 const menus = [
   { to: "/owner", label: "Dashboard Owner", icon: Gauge, roles: ["Owner"] },
   { to: "/admin", label: "Dashboard Wakil Owner", icon: Gauge, roles: ["Wakil Owner"] },
+  { to: "/developer", label: "Dashboard Developer", icon: Gauge, roles: ["Developer"] },
   { to: "/head", label: "Dashboard Divisi", icon: Gauge, roles: ["Kepala Divisi"] },
-  { to: "/staff", label: "Dashboard Staff", icon: Gauge, roles: ["Staff"] },
-  { to: "/divisions", label: "Divisi", icon: Building2, roles: ["Owner", "Wakil Owner"] },
-  { to: "/employees", label: "Staf", icon: Users, roles: ["Owner", "Kepala Divisi", "Wakil Owner"] },
-  { to: "/division-jobdesk", label: "Jobdesk Divisi", icon: Briefcase, roles: ["Owner", "Kepala Divisi", "Wakil Owner"] },
-  { to: "/individual-jobdesk", label: "Jobdesk Individu", icon: CheckSquare, roles: ["Owner", "Kepala Divisi", "Staff", "Wakil Owner"] },
-  { to: "/reviews", label: "Review Tugas", staffLabel: "Feedback Tugas", icon: MessageSquareText, roles: ["Owner", "Kepala Divisi", "Staff", "Wakil Owner"] },
-  { to: "/minutes", label: "Notulen Rapat", icon: ClipboardList, roles: ["Owner", "Kepala Divisi", "Staff", "Wakil Owner"] },
-  { to: "/agenda", label: "Agenda Rapat", icon: CalendarDays, roles: ["Owner", "Kepala Divisi", "Staff", "Wakil Owner"] },
-  { to: "/reports", label: "Laporan Kerja", icon: FileText, roles: ["Owner", "Kepala Divisi", "Staff", "Wakil Owner"] },
-  { to: "/announcements", label: "Pengumuman", icon: Bell, roles: ["Owner", "Kepala Divisi", "Staff", "Wakil Owner"] },
-  { to: "/sop", label: "SOP", icon: ClipboardList, roles: ["Owner", "Kepala Divisi", "Staff", "Wakil Owner"] },
-  { to: "/documents", label: "Arsip Dokumen", icon: Archive, roles: ["Owner", "Kepala Divisi", "Staff", "Wakil Owner"] },
-  { to: "/activity-log", label: "Activity Log", icon: Activity, roles: ["Owner", "Wakil Owner"] },
-  { to: "/users", label: "User Management", icon: UserCog, roles: ["Owner", "Wakil Owner"] },
-  { to: "/profile", label: "Profile", icon: UserCircle, roles: ["Owner", "Kepala Divisi", "Staff", "Wakil Owner"] },
-  { to: "/settings", label: "Settings", icon: Settings, roles: ["Owner"] },
+  { to: "/staff", label: "Dashboard Staff", icon: Gauge, roles: ["Staff", "Magang"] },
+  { to: "/divisions", label: "Divisi", icon: Building2, roles: ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer"] },
+  { to: "/employees", label: "Staf", icon: Users, roles: ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer"] },
+  { to: "/interns", label: "Staf Magang", icon: Users, roles: ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer"] },
+  { to: "/division-jobdesk", label: "Jobdesk Divisi", icon: Briefcase, roles: ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer"] },
+  { to: "/individual-jobdesk", label: "Jobdesk Individu", icon: CheckSquare, roles: ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer"] },
+  { to: "/reviews", label: "Review Tugas", staffLabel: "Feedback Tugas", icon: MessageSquareText, roles: ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer"] },
+  { to: "/minutes", label: "Notulen Rapat", icon: ClipboardList, roles: ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer"] },
+  { to: "/agenda", label: "Agenda Rapat", icon: CalendarDays, roles: ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer"] },
+  { to: "/reports", label: "Laporan Kerja", icon: FileText, roles: ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer"] },
+  { to: "/announcements", label: "Pengumuman", icon: Bell, roles: ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer"] },
+  { to: "/sop", label: "SOP", icon: ClipboardList, roles: ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer"] },
+  { to: "/documents", label: "Arsip Dokumen", icon: Archive, roles: ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer"] },
+  { to: "/activity-log", label: "Activity Log", icon: Activity, roles: ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer"] },
+  { to: "/users", label: "User Management", icon: UserCog, roles: ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer"] },
+  { to: "/profile", label: "Profile", icon: UserCircle, roles: ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer"] },
+  { to: "/settings", label: "Settings", icon: Settings, roles: ["Owner", "Developer"] },
 ];
 
 export default function Sidebar({ user, open, onClose }) {
@@ -72,7 +74,7 @@ export default function Sidebar({ user, open, onClose }) {
               }
             >
               <Icon size={18} />
-              <span>{user?.role === "Staff" && staffLabel ? staffLabel : label}</span>
+              <span>{(user?.role === "Staff" || user?.role === "Magang") && staffLabel ? staffLabel : label}</span>
             </NavLink>
           ))}
         </nav>
