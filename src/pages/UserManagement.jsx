@@ -12,7 +12,7 @@ export default function UserManagement() {
   const [selected, setSelected] = useState(null);
   const { users, divisions, divisionName, loading, error, reload } = useAppData();
   const [message, setMessage] = useState("");
-  const canManage = user?.role === "Owner" || user?.role === "Wakil Owner";
+  const canManage = user?.role === "Owner" || user?.role === "Wakil Owner" || user?.role === "Developer";
 
   async function updateStatus(row, status) {
     setMessage("");
@@ -31,7 +31,7 @@ export default function UserManagement() {
     const { error: updateError } = await supabase.from("app_users").update({ status }).eq("id", row.id);
     if (updateError) {
       const isPolicyError = updateError.message.toLowerCase().includes("row-level security");
-      setMessage(isPolicyError ? "Hanya Owner atau Wakil Owner aktif yang dapat mengubah user." : updateError.message);
+      setMessage(isPolicyError ? "Hanya Owner, Wakil Owner, atau Developer aktif yang dapat mengubah user." : updateError.message);
       return;
     }
 
@@ -113,7 +113,7 @@ function UserForm({ selected, divisions, actor, onSaved }) {
 
     if (error) {
       const isPolicyError = error.message.toLowerCase().includes("row-level security");
-      setMessage(isPolicyError ? "Hanya Owner atau Wakil Owner aktif yang dapat mengubah user." : error.message);
+      setMessage(isPolicyError ? "Hanya Owner, Wakil Owner, atau Developer aktif yang dapat mengubah user." : error.message);
       setSaving(false);
       return;
     }
@@ -151,6 +151,7 @@ function UserForm({ selected, divisions, actor, onSaved }) {
             <option>Staff</option>
             <option>Magang</option>
             <option>Wakil Owner</option>
+            <option>Developer</option>
           </select>
         </label>
         <label className="form-field">

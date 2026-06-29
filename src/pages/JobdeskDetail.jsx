@@ -8,7 +8,7 @@ import { Page } from "./Divisions";
 import { supabase, isSupabaseConfigured } from "../lib/supabase";
 import { getCurrentUser } from "../utils/auth";
 import { buildSubmissionRows } from "../utils/submissions";
-import { isStaffLike } from "../utils/helpers";
+import { isManagementRole, isStaffLike } from "../utils/helpers";
 
 export default function JobdeskDetail() {
   const { id } = useParams();
@@ -47,7 +47,7 @@ export default function JobdeskDetail() {
             <div className="mt-5 rounded border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
               <p className="font-semibold">Pengumpulan PIC</p>
               {submissionRow.submissionNote && <p className="mt-1">{submissionRow.submissionNote}</p>}
-              {submissionRow.driveLink && user?.role !== "Owner" && (
+              {submissionRow.driveLink && !isManagementRole(user?.role) && (
                 <a className="mt-2 inline-flex font-semibold text-navy-700 hover:underline" href={submissionRow.driveLink} target="_blank" rel="noreferrer">
                   Buka link Google Drive
                 </a>

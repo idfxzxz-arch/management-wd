@@ -50,9 +50,9 @@ export default function DivisionJobdesk() {
 
 function JobdeskForm({ divisions, employees, user, divisionName, onNotice, onSaved }) {
   const managedDivisionId = user?.role === "Kepala Divisi" && user.divisionId !== "all" ? user.divisionId : divisions[0]?.id || "it";
-  const managementRoles = ["Owner", "Wakil Owner"];
+  const managementRoles = ["Owner", "Wakil Owner", "Developer"];
   const canReceiveTask = (employee, divisionId = managedDivisionId) => {
-    const allowedRoles = ["Owner", "Wakil Owner", "Kepala Divisi", "Staff", "Magang"];
+    const allowedRoles = ["Owner", "Wakil Owner", "Developer", "Kepala Divisi", "Staff", "Magang"];
     const isManagementAssignee = managementRoles.includes(employee.role);
     return (
       allowedRoles.includes(employee.role) &&
@@ -70,7 +70,7 @@ function JobdeskForm({ divisions, employees, user, divisionName, onNotice, onSav
     description: "",
     divisionId: managedDivisionId,
     assigneeId: employees.find((employee) => canReceiveTask(employee))?.id || "",
-    assignedBy: user?.role === "Owner" || user?.role === "Wakil Owner" ? user.role : "Kepala Divisi",
+    assignedBy: user?.role === "Owner" || user?.role === "Wakil Owner" || user?.role === "Developer" ? user.role : "Kepala Divisi",
     target: "",
     priority: "Sedang",
     deadline: "",
@@ -104,7 +104,7 @@ function JobdeskForm({ divisions, employees, user, divisionName, onNotice, onSav
     }
     const assignee = assignees.find((employee) => String(employee.id) === String(form.assigneeId));
     if (!assignee || (!managementRoles.includes(assignee.role) && assignee.divisionId !== form.divisionId)) {
-      setMessage("Penerima tugas harus berasal dari divisi yang dipilih, kecuali Owner atau Wakil Owner.");
+      setMessage("Penerima tugas harus berasal dari divisi yang dipilih, kecuali Owner, Wakil Owner, atau Developer.");
       return;
     }
 
@@ -162,7 +162,7 @@ function JobdeskForm({ divisions, employees, user, divisionName, onNotice, onSav
       division_id: form.divisionId,
       action: `membuat jobdesk "${form.title}"`,
       time: new Date().toISOString().slice(0, 16).replace("T", " "),
-      severity: user?.role === "Owner" || user?.role === "Wakil Owner" ? "owner" : "info",
+      severity: user?.role === "Owner" || user?.role === "Wakil Owner" || user?.role === "Developer" ? "owner" : "info",
     });
 
     setSaving(false);
@@ -215,6 +215,7 @@ function JobdeskForm({ divisions, employees, user, divisionName, onNotice, onSav
           <select disabled className="form-control" value={form.assignedBy} onChange={(event) => updateField("assignedBy", event.target.value)}>
             <option>Owner</option>
             <option>Wakil Owner</option>
+            <option>Developer</option>
             <option>Kepala Divisi</option>
           </select>
         </label>

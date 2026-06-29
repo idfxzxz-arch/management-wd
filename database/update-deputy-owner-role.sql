@@ -12,7 +12,7 @@ set role = 'Wakil Owner',
 where role = 'Administrator' or lower(email) in ('admin@wdgroup.com', 'destamara.carissa@wdgroup.com', 'cantikaqiza@gmail.com') or id = 'admin-general';
 
 alter table app_users add constraint app_users_role_check
-check (role in ('Owner', 'Kepala Divisi', 'Staff', 'Magang', 'Wakil Owner'));
+check (role in ('Owner', 'Kepala Divisi', 'Staff', 'Magang', 'Wakil Owner', 'Developer'));
 
 update employees
 set role = 'Wakil Owner',

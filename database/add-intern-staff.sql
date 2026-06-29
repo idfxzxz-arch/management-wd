@@ -2,7 +2,7 @@
 
 alter table app_users drop constraint if exists app_users_role_check;
 alter table app_users add constraint app_users_role_check
-check (role in ('Owner', 'Kepala Divisi', 'Staff', 'Magang', 'Wakil Owner'));
+check (role in ('Owner', 'Kepala Divisi', 'Staff', 'Magang', 'Wakil Owner', 'Developer'));
 
 update employees as e
 set email = updates.email,
@@ -51,6 +51,6 @@ on conflict (email) do update set
   employee_id = excluded.employee_id;
 
 update app_settings
-set setting_value = 'Owner, Kepala Divisi, Staff, Magang, Wakil Owner',
+set setting_value = 'Owner, Kepala Divisi, Staff, Magang, Wakil Owner, Developer',
     updated_at = now()
 where setting_key = 'roles';

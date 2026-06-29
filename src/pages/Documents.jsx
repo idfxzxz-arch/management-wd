@@ -17,8 +17,8 @@ export default function Documents() {
   const [message, setMessage] = useState("");
   const [deleting, setDeleting] = useState(null);
   const [deletingNow, setDeletingNow] = useState(false);
-  const canDelete = user?.role === "Owner" || user?.role === "Wakil Owner";
-  const canUpload = user?.role === "Owner" || user?.role === "Wakil Owner" || user?.role === "Kepala Divisi";
+  const canDelete = user?.role === "Owner" || user?.role === "Wakil Owner" || user?.role === "Developer";
+  const canUpload = user?.role === "Owner" || user?.role === "Wakil Owner" || user?.role === "Developer" || user?.role === "Kepala Divisi";
   const rows = useMemo(() => scopedByDivision(documents, user).filter((doc) => contains(Object.values(doc).join(" "), query)), [query, user]);
 
   async function openDocument(document) {
@@ -217,7 +217,7 @@ function DocumentForm({ divisions, user, onSaved }) {
       </label>
       <label className="form-field">
         <span className="form-label">Divisi</span>
-        <select disabled={user?.role !== "Owner" && user?.role !== "Wakil Owner"} className="form-control" value={form.divisionId} onChange={(event) => updateField("divisionId", event.target.value)}>
+        <select disabled={user?.role !== "Owner" && user?.role !== "Wakil Owner" && user?.role !== "Developer"} className="form-control" value={form.divisionId} onChange={(event) => updateField("divisionId", event.target.value)}>
           <option value="all">Semua Divisi</option>
           {divisions.map((division) => <option key={division.id} value={division.id}>{division.name}</option>)}
         </select>

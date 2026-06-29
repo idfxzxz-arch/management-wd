@@ -15,7 +15,7 @@ export default function Settings() {
   const items = [
     { icon: Building2, key: "company_name", title: "Nama Perusahaan", value: valueByKey.company_name || "WD Group Company" },
     { icon: Bell, key: "notifications", title: "Notifikasi", value: valueByKey.notifications || "Email, dashboard alert, dan reminder deadline aktif" },
-    { icon: Shield, key: "roles", title: "Pengaturan Role", value: valueByKey.roles || "Owner, Kepala Divisi, Staff, Magang, Wakil Owner" },
+    { icon: Shield, key: "roles", title: "Pengaturan Role", value: valueByKey.roles || "Owner, Kepala Divisi, Staff, Magang, Wakil Owner, Developer" },
   ];
   const selectedTheme = validTheme(valueByKey.theme);
 
@@ -40,7 +40,7 @@ export default function Settings() {
 
     if (upsertError) {
       const isPolicyError = upsertError.message.toLowerCase().includes("row-level security");
-      setMessage(isPolicyError ? "Hanya Owner yang dapat mengubah Settings." : upsertError.message);
+      setMessage(isPolicyError ? "Hanya Owner atau Developer yang dapat mengubah Settings." : upsertError.message);
       setSavingKey("");
       return;
     }

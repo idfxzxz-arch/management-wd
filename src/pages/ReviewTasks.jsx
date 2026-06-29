@@ -27,7 +27,7 @@ export default function ReviewTasks() {
   const employeeRole = (id) => employees.find((employee) => String(employee.id) === String(id))?.role || "Staff";
   const allRows = buildSubmissionRows(scopedByDivision(tasks, user), taskSubmissions, { employeeName, employeeRole });
   const canReview = (row) => {
-    if (user?.role === "Owner" || user?.role === "Wakil Owner") return true;
+    if (user?.role === "Owner" || user?.role === "Wakil Owner" || user?.role === "Developer") return true;
     if (user?.role === "Kepala Divisi") return user.divisionId === "all" || row.divisionId === user.divisionId;
     return false;
   };
@@ -141,9 +141,9 @@ export default function ReviewTasks() {
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       {message && <div className={`rounded-lg border p-4 text-sm ${message.includes("berhasil") || message.includes("approve") ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-red-200 bg-red-50 text-red-700"}`}>{message}</div>}
 
-      {(user?.role === "Owner" || user?.role === "Kepala Divisi" || user?.role === "Wakil Owner") && (
+      {(user?.role === "Owner" || user?.role === "Kepala Divisi" || user?.role === "Wakil Owner" || user?.role === "Developer") && (
         <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
-          {user.role === "Owner" || user.role === "Wakil Owner"
+          {user.role === "Owner" || user.role === "Wakil Owner" || user.role === "Developer"
             ? "Anda dapat mereview kiriman staf dari seluruh divisi. Buka Drive, lalu pilih Approve atau Revisi."
             : "Anda dapat mereview kiriman staf di divisi Anda. Buka Drive, lalu pilih Approve atau Revisi."}
         </div>

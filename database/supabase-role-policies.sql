@@ -57,7 +57,7 @@ set role = 'Wakil Owner',
     email = 'cantikaqiza@gmail.com',
     division_id = 'all'
 where role = 'Administrator' or lower(email) in ('admin@wdgroup.com', 'destamara.carissa@wdgroup.com', 'cantikaqiza@gmail.com') or id = 18;
-alter table app_users add constraint app_users_role_check check (role in ('Owner', 'Kepala Divisi', 'Staff', 'Magang', 'Wakil Owner'));
+alter table app_users add constraint app_users_role_check check (role in ('Owner', 'Kepala Divisi', 'Staff', 'Magang', 'Wakil Owner', 'Developer'));
 
 create schema if not exists private;
 revoke all on schema private from public;
@@ -78,6 +78,33 @@ set email = 'dosenwildandeni@gmail.com',
     status = 'Aktif'
 where id = 1 or role = 'Owner' or lower(email) = 'owner@wdgroup.com';
 
+insert into employees (name, email, position, division_id, role, status, joined_at)
+select 'Developer WD Group', 'developer@wdgroup.com', 'Developer', 'all', 'Developer', 'Aktif', current_date
+where not exists (
+  select 1 from employees where lower(email) = 'developer@wdgroup.com' or role = 'Developer'
+);
+
+update employees
+set name = 'Developer WD Group',
+    email = 'developer@wdgroup.com',
+    position = 'Developer',
+    division_id = 'all',
+    role = 'Developer',
+    status = 'Aktif'
+where lower(email) = 'developer@wdgroup.com' or role = 'Developer';
+
+insert into app_users (id, name, email, role, division_id, status, employee_id)
+select 'developer-general', 'Developer WD Group', 'developer@wdgroup.com', 'Developer', 'all', 'Aktif', e.id
+from employees e
+where lower(e.email) = 'developer@wdgroup.com'
+on conflict (email) do update set
+  id = excluded.id,
+  name = excluded.name,
+  role = excluded.role,
+  division_id = excluded.division_id,
+  status = excluded.status,
+  employee_id = excluded.employee_id;
+
 update app_users u
 set employee_id = e.id
 from employees e
@@ -85,6 +112,12 @@ where lower(u.email) = lower(e.email) and u.employee_id is null;
 
 update app_users set employee_id = 1, division_id = 'all' where role = 'Owner' and employee_id is null;
 update app_users set employee_id = 18, division_id = 'all' where role = 'Wakil Owner' and employee_id is null;
+update app_users u
+set employee_id = e.id, division_id = 'all'
+from employees e
+where u.role = 'Developer'
+  and lower(e.email) = 'developer@wdgroup.com'
+  and u.employee_id is null;
 update app_users set employee_id = 2, name = 'Tegar', email = 'tegardarmawan59@gmail.com', division_id = 'it' where id = 'head-general';
 update app_users set employee_id = 3, name = 'Yahya Muhammad', email = 'yahyaalbayaz@gmail.com', division_id = 'project-content' where id = 'head-content';
 update app_users set employee_id = 4, name = 'Dewi Wulandari', email = 'dewiiwulandari03@gmail.com', division_id = 'project-content' where id = 'staff-general';
@@ -292,7 +325,7 @@ $$;
 
 create or replace function private.is_management()
 returns boolean language sql stable security definer set search_path = public
-as $$ select coalesce(private.current_app_role() in ('Owner', 'Wakil Owner'), false) $$;
+as $$ select coalesce(private.current_app_role() in ('Owner', 'Wakil Owner', 'Developer'), false) $$;
 
 create or replace function private.can_access_division(target_division text)
 returns boolean language sql stable security definer set search_path = public
@@ -392,7 +425,7 @@ create policy "scoped read submissions" on task_submissions for select to authen
 using (private.current_app_role() is not null);
 create policy "staff insert submissions" on task_submissions for insert to authenticated
 with check (
-  private.current_app_role() in ('Owner', 'Wakil Owner', 'Kepala Divisi')
+  private.current_app_role() in ('Owner', 'Wakil Owner', 'Developer', 'Kepala Divisi')
   and exists (select 1 from tasks t where t.id = task_id and t.assignee_id = private.current_employee_id())
 );
 create policy "scoped update submissions" on task_submissions for update to authenticated
@@ -426,11 +459,11 @@ using (private.is_management() or (private.current_app_role() = 'Kepala Divisi' 
 create policy "scoped read reports" on reports for select to authenticated
 using (private.current_app_role() is not null);
 create policy "staff insert reports" on reports for insert to authenticated
-with check (private.current_app_role() in ('Owner', 'Wakil Owner', 'Kepala Divisi'));
+with check (private.current_app_role() in ('Owner', 'Wakil Owner', 'Developer', 'Kepala Divisi'));
 create policy "scoped read weekly reports" on weekly_reports for select to authenticated
 using (private.current_app_role() is not null);
 create policy "staff insert weekly reports" on weekly_reports for insert to authenticated
-with check (private.current_app_role() in ('Owner', 'Wakil Owner', 'Kepala Divisi'));
+with check (private.current_app_role() in ('Owner', 'Wakil Owner', 'Developer', 'Kepala Divisi'));
 
 create policy "authenticated read announcements" on announcements for select to authenticated using (private.current_app_role() is not null);
 create policy "management insert announcements" on announcements for insert to authenticated with check (private.is_management());
@@ -447,14 +480,14 @@ create policy "management update documents" on documents for update to authentic
 create policy "management delete documents" on documents for delete to authenticated using (private.is_management());
 
 create policy "management read activity logs" on activity_logs for select to authenticated using (private.current_app_role() is not null);
-create policy "authenticated insert activity logs" on activity_logs for insert to authenticated with check (private.current_app_role() in ('Owner', 'Wakil Owner', 'Kepala Divisi'));
+create policy "authenticated insert activity logs" on activity_logs for insert to authenticated with check (private.current_app_role() in ('Owner', 'Wakil Owner', 'Developer', 'Kepala Divisi'));
 create policy "management update activity logs" on activity_logs for update to authenticated using (private.is_management()) with check (private.is_management());
 create policy "management delete activity logs" on activity_logs for delete to authenticated using (private.is_management());
 
 create policy "scoped read sops" on sops for select to authenticated using (private.current_app_role() is not null);
 create policy "authenticated read settings" on app_settings for select to authenticated using (private.current_app_role() is not null);
-create policy "owner insert settings" on app_settings for insert to authenticated with check (private.current_app_role() = 'Owner');
-create policy "owner update settings" on app_settings for update to authenticated using (private.current_app_role() = 'Owner') with check (private.current_app_role() = 'Owner');
+create policy "owner insert settings" on app_settings for insert to authenticated with check (private.current_app_role() in ('Owner', 'Developer'));
+create policy "owner update settings" on app_settings for update to authenticated using (private.current_app_role() in ('Owner', 'Developer')) with check (private.current_app_role() in ('Owner', 'Developer'));
 
 create or replace function private.enforce_staff_task_update()
 returns trigger language plpgsql security definer set search_path = public
@@ -539,7 +572,7 @@ using (bucket_id = 'company-documents' and private.is_management());
 create policy "authenticated read task files" on storage.objects for select to authenticated
 using (bucket_id = 'task-submissions' and private.current_app_role() is not null);
 create policy "staff upload task files" on storage.objects for insert to authenticated
-with check (bucket_id = 'task-submissions' and private.current_app_role() in ('Owner', 'Wakil Owner', 'Kepala Divisi'));
+with check (bucket_id = 'task-submissions' and private.current_app_role() in ('Owner', 'Wakil Owner', 'Developer', 'Kepala Divisi'));
 
 revoke all on all functions in schema private from public;
 grant usage on schema private to authenticated;

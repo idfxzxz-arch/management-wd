@@ -111,6 +111,7 @@ export function AppDataProvider({ children }) {
     function divisionName(id, role = "") {
       if (role === "Owner") return "Owner";
       if (role === "Wakil Owner") return "Wakil Owner";
+      if (role === "Developer") return "Developer";
       if (id === "all") return "Semua Divisi";
       return data.divisions.find((division) => division.id === id)?.name || "-";
     }
