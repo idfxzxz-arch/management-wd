@@ -390,7 +390,7 @@ using (private.current_app_role() is not null);
 create policy "management insert tasks" on tasks for insert to authenticated
 with check (
   private.is_management()
-  or (private.current_app_role() = 'Kepala Divisi' and division_id = private.current_app_division())
+  or private.current_app_role() = 'Kepala Divisi'
 );
 create policy "scoped update tasks" on tasks for update to authenticated
 using (

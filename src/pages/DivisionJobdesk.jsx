@@ -74,20 +74,14 @@ function buildDivisionOptions(divisions, employees) {
 
 function JobdeskForm({ divisions, employees, user, divisionName, onNotice, onSaved }) {
   const divisionOptions = buildDivisionOptions(divisions, employees);
-  const managedDivisionId = user?.role === "Kepala Divisi" && user.divisionId !== "all" ? user.divisionId : divisionOptions[0]?.id || "it";
+  const managedDivisionId = divisionOptions[0]?.id || user?.divisionId || "it";
   const managementRoles = ["Owner", "Wakil Owner", "Developer"];
   const canReceiveTask = (employee, divisionId = managedDivisionId) => {
     const allowedRoles = ["Owner", "Wakil Owner", "Developer", "Kepala Divisi", "Staff", "Magang"];
     const isManagementAssignee = managementRoles.includes(employee.role);
     return (
       allowedRoles.includes(employee.role) &&
-      (isManagementAssignee || employee.divisionId === divisionId) &&
-      (
-        user?.role !== "Kepala Divisi" ||
-        user.divisionId === "all" ||
-        isManagementAssignee ||
-        employee.divisionId === user.divisionId
-      )
+      (isManagementAssignee || employee.divisionId === divisionId)
     );
   };
   const [form, setForm] = useState({
@@ -162,7 +156,7 @@ function JobdeskForm({ divisions, employees, user, divisionName, onNotice, onSav
 
     if (error) {
       const isPolicyError = error.message.toLowerCase().includes("row-level security");
-      setMessage(isPolicyError ? "Anda hanya dapat membuat tugas untuk divisi yang dikelola." : error.message);
+      setMessage(isPolicyError ? "Policy database belum mengizinkan Kepala Divisi membuat tugas lintas divisi. Jalankan policy terbaru." : error.message);
       setSaving(false);
       return;
     }
@@ -208,7 +202,7 @@ function JobdeskForm({ divisions, employees, user, divisionName, onNotice, onSav
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="form-field">
           <span className="form-label">Divisi</span>
-          <select disabled={user?.role === "Kepala Divisi" && user.divisionId !== "all"} className="form-control" value={form.divisionId} onChange={(event) => setForm((current) => ({ ...current, divisionId: event.target.value, assigneeId: "" }))}>
+          <select className="form-control" value={form.divisionId} onChange={(event) => setForm((current) => ({ ...current, divisionId: event.target.value, assigneeId: "" }))}>
             {divisionOptions.map((division) => <option key={division.id} value={division.id}>{division.name}</option>)}
           </select>
           {!divisions.length && (
