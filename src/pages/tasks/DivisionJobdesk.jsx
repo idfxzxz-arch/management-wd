@@ -73,12 +73,17 @@ function buildDivisionOptions(divisions, employees) {
 }
 
 function JobdeskForm({ divisions, employees, user, divisionName, onNotice, onSaved }) {
-  const divisionOptions = buildDivisionOptions(divisions, employees);
-  const managedDivisionId = divisionOptions[0]?.id || user?.divisionId || "it";
+  const baseDivisionOptions = buildDivisionOptions(divisions, employees);
+  const divisionOptions = [{ id: "all", name: "Semua Divisi" }, ...baseDivisionOptions];
+  const managedDivisionId = baseDivisionOptions[0]?.id || user?.divisionId || "it";
   const managementRoles = ["Owner", "Wakil Owner", "Developer"];
+  const broadcastRoles = ["Kepala Divisi", "Staff", "Magang"];
   const canReceiveTask = (employee, divisionId = managedDivisionId) => {
     const allowedRoles = ["Owner", "Wakil Owner", "Developer", "Kepala Divisi", "Staff", "Magang"];
     const isManagementAssignee = managementRoles.includes(employee.role);
+    if (divisionId === "all") {
+      return employee.status === "Aktif" && broadcastRoles.includes(employee.role) && employee.divisionId && employee.divisionId !== "all";
+    }
     return (
       allowedRoles.includes(employee.role) &&
       (isManagementAssignee || employee.divisionId === divisionId)
@@ -98,6 +103,7 @@ function JobdeskForm({ divisions, employees, user, divisionName, onNotice, onSav
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
+  const isBroadcast = form.divisionId === "all";
   const assignees = employees.filter((employee) => canReceiveTask(employee, form.divisionId));
   const managementAssignees = assignees.filter((employee) => managementRoles.includes(employee.role));
   const staffAssignees = assignees.filter((employee) => !managementRoles.includes(employee.role) && employee.role !== "Magang");
@@ -117,14 +123,22 @@ function JobdeskForm({ divisions, employees, user, divisionName, onNotice, onSav
       return;
     }
 
-    if (!form.title || !form.description || !form.target || !form.deadline || !form.assigneeId) {
-      setMessage("Lengkapi judul, deskripsi, target, deadline, dan penerima tugas.");
+    if (!form.title || !form.description || !form.target || !form.deadline || (!isBroadcast && !form.assigneeId)) {
+      setMessage(`Lengkapi judul, deskripsi, target, deadline${isBroadcast ? "" : ", dan penerima tugas"}.`);
       return;
     }
-    const assignee = assignees.find((employee) => String(employee.id) === String(form.assigneeId));
-    if (!assignee || (!managementRoles.includes(assignee.role) && assignee.divisionId !== form.divisionId)) {
-      setMessage("Penerima tugas harus berasal dari divisi yang dipilih, kecuali Owner, Wakil Owner, atau Developer.");
-      return;
+    const broadcastAssignees = assignees.filter((employee) => employee.email);
+    const assignee = isBroadcast ? null : assignees.find((employee) => String(employee.id) === String(form.assigneeId));
+    if (isBroadcast) {
+      if (!broadcastAssignees.length) {
+        setMessage("Tidak ada anggota aktif dengan email login di semua divisi.");
+        return;
+      }
+    } else {
+      if (!assignee || (!managementRoles.includes(assignee.role) && assignee.divisionId !== form.divisionId)) {
+        setMessage("Penerima tugas harus berasal dari divisi yang dipilih, kecuali Owner, Wakil Owner, atau Developer.");
+        return;
+      }
     }
 
     setSaving(true);
@@ -135,9 +149,9 @@ function JobdeskForm({ divisions, employees, user, divisionName, onNotice, onSav
       return;
     }
 
-    const payload = {
-      division_id: form.divisionId,
-      assignee_id: Number(form.assigneeId),
+    const buildPayload = (targetAssignee, targetDivisionId) => ({
+      division_id: targetDivisionId,
+      assignee_id: Number(targetAssignee.id),
       assigned_by: form.assignedBy,
       assigned_by_name: user?.name || form.assignedBy,
       title: form.title,
@@ -150,9 +164,13 @@ function JobdeskForm({ divisions, employees, user, divisionName, onNotice, onSav
       progress: 0,
       note: form.note,
       history: [`Tugas dibuat oleh ${user?.name || form.assignedBy}`],
-    };
+    });
 
-    const { data: createdTask, error } = await supabase.from("tasks").insert(payload).select("*").single();
+    const payloads = isBroadcast
+      ? broadcastAssignees.map((targetAssignee) => buildPayload(targetAssignee, targetAssignee.divisionId))
+      : [buildPayload(assignee, form.divisionId)];
+
+    const { data: createdTasks, error } = await supabase.from("tasks").insert(payloads).select("*");
 
     if (error) {
       const isPolicyError = error.message.toLowerCase().includes("row-level security");
@@ -161,25 +179,47 @@ function JobdeskForm({ divisions, employees, user, divisionName, onNotice, onSav
       return;
     }
 
-    const emailResult = await queueTaskEmailNotification({
-      task: createdTask,
-      assignee,
-      actorName: user?.name || form.assignedBy,
-      divisionName: divisionName(form.divisionId),
-    });
+    let sentCount = 0;
+    let queuedCount = 0;
+    let failedMessage = "";
+    for (const createdTask of createdTasks || []) {
+      const targetAssignee = isBroadcast
+        ? broadcastAssignees.find((employee) => String(employee.id) === String(createdTask.assignee_id))
+        : assignee;
+      if (!targetAssignee) continue;
+      const emailResult = await queueTaskEmailNotification({
+        task: createdTask,
+        assignee: targetAssignee,
+        actorName: user?.name || form.assignedBy,
+        divisionName: divisionName(createdTask.division_id),
+      });
+      if (emailResult.sent) sentCount += 1;
+      else if (emailResult.queued) queuedCount += 1;
+      if (!emailResult.sent && emailResult.error && !failedMessage) failedMessage = emailResult.error;
+    }
 
-    if (emailResult.sent) {
+    if (isBroadcast) {
+      const total = createdTasks?.length || 0;
+      const emailInfo = sentCount
+        ? `${sentCount} email terkirim`
+        : queuedCount
+          ? `${queuedCount} email masuk antrean`
+          : failedMessage
+            ? `email belum terkirim: ${failedMessage}`
+            : "tidak ada email terkirim";
+      onNotice(`${total} jobdesk tersimpan untuk semua divisi dan anggota. ${emailInfo}.`);
+    } else if (sentCount) {
       onNotice(`Tugas tersimpan dan email notifikasi terkirim ke ${assignee.email}.`);
-    } else if (emailResult.queued) {
-      onNotice(`Tugas tersimpan, tapi email belum terkirim ke ${assignee.email}: ${emailResult.error || "function email belum aktif."}`);
+    } else if (queuedCount) {
+      onNotice(`Tugas tersimpan, tapi email belum terkirim ke ${assignee.email}: ${failedMessage || "function email belum aktif."}`);
     } else {
-      onNotice(`Tugas tersimpan, tapi antrean email gagal dibuat: ${emailResult.error || "cek konfigurasi email."}`);
+      onNotice(`Tugas tersimpan, tapi antrean email gagal dibuat: ${failedMessage || "cek konfigurasi email."}`);
     }
 
     await supabase.from("activity_logs").insert({
       actor: user?.name || form.assignedBy,
       division_id: form.divisionId,
-      action: `membuat jobdesk "${form.title}"`,
+      action: isBroadcast ? `membuat jobdesk "${form.title}" untuk semua divisi` : `membuat jobdesk "${form.title}"`,
       time: new Date().toISOString().slice(0, 16).replace("T", " "),
       severity: user?.role === "Owner" || user?.role === "Wakil Owner" || user?.role === "Developer" ? "owner" : "info",
     });
@@ -202,7 +242,7 @@ function JobdeskForm({ divisions, employees, user, divisionName, onNotice, onSav
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="form-field">
           <span className="form-label">Divisi</span>
-          <select className="form-control" value={form.divisionId} onChange={(event) => setForm((current) => ({ ...current, divisionId: event.target.value, assigneeId: "" }))}>
+          <select className="form-control" value={form.divisionId} onChange={(event) => setForm((current) => ({ ...current, divisionId: event.target.value, assigneeId: event.target.value === "all" ? "all" : "" }))}>
             {divisionOptions.map((division) => <option key={division.id} value={division.id}>{division.name}</option>)}
           </select>
           {!divisions.length && (
@@ -213,19 +253,23 @@ function JobdeskForm({ divisions, employees, user, divisionName, onNotice, onSav
         </label>
         <label className="form-field">
           <span className="form-label">Penerima Tugas</span>
-          <select className="form-control" value={form.assigneeId} onChange={(event) => updateField("assigneeId", event.target.value)}>
-            <option value="">{assignees.length ? "Pilih penerima tugas" : "Tidak ada penerima di divisi ini"}</option>
-            {managementAssignees.length > 0 && (
+          <select disabled={isBroadcast} className="form-control" value={isBroadcast ? "all" : form.assigneeId} onChange={(event) => updateField("assigneeId", event.target.value)}>
+            {isBroadcast ? (
+              <option value="all">Semua anggota aktif di semua divisi ({assignees.length})</option>
+            ) : (
+              <option value="">{assignees.length ? "Pilih penerima tugas" : "Tidak ada penerima di divisi ini"}</option>
+            )}
+            {!isBroadcast && managementAssignees.length > 0 && (
               <optgroup label="Manajemen">
                 {managementAssignees.map((employee) => <option key={employee.id} value={employee.id}>{employee.name} - {employee.role}</option>)}
               </optgroup>
             )}
-            {staffAssignees.length > 0 && (
+            {!isBroadcast && staffAssignees.length > 0 && (
               <optgroup label={`Staf ${divisionName(form.divisionId)}`}>
                 {staffAssignees.map((employee) => <option key={employee.id} value={employee.id}>{assigneeLabel(employee)}</option>)}
               </optgroup>
             )}
-            {internAssignees.length > 0 && (
+            {!isBroadcast && internAssignees.length > 0 && (
               <optgroup label={`Anak Magang ${divisionName(form.divisionId)}`}>
                 {internAssignees.map((employee) => <option key={employee.id} value={employee.id}>{assigneeLabel(employee)}</option>)}
               </optgroup>
