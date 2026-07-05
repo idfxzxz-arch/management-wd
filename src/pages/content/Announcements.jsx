@@ -1,11 +1,11 @@
 import { useState } from "react";
-import Badge from "../components/Badge";
-import DataTable from "../components/DataTable";
-import Modal from "../components/Modal";
-import { getCurrentUser } from "../utils/auth";
-import { Page } from "./Divisions";
-import { useAppData } from "../data/AppDataProvider";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import Badge from "../../components/Badge";
+import DataTable from "../../components/DataTable";
+import Modal from "../../components/Modal";
+import { getCurrentUser } from "../../utils/auth";
+import { Page } from "../../components/PageShell";
+import { useAppData } from "../../data/AppDataProvider";
+import { supabase, isSupabaseConfigured } from "../../lib/supabase";
 
 export default function Announcements() {
   const user = getCurrentUser();
@@ -13,7 +13,7 @@ export default function Announcements() {
   const [open, setOpen] = useState(false);
 
   return (
-    <Page title="Pengumuman Internal" subtitle="Daftar pengumuman perusahaan, target divisi, dan prioritas." action={(user.role === "Owner" || user.role === "Wakil Owner" || user.role === "Developer") && <button onClick={() => setOpen(true)} className="rounded bg-navy-800 px-4 py-2 text-sm font-semibold text-white">Buat Pengumuman</button>}>
+    <Page title="Pengumuman Internal" subtitle="Daftar pengumuman perusahaan, target divisi, dan prioritas." action={(user.role === "Owner" || user.role === "Wakil Owner" || user.role === "Developer" || user.role === "HRD") && <button onClick={() => setOpen(true)} className="rounded bg-navy-800 px-4 py-2 text-sm font-semibold text-white">Buat Pengumuman</button>}>
       {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data...</div>}
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       <DataTable

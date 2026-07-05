@@ -2,7 +2,7 @@ create table if not exists app_users (
   id text primary key,
   name text not null,
   email text not null unique,
-  role text not null check (role in ('Owner', 'Kepala Divisi', 'Staff', 'Magang', 'Wakil Owner', 'Developer')),
+  role text not null check (role in ('Owner', 'Kepala Divisi', 'Staff', 'Magang', 'Wakil Owner', 'Developer', 'HRD')),
   division_id text not null default 'all',
   status text not null default 'Aktif',
   must_change_password boolean not null default true,

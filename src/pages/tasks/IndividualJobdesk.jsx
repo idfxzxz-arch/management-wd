@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
 import { useMemo, useState } from "react";
-import Badge from "../components/Badge";
-import DataTable from "../components/DataTable";
-import ProgressBar from "../components/ProgressBar";
-import { getCurrentUser } from "../utils/auth";
-import { contains } from "../utils/helpers";
-import { Page, Search } from "./Divisions";
-import { useAppData } from "../data/AppDataProvider";
+import Badge from "../../components/Badge";
+import DataTable from "../../components/DataTable";
+import ProgressBar from "../../components/ProgressBar";
+import { getCurrentUser } from "../../utils/auth";
+import { contains } from "../../utils/helpers";
+import { Page, Search } from "../../components/PageShell";
+import { useAppData } from "../../data/AppDataProvider";
 
 export default function IndividualJobdesk() {
   const user = getCurrentUser();

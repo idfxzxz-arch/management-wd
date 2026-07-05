@@ -1,12 +1,12 @@
 import { useMemo, useState } from "react";
 import { Trash2 } from "lucide-react";
-import DataTable from "../components/DataTable";
-import Modal from "../components/Modal";
-import { getCurrentUser } from "../utils/auth";
-import { contains } from "../utils/helpers";
-import { Page, Search } from "./Divisions";
-import { useAppData } from "../data/AppDataProvider";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import DataTable from "../../components/DataTable";
+import Modal from "../../components/Modal";
+import { getCurrentUser } from "../../utils/auth";
+import { contains } from "../../utils/helpers";
+import { Page, Search } from "../../components/PageShell";
+import { useAppData } from "../../data/AppDataProvider";
+import { supabase, isSupabaseConfigured } from "../../lib/supabase";
 
 export default function Documents() {
   const user = getCurrentUser();
@@ -18,7 +18,7 @@ export default function Documents() {
   const [deleting, setDeleting] = useState(null);
   const [deletingNow, setDeletingNow] = useState(false);
   const canDelete = user?.role === "Owner" || user?.role === "Wakil Owner" || user?.role === "Developer";
-  const canUpload = user?.role === "Owner" || user?.role === "Wakil Owner" || user?.role === "Developer" || user?.role === "Kepala Divisi";
+  const canUpload = user?.role === "Owner" || user?.role === "Wakil Owner" || user?.role === "Developer" || user?.role === "Kepala Divisi" || user?.role === "HRD";
   const rows = useMemo(() => scopedByDivision(documents, user).filter((doc) => contains(Object.values(doc).join(" "), query)), [query, user]);
 
   async function openDocument(document) {
@@ -217,7 +217,7 @@ function DocumentForm({ divisions, user, onSaved }) {
       </label>
       <label className="form-field">
         <span className="form-label">Divisi</span>
-        <select disabled={user?.role !== "Owner" && user?.role !== "Wakil Owner" && user?.role !== "Developer"} className="form-control" value={form.divisionId} onChange={(event) => updateField("divisionId", event.target.value)}>
+        <select disabled={user?.role !== "Owner" && user?.role !== "Wakil Owner" && user?.role !== "Developer" && user?.role !== "HRD"} className="form-control" value={form.divisionId} onChange={(event) => updateField("divisionId", event.target.value)}>
           <option value="all">Semua Divisi</option>
           {divisions.map((division) => <option key={division.id} value={division.id}>{division.name}</option>)}
         </select>

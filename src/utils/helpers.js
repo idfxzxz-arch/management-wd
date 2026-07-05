@@ -1,13 +1,18 @@
 export const managementRoles = ["Owner", "Wakil Owner", "Developer"];
+export const companyWideRoles = [...managementRoles, "HRD"];
 
 export function isManagementRole(role) {
   return managementRoles.includes(role);
 }
 
+export function hasCompanyWideAccess(role) {
+  return companyWideRoles.includes(role);
+}
+
 export const roleAccess = {
   Owner: [...managementRoles],
-  Head: [...managementRoles, "Kepala Divisi"],
-  Staff: [...managementRoles, "Kepala Divisi", "Staff", "Magang"],
+  Head: [...companyWideRoles, "Kepala Divisi"],
+  Staff: [...companyWideRoles, "Kepala Divisi", "Staff", "Magang"],
 };
 
 export const staffLikeRoles = ["Staff", "Magang"];
@@ -20,6 +25,7 @@ export function divisionName(id, role = "") {
   if (role === "Owner") return "Owner";
   if (role === "Wakil Owner") return "Wakil Owner";
   if (role === "Developer") return "Developer";
+  if (role === "HRD") return "HRD";
   if (id === "all") return "Semua Divisi";
   return id || "-";
 }
@@ -29,7 +35,7 @@ export function employeeName(id) {
 }
 
 export function scopedByDivision(items, user) {
-  if (!user || isManagementRole(user.role) || user.divisionId === "all") return items;
+  if (!user || hasCompanyWideAccess(user.role) || user.divisionId === "all") return items;
   return items.filter((item) => item.divisionId === user.divisionId || item.divisionId === "all");
 }
 

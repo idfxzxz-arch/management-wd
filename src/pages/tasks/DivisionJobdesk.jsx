@@ -1,13 +1,13 @@
 import { useMemo, useState } from "react";
-import Badge from "../components/Badge";
-import DataTable from "../components/DataTable";
-import Modal from "../components/Modal";
-import { getCurrentUser } from "../utils/auth";
-import { contains, isStaffLike } from "../utils/helpers";
-import { Page, Search } from "./Divisions";
-import { useAppData } from "../data/AppDataProvider";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
-import { queueTaskEmailNotification } from "../utils/taskEmailNotifications";
+import Badge from "../../components/Badge";
+import DataTable from "../../components/DataTable";
+import Modal from "../../components/Modal";
+import { getCurrentUser } from "../../utils/auth";
+import { contains, isStaffLike } from "../../utils/helpers";
+import { Page, Search } from "../../components/PageShell";
+import { useAppData } from "../../data/AppDataProvider";
+import { supabase, isSupabaseConfigured } from "../../lib/supabase";
+import { queueTaskEmailNotification } from "../../utils/taskEmailNotifications";
 
 export default function DivisionJobdesk() {
   const user = getCurrentUser();

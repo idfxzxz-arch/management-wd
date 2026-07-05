@@ -78,5 +78,6 @@ export function dashboardPath(role) {
   if (role === "Kepala Divisi") return "/head";
   if (role === "Wakil Owner") return "/admin";
   if (role === "Developer") return "/developer";
+  if (role === "HRD") return "/hrd";
   return "/staff";
 }

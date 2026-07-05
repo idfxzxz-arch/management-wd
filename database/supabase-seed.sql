@@ -9,7 +9,7 @@ create table if not exists app_settings (
 );
 
 alter table app_users drop constraint if exists app_users_role_check;
-alter table app_users add constraint app_users_role_check check (role in ('Owner', 'Kepala Divisi', 'Staff', 'Magang', 'Wakil Owner', 'Developer'));
+alter table app_users add constraint app_users_role_check check (role in ('Owner', 'Kepala Divisi', 'Staff', 'Magang', 'Wakil Owner', 'Developer', 'HRD'));
 alter table app_users add column if not exists must_change_password boolean not null default true;
 alter table app_users add column if not exists password_set_at timestamptz;
 
@@ -86,7 +86,8 @@ insert into app_users (id, name, email, role, division_id, status) values
   ('head-public-relation-admin', 'Alifa Dwi Kharisma', 'alifadwi230506@gmail.com', 'Kepala Divisi', 'public-relation-admin', 'Aktif'),
   ('staff-general', 'Dewi Wulandari', 'dewiiwulandari03@gmail.com', 'Staff', 'project-content', 'Aktif'),
   ('admin-general', 'Destamara Carissa Feodora', 'cantikaqiza@gmail.com', 'Wakil Owner', 'all', 'Aktif'),
-  ('developer-general', 'Developer WD Group', 'developer@wdgroup.com', 'Developer', 'all', 'Aktif');
+  ('developer-general', 'Developer WD Group', 'developer@wdgroup.com', 'Developer', 'all', 'Aktif'),
+  ('hrd-general', 'Ilham Artha', 'ilhamarthaid@gmail.com', 'HRD', 'all', 'Aktif');
 
 insert into divisions (id, name, head, members, description, performance) values
   ('it', 'Manajemen Sistem IT', 'Tegar', 1, 'Mengelola sistem internal, akses aplikasi, keamanan data, dan kebutuhan teknis operasional.', 'Sangat Baik'),
@@ -99,6 +100,7 @@ insert into employees (id, name, email, position, division_id, role, status, joi
   (1, 'Wildan Deni Fahrezi', 'dosenwildandeni@gmail.com', 'Owner', 'all', 'Owner', 'Aktif', '2020-01-10'),
   (18, 'Destamara Carissa Feodora', 'cantikaqiza@gmail.com', 'Wakil Owner', 'all', 'Wakil Owner', 'Aktif', '2020-02-01'),
   (19, 'Developer WD Group', 'developer@wdgroup.com', 'Developer', 'all', 'Developer', 'Aktif', '2020-02-02'),
+  (20, 'Ilham Artha', 'ilhamarthaid@gmail.com', 'HRD', 'all', 'HRD', 'Aktif', current_date),
   (2, 'Tegar', 'tegardarmawan59@gmail.com', 'Tim Manajemen Sistem IT', 'it', 'Kepala Divisi', 'Aktif', '2021-03-15'),
   (3, 'Yahya Muhammad', 'yahyaalbayaz@gmail.com', 'Kepala Divisi Project Manager & Konten', 'project-content', 'Kepala Divisi', 'Aktif', '2022-07-04'),
   (4, 'Dewi Wulandari', 'dewiiwulandari03@gmail.com', 'Tim Project Manager & Konten', 'project-content', 'Staff', 'Aktif', '2022-09-12'),
@@ -186,7 +188,7 @@ insert into app_settings (setting_key, setting_value) values
   ('company_name', 'WD Group Company'),
   ('theme', 'navy'),
   ('notifications', 'Email, dashboard alert, dan reminder deadline aktif'),
-  ('roles', 'Owner, Kepala Divisi, Staff, Magang, Wakil Owner, Developer')
+  ('roles', 'Owner, Kepala Divisi, Staff, Magang, Wakil Owner, Developer, HRD')
 on conflict (setting_key) do update set
   setting_value = excluded.setting_value,
   updated_at = now();
@@ -199,6 +201,7 @@ update task_submissions set reviewed_by = 'Wildan Deni Fahrezi' where reviewer_r
 update app_users set employee_id = 1, division_id = 'all' where role = 'Owner';
 update app_users set employee_id = 18, division_id = 'all' where role = 'Wakil Owner';
 update app_users set employee_id = 19, division_id = 'all' where role = 'Developer';
+update app_users set employee_id = 20, division_id = 'all' where role = 'HRD';
 update app_users set employee_id = 2, name = 'Tegar', email = 'tegardarmawan59@gmail.com', division_id = 'it' where id = 'head-general';
 update app_users set employee_id = 3, name = 'Yahya Muhammad', email = 'yahyaalbayaz@gmail.com', division_id = 'project-content' where id = 'head-content';
 update app_users set employee_id = 5, name = 'Nayla Rizki Rachmania', email = 'naylarizki16@gmail.com', division_id = 'admin-booking' where id = 'head-admin-booking';

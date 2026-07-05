@@ -11,11 +11,11 @@ import {
   Users,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import Badge from "../components/Badge";
-import StatCard from "../components/StatCard";
-import { useAppData } from "../data/AppDataProvider";
-import { getCurrentUser } from "../utils/auth";
-import { buildSubmissionRows, submissionStats } from "../utils/submissions";
+import Badge from "../../components/Badge";
+import StatCard from "../../components/StatCard";
+import { useAppData } from "../../data/AppDataProvider";
+import { getCurrentUser } from "../../utils/auth";
+import { buildSubmissionRows, submissionStats } from "../../utils/submissions";
 
 const taskStatusColors = {
   selesai: "#10b981",

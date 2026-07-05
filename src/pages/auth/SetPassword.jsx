@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Lock } from "lucide-react";
-import AuthLayout from "../layouts/AuthLayout";
-import { supabase } from "../lib/supabase";
-import { dashboardPath, getCurrentUser, logout, syncCurrentUser } from "../utils/auth";
+import AuthLayout from "../../layouts/AuthLayout";
+import { supabase } from "../../lib/supabase";
+import { dashboardPath, getCurrentUser, logout, syncCurrentUser } from "../../utils/auth";
 
 export default function SetPassword() {
   const navigate = useNavigate();

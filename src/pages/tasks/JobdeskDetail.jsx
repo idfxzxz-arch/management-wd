@@ -1,14 +1,14 @@
 import { Link, useParams } from "react-router-dom";
 import { useState } from "react";
 import { ExternalLink, FolderOpen } from "lucide-react";
-import Badge from "../components/Badge";
-import ProgressBar from "../components/ProgressBar";
-import { useAppData } from "../data/AppDataProvider";
-import { Page } from "./Divisions";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
-import { getCurrentUser } from "../utils/auth";
-import { buildSubmissionRows } from "../utils/submissions";
-import { isManagementRole, isStaffLike } from "../utils/helpers";
+import Badge from "../../components/Badge";
+import ProgressBar from "../../components/ProgressBar";
+import { useAppData } from "../../data/AppDataProvider";
+import { Page } from "../../components/PageShell";
+import { supabase, isSupabaseConfigured } from "../../lib/supabase";
+import { getCurrentUser } from "../../utils/auth";
+import { buildSubmissionRows } from "../../utils/submissions";
+import { isManagementRole, isStaffLike } from "../../utils/helpers";
 
 export default function JobdeskDetail() {
   const { id } = useParams();

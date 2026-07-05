@@ -57,7 +57,7 @@ set role = 'Wakil Owner',
     email = 'cantikaqiza@gmail.com',
     division_id = 'all'
 where role = 'Administrator' or lower(email) in ('admin@wdgroup.com', 'destamara.carissa@wdgroup.com', 'cantikaqiza@gmail.com') or id = 18;
-alter table app_users add constraint app_users_role_check check (role in ('Owner', 'Kepala Divisi', 'Staff', 'Magang', 'Wakil Owner', 'Developer'));
+alter table app_users add constraint app_users_role_check check (role in ('Owner', 'Kepala Divisi', 'Staff', 'Magang', 'Wakil Owner', 'Developer', 'HRD'));
 
 create schema if not exists private;
 revoke all on schema private from public;
@@ -105,6 +105,33 @@ on conflict (email) do update set
   status = excluded.status,
   employee_id = excluded.employee_id;
 
+insert into employees (name, email, position, division_id, role, status, joined_at)
+select 'Ilham Artha', 'ilhamarthaid@gmail.com', 'HRD', 'all', 'HRD', 'Aktif', current_date
+where not exists (
+  select 1 from employees where lower(email) = 'ilhamarthaid@gmail.com' or role = 'HRD'
+);
+
+update employees
+set name = 'Ilham Artha',
+    email = 'ilhamarthaid@gmail.com',
+    position = 'HRD',
+    division_id = 'all',
+    role = 'HRD',
+    status = 'Aktif'
+where lower(email) = 'ilhamarthaid@gmail.com' or role = 'HRD';
+
+insert into app_users (id, name, email, role, division_id, status, employee_id)
+select 'hrd-general', 'Ilham Artha', 'ilhamarthaid@gmail.com', 'HRD', 'all', 'Aktif', e.id
+from employees e
+where lower(e.email) = 'ilhamarthaid@gmail.com'
+on conflict (email) do update set
+  id = excluded.id,
+  name = excluded.name,
+  role = excluded.role,
+  division_id = excluded.division_id,
+  status = excluded.status,
+  employee_id = excluded.employee_id;
+
 update app_users u
 set employee_id = e.id
 from employees e
@@ -117,6 +144,12 @@ set employee_id = e.id, division_id = 'all'
 from employees e
 where u.role = 'Developer'
   and lower(e.email) = 'developer@wdgroup.com'
+  and u.employee_id is null;
+update app_users u
+set employee_id = e.id, division_id = 'all'
+from employees e
+where u.role = 'HRD'
+  and lower(e.email) = 'ilhamarthaid@gmail.com'
   and u.employee_id is null;
 update app_users set employee_id = 2, name = 'Tegar', email = 'tegardarmawan59@gmail.com', division_id = 'it' where id = 'head-general';
 update app_users set employee_id = 3, name = 'Yahya Muhammad', email = 'yahyaalbayaz@gmail.com', division_id = 'project-content' where id = 'head-content';
@@ -466,7 +499,7 @@ create policy "staff insert weekly reports" on weekly_reports for insert to auth
 with check (private.current_app_role() in ('Owner', 'Wakil Owner', 'Developer', 'Kepala Divisi'));
 
 create policy "authenticated read announcements" on announcements for select to authenticated using (private.current_app_role() is not null);
-create policy "management insert announcements" on announcements for insert to authenticated with check (private.is_management());
+create policy "management insert announcements" on announcements for insert to authenticated with check (private.is_management() or private.current_app_role() = 'HRD');
 create policy "management update announcements" on announcements for update to authenticated using (private.is_management()) with check (private.is_management());
 create policy "management delete announcements" on announcements for delete to authenticated using (private.is_management());
 
@@ -474,13 +507,14 @@ create policy "scoped read documents" on documents for select to authenticated u
 create policy "scoped insert documents" on documents for insert to authenticated
 with check (
   private.is_management()
+  or private.current_app_role() = 'HRD'
   or (private.current_app_role() = 'Kepala Divisi' and division_id = private.current_app_division())
 );
 create policy "management update documents" on documents for update to authenticated using (private.is_management()) with check (private.is_management());
 create policy "management delete documents" on documents for delete to authenticated using (private.is_management());
 
 create policy "management read activity logs" on activity_logs for select to authenticated using (private.current_app_role() is not null);
-create policy "authenticated insert activity logs" on activity_logs for insert to authenticated with check (private.current_app_role() in ('Owner', 'Wakil Owner', 'Developer', 'Kepala Divisi'));
+create policy "authenticated insert activity logs" on activity_logs for insert to authenticated with check (private.current_app_role() in ('Owner', 'Wakil Owner', 'Developer', 'Kepala Divisi', 'HRD'));
 create policy "management update activity logs" on activity_logs for update to authenticated using (private.is_management()) with check (private.is_management());
 create policy "management delete activity logs" on activity_logs for delete to authenticated using (private.is_management());
 
@@ -561,6 +595,7 @@ with check (
   bucket_id = 'company-documents'
   and (
     private.is_management()
+    or private.current_app_role() = 'HRD'
     or (
       private.current_app_role() = 'Kepala Divisi'
       and split_part(name, '/', 1) = private.current_app_division()

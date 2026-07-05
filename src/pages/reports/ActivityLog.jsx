@@ -1,7 +1,7 @@
-import Badge from "../components/Badge";
-import DataTable from "../components/DataTable";
-import { useAppData } from "../data/AppDataProvider";
-import { Page } from "./Divisions";
+import Badge from "../../components/Badge";
+import DataTable from "../../components/DataTable";
+import { useAppData } from "../../data/AppDataProvider";
+import { Page } from "../../components/PageShell";
 
 export default function ActivityLog() {
   const { activityLogs, divisionName, loading, error } = useAppData();

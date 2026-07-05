@@ -1,15 +1,15 @@
-import Badge from "../components/Badge";
-import DataTable from "../components/DataTable";
-import Modal from "../components/Modal";
+import Badge from "../../components/Badge";
+import DataTable from "../../components/DataTable";
+import Modal from "../../components/Modal";
 import { useState } from "react";
 import { Activity, AlertTriangle, BarChart3, CheckCircle2, ClipboardList, Target } from "lucide-react";
-import { getCurrentUser } from "../utils/auth";
-import { detectPerformance } from "../utils/helpers";
-import { Page } from "./Divisions";
-import StatCard from "../components/StatCard";
-import ProgressBar from "../components/ProgressBar";
-import { useAppData } from "../data/AppDataProvider";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import { getCurrentUser } from "../../utils/auth";
+import { detectPerformance } from "../../utils/helpers";
+import { Page } from "../../components/PageShell";
+import StatCard from "../../components/StatCard";
+import ProgressBar from "../../components/ProgressBar";
+import { useAppData } from "../../data/AppDataProvider";
+import { supabase, isSupabaseConfigured } from "../../lib/supabase";
 
 export default function WorkReports() {
   const user = getCurrentUser();

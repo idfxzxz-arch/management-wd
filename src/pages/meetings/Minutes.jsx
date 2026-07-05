@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
 import { useMemo, useState } from "react";
 import { Pencil, Trash2 } from "lucide-react";
-import DataTable from "../components/DataTable";
-import Modal from "../components/Modal";
-import { getCurrentUser } from "../utils/auth";
-import { contains } from "../utils/helpers";
-import { Page, Search } from "./Divisions";
-import { useAppData } from "../data/AppDataProvider";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import DataTable from "../../components/DataTable";
+import Modal from "../../components/Modal";
+import { getCurrentUser } from "../../utils/auth";
+import { contains } from "../../utils/helpers";
+import { Page, Search } from "../../components/PageShell";
+import { useAppData } from "../../data/AppDataProvider";
+import { supabase, isSupabaseConfigured } from "../../lib/supabase";
 
 export default function Minutes() {
   const user = getCurrentUser();

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Lock, Mail } from "lucide-react";
-import { dashboardPath, getCurrentUser, login } from "../utils/auth";
-import AuthLayout from "../layouts/AuthLayout";
+import { dashboardPath, getCurrentUser, login } from "../../utils/auth";
+import AuthLayout from "../../layouts/AuthLayout";
 
 export default function Login() {
   const navigate = useNavigate();

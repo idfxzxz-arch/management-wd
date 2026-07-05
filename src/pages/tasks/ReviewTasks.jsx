@@ -1,14 +1,14 @@
 import { useMemo, useState } from "react";
 import { ExternalLink, Eye, RotateCcw, ShieldCheck } from "lucide-react";
-import Badge from "../components/Badge";
-import DataTable from "../components/DataTable";
-import Modal from "../components/Modal";
-import { Page, Search } from "./Divisions";
-import { getCurrentUser } from "../utils/auth";
-import { contains, isStaffLike } from "../utils/helpers";
-import { useAppData } from "../data/AppDataProvider";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
-import { REVIEW_STATUSES, buildSubmissionRows, submissionStats } from "../utils/submissions";
+import Badge from "../../components/Badge";
+import DataTable from "../../components/DataTable";
+import Modal from "../../components/Modal";
+import { Page, Search } from "../../components/PageShell";
+import { getCurrentUser } from "../../utils/auth";
+import { contains, isStaffLike } from "../../utils/helpers";
+import { useAppData } from "../../data/AppDataProvider";
+import { supabase, isSupabaseConfigured } from "../../lib/supabase";
+import { REVIEW_STATUSES, buildSubmissionRows, submissionStats } from "../../utils/submissions";
 
 const READY_FOR_REVIEW = ["Menunggu Review", "Revisi Dikirim Ulang", "Terlambat"];
 

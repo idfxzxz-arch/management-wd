@@ -112,6 +112,7 @@ export function AppDataProvider({ children }) {
       if (role === "Owner") return "Owner";
       if (role === "Wakil Owner") return "Wakil Owner";
       if (role === "Developer") return "Developer";
+      if (role === "HRD") return "HRD";
       if (id === "all") return "Semua Divisi";
       return data.divisions.find((division) => division.id === id)?.name || "-";
     }

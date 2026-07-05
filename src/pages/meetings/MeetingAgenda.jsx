@@ -1,11 +1,11 @@
 import { useState } from "react";
-import Badge from "../components/Badge";
-import DataTable from "../components/DataTable";
-import Modal from "../components/Modal";
-import { getCurrentUser } from "../utils/auth";
-import { useAppData } from "../data/AppDataProvider";
-import { Page } from "./Divisions";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import Badge from "../../components/Badge";
+import DataTable from "../../components/DataTable";
+import Modal from "../../components/Modal";
+import { getCurrentUser } from "../../utils/auth";
+import { useAppData } from "../../data/AppDataProvider";
+import { Page } from "../../components/PageShell";
+import { supabase, isSupabaseConfigured } from "../../lib/supabase";
 
 export default function MeetingAgenda() {
   const user = getCurrentUser();

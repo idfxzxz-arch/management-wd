@@ -1,7 +1,7 @@
 import { Link, useParams } from "react-router-dom";
-import { useAppData } from "../data/AppDataProvider";
-import { Page } from "./Divisions";
-import { getCurrentUser } from "../utils/auth";
+import { useAppData } from "../../data/AppDataProvider";
+import { Page } from "../../components/PageShell";
+import { getCurrentUser } from "../../utils/auth";
 
 export default function MinuteDetail() {
   const { id } = useParams();

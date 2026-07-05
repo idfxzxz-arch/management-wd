@@ -1,8 +1,8 @@
-import Badge from "../components/Badge";
-import DataTable from "../components/DataTable";
-import { getCurrentUser } from "../utils/auth";
-import { useAppData } from "../data/AppDataProvider";
-import { Page } from "./Divisions";
+import Badge from "../../components/Badge";
+import DataTable from "../../components/DataTable";
+import { getCurrentUser } from "../../utils/auth";
+import { useAppData } from "../../data/AppDataProvider";
+import { Page } from "../../components/PageShell";
 
 export default function Profile() {
   const user = getCurrentUser();
