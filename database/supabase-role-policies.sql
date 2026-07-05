@@ -56,7 +56,7 @@ set role = 'Wakil Owner',
     name = 'Destamara Carissa Feodora',
     email = 'cantikaqiza@gmail.com',
     division_id = 'all'
-where role = 'Administrator' or lower(email) in ('admin@wdgroup.com', 'destamara.carissa@wdgroup.com', 'cantikaqiza@gmail.com') or id = 18;
+where role = 'Administrator' or lower(email) in ('admin@wdgroup.com', 'destamara.carissa@wdgroup.com', 'cantikaqiza@gmail.com');
 alter table app_users add constraint app_users_role_check check (role in ('Owner', 'Kepala Divisi', 'Staff', 'Magang', 'Wakil Owner', 'Developer', 'HRD'));
 
 create schema if not exists private;
@@ -76,7 +76,7 @@ set email = 'dosenwildandeni@gmail.com',
     division_id = 'all',
     role = 'Owner',
     status = 'Aktif'
-where id = 1 or role = 'Owner' or lower(email) = 'owner@wdgroup.com';
+where role = 'Owner' or lower(email) = 'owner@wdgroup.com';
 
 insert into employees (name, email, position, division_id, role, status, joined_at)
 select 'Developer WD Group', 'developer@wdgroup.com', 'Developer', 'all', 'Developer', 'Aktif', current_date
@@ -137,23 +137,65 @@ set employee_id = e.id
 from employees e
 where lower(u.email) = lower(e.email) and u.employee_id is null;
 
-update app_users set employee_id = 1, division_id = 'all' where role = 'Owner' and employee_id is null;
-update app_users set employee_id = 18, division_id = 'all' where role = 'Wakil Owner' and employee_id is null;
+insert into employees (name, email, position, division_id, role, status, joined_at)
+select seed.name, seed.email, seed.position, seed.division_id, seed.role, 'Aktif', current_date
+from (values
+  ('Tegar', 'tegardarmawan59@gmail.com', 'Tim Manajemen Sistem IT', 'it', 'Kepala Divisi'),
+  ('Yahya Muhammad', 'yahyaalbayaz@gmail.com', 'Kepala Divisi Project Manager & Konten', 'project-content', 'Kepala Divisi'),
+  ('Dewi Wulandari', 'dewiiwulandari03@gmail.com', 'Tim Project Manager & Konten', 'project-content', 'Staff'),
+  ('Nayla Rizki Rachmania', 'naylarizki16@gmail.com', 'Kepala Divisi Administrasi & Booking', 'admin-booking', 'Kepala Divisi'),
+  ('Ayu Safitri', 'ayu808485@gmail.com', 'Tim Administrasi & Booking', 'admin-booking', 'Staff'),
+  ('M. Mirza Al-farizi', 'mijaa478@gmail.com', 'Tim Staff Media Production', 'media-production', 'Staff'),
+  ('Sandi Nabil Ristullah', 'sndeyszrwr@gmail.com', 'Staf Magang Media Production', 'media-production', 'Magang'),
+  ('Syahdan Alwinanta', 'syahdanalwin@gmail.com', 'Staf Magang Media Production', 'media-production', 'Magang'),
+  ('Rehan Rizkianto', 'ryypripayer@gmail.com', 'Staf Magang Media Production', 'media-production', 'Magang'),
+  ('Maulana Al Ayubi', 'maulanaalayubi59@gmail.com', 'Staf Magang Media Production', 'media-production', 'Magang'),
+  ('Irum Maqbullah', 'irummaqbullah@gmail.com', 'Staf Magang Media Production', 'media-production', 'Magang'),
+  ('Wahyu Agung Utomo', 'wahyupqxd@gmail.com', 'Staf Magang Media Production', 'media-production', 'Magang'),
+  ('Alifa Dwi Kharisma', 'alifadwi230506@gmail.com', 'Kepala Divisi Public Relation & Admin', 'public-relation-admin', 'Kepala Divisi'),
+  ('Febriyan Budi Prasetyo', 'febriyanbudi921@gmail.com', 'Tim Staff Public Relation & Admin', 'public-relation-admin', 'Staff'),
+  ('Teuku Arnel', 'teukujunefri@gmail.com', 'Tim Staff Media Production', 'media-production', 'Staff')
+) as seed(name, email, position, division_id, role)
+where not exists (
+  select 1 from employees e where lower(e.email) = lower(seed.email)
+);
+
+update app_users u
+set employee_id = e.id, division_id = 'all'
+from employees e
+where u.role = 'Owner'
+  and lower(e.email) = 'dosenwildandeni@gmail.com'
+  and (u.employee_id is null or u.employee_id is distinct from e.id);
+update app_users u
+set employee_id = e.id, division_id = 'all'
+from employees e
+where u.role = 'Wakil Owner'
+  and lower(e.email) = 'cantikaqiza@gmail.com'
+  and (u.employee_id is null or u.employee_id is distinct from e.id);
 update app_users u
 set employee_id = e.id, division_id = 'all'
 from employees e
 where u.role = 'Developer'
   and lower(e.email) = 'developer@wdgroup.com'
-  and u.employee_id is null;
+  and (u.employee_id is null or u.employee_id is distinct from e.id);
 update app_users u
 set employee_id = e.id, division_id = 'all'
 from employees e
 where u.role = 'HRD'
   and lower(e.email) = 'ilhamarthaid@gmail.com'
-  and u.employee_id is null;
-update app_users set employee_id = 2, name = 'Tegar', email = 'tegardarmawan59@gmail.com', division_id = 'it' where id = 'head-general';
-update app_users set employee_id = 3, name = 'Yahya Muhammad', email = 'yahyaalbayaz@gmail.com', division_id = 'project-content' where id = 'head-content';
-update app_users set employee_id = 4, name = 'Dewi Wulandari', email = 'dewiiwulandari03@gmail.com', division_id = 'project-content' where id = 'staff-general';
+  and (u.employee_id is null or u.employee_id is distinct from e.id);
+update app_users u
+set employee_id = e.id, name = 'Tegar', email = 'tegardarmawan59@gmail.com', division_id = 'it'
+from employees e
+where u.id = 'head-general' and lower(e.email) = 'tegardarmawan59@gmail.com';
+update app_users u
+set employee_id = e.id, name = 'Yahya Muhammad', email = 'yahyaalbayaz@gmail.com', division_id = 'project-content'
+from employees e
+where u.id = 'head-content' and lower(e.email) = 'yahyaalbayaz@gmail.com';
+update app_users u
+set employee_id = e.id, name = 'Dewi Wulandari', email = 'dewiiwulandari03@gmail.com', division_id = 'project-content'
+from employees e
+where u.id = 'staff-general' and lower(e.email) = 'dewiiwulandari03@gmail.com';
 
 update employees
 set name = 'Tegar',
@@ -161,7 +203,7 @@ set name = 'Tegar',
     role = 'Kepala Divisi',
     position = 'Tim Manajemen Sistem IT',
     division_id = 'it'
-where id = 2 or lower(email) in ('tegar@wdgroup.com', 'tegardarmawan59@gmail.com');
+where lower(email) in ('tegar@wdgroup.com', 'tegardarmawan59@gmail.com');
 
 update employees
 set name = 'Yahya Muhammad',
@@ -169,7 +211,7 @@ set name = 'Yahya Muhammad',
     role = 'Kepala Divisi',
     position = 'Kepala Divisi Project Manager & Konten',
     division_id = 'project-content'
-where id = 3 or lower(email) in ('yahya.muhammad@wdgroup.com', 'yahyaalbayaz@gmail.com');
+where lower(email) in ('yahya.muhammad@wdgroup.com', 'yahyaalbayaz@gmail.com');
 
 update employees
 set name = 'Dewi Wulandari',
@@ -177,24 +219,24 @@ set name = 'Dewi Wulandari',
     role = 'Staff',
     position = 'Tim Project Manager & Konten',
     division_id = 'project-content'
-where id = 4 or lower(email) in ('dewi.wulandari@wdgroup.com', 'dewiiwulandari03@gmail.com', 'staff@wdgroup.com');
+where lower(email) in ('dewi.wulandari@wdgroup.com', 'dewiiwulandari03@gmail.com', 'staff@wdgroup.com');
 
 update employees
 set role = 'Kepala Divisi',
     position = 'Kepala Divisi Administrasi & Booking',
     email = 'naylarizki16@gmail.com'
-where id = 5 or lower(email) in ('nayla.rizki@wdgroup.com', 'naylarizki16@gmail.com');
+where lower(email) in ('nayla.rizki@wdgroup.com', 'naylarizki16@gmail.com');
 
 update employees
 set role = 'Kepala Divisi',
     position = 'Kepala Divisi Public Relation & Admin',
     email = 'alifadwi230506@gmail.com'
-where id = 14 or lower(email) in ('alifa.kharisma@wdgroup.com', 'alifadwi230506@gmail.com');
+where lower(email) in ('alifa.kharisma@wdgroup.com', 'alifadwi230506@gmail.com');
 
 insert into employees (name, email, position, division_id, role, status, joined_at)
 select 'Teuku Arnel', 'teukujunefri@gmail.com', 'Tim Staff Media Production', 'media-production', 'Staff', 'Aktif', '2024-04-01'
 where not exists (
-  select 1 from employees where id = 16 or lower(email) in ('teuku.arnel@wdgroup.com', 'teukujunefri@gmail.com')
+  select 1 from employees where lower(email) in ('teuku.arnel@wdgroup.com', 'teukujunefri@gmail.com')
 );
 
 update employees
@@ -204,7 +246,7 @@ set name = 'Teuku Arnel',
     division_id = 'media-production',
     role = 'Staff',
     status = 'Aktif'
-where id = 16 or lower(email) in ('teuku.arnel@wdgroup.com', 'teukujunefri@gmail.com');
+where lower(email) in ('teuku.arnel@wdgroup.com', 'teukujunefri@gmail.com');
 
 update employees as e
 set email = updates.email,
@@ -214,26 +256,25 @@ set email = updates.email,
     role = updates.role,
     status = 'Aktif'
 from (values
-  (3, 'Yahya Muhammad', 'yahyaalbayaz@gmail.com', 'Kepala Divisi Project Manager & Konten', 'project-content', 'Kepala Divisi'),
-  (4, 'Dewi Wulandari', 'dewiiwulandari03@gmail.com', 'Tim Project Manager & Konten', 'project-content', 'Staff'),
-  (5, 'Nayla Rizki Rachmania', 'naylarizki16@gmail.com', 'Kepala Divisi Administrasi & Booking', 'admin-booking', 'Kepala Divisi'),
-  (6, 'Ayu Safitri', 'ayu808485@gmail.com', 'Tim Administrasi & Booking', 'admin-booking', 'Staff'),
-  (7, 'M. Mirza Al-farizi', 'mijaa478@gmail.com', 'Tim Staff Media Production', 'media-production', 'Staff'),
-  (8, 'Sandi Nabil Ristullah', 'sndeyszrwr@gmail.com', 'Staf Magang Media Production', 'media-production', 'Magang'),
-  (9, 'Syahdan Alwinanta', 'syahdanalwin@gmail.com', 'Staf Magang Media Production', 'media-production', 'Magang'),
-  (10, 'Rehan Rizkianto', 'ryypripayer@gmail.com', 'Staf Magang Media Production', 'media-production', 'Magang'),
-  (11, 'Maulana Al Ayubi', 'maulanaalayubi59@gmail.com', 'Staf Magang Media Production', 'media-production', 'Magang'),
-  (12, 'Irum Maqbullah', 'irummaqbullah@gmail.com', 'Staf Magang Media Production', 'media-production', 'Magang'),
-  (13, 'Wahyu Agung Utomo', 'wahyupqxd@gmail.com', 'Staf Magang Media Production', 'media-production', 'Magang'),
-  (14, 'Alifa Dwi Kharisma', 'alifadwi230506@gmail.com', 'Kepala Divisi Public Relation & Admin', 'public-relation-admin', 'Kepala Divisi'),
-  (15, 'Febriyan Budi Prasetyo', 'febriyanbudi921@gmail.com', 'Tim Staff Public Relation & Admin', 'public-relation-admin', 'Staff'),
-  (16, 'Teuku Arnel', 'teukujunefri@gmail.com', 'Tim Staff Media Production', 'media-production', 'Staff')
-) as updates(id, name, email, position, division_id, role)
-where e.id = updates.id;
+  ('Yahya Muhammad', 'yahyaalbayaz@gmail.com', 'Kepala Divisi Project Manager & Konten', 'project-content', 'Kepala Divisi'),
+  ('Dewi Wulandari', 'dewiiwulandari03@gmail.com', 'Tim Project Manager & Konten', 'project-content', 'Staff'),
+  ('Nayla Rizki Rachmania', 'naylarizki16@gmail.com', 'Kepala Divisi Administrasi & Booking', 'admin-booking', 'Kepala Divisi'),
+  ('Ayu Safitri', 'ayu808485@gmail.com', 'Tim Administrasi & Booking', 'admin-booking', 'Staff'),
+  ('M. Mirza Al-farizi', 'mijaa478@gmail.com', 'Tim Staff Media Production', 'media-production', 'Staff'),
+  ('Sandi Nabil Ristullah', 'sndeyszrwr@gmail.com', 'Staf Magang Media Production', 'media-production', 'Magang'),
+  ('Syahdan Alwinanta', 'syahdanalwin@gmail.com', 'Staf Magang Media Production', 'media-production', 'Magang'),
+  ('Rehan Rizkianto', 'ryypripayer@gmail.com', 'Staf Magang Media Production', 'media-production', 'Magang'),
+  ('Maulana Al Ayubi', 'maulanaalayubi59@gmail.com', 'Staf Magang Media Production', 'media-production', 'Magang'),
+  ('Irum Maqbullah', 'irummaqbullah@gmail.com', 'Staf Magang Media Production', 'media-production', 'Magang'),
+  ('Wahyu Agung Utomo', 'wahyupqxd@gmail.com', 'Staf Magang Media Production', 'media-production', 'Magang'),
+  ('Alifa Dwi Kharisma', 'alifadwi230506@gmail.com', 'Kepala Divisi Public Relation & Admin', 'public-relation-admin', 'Kepala Divisi'),
+  ('Febriyan Budi Prasetyo', 'febriyanbudi921@gmail.com', 'Tim Staff Public Relation & Admin', 'public-relation-admin', 'Staff'),
+  ('Teuku Arnel', 'teukujunefri@gmail.com', 'Tim Staff Media Production', 'media-production', 'Staff')
+) as updates(name, email, position, division_id, role)
+where lower(e.email) = lower(updates.email);
 
 delete from app_users
-where employee_id in (8, 9, 10, 11, 12, 13)
-  or lower(email) in (
+where lower(email) in (
     'sandi.nabil@wdgroup.com',
     'syahdan.alwinanta@wdgroup.com',
     'rehan.rizkianto@wdgroup.com',
@@ -248,23 +289,28 @@ set email = updates.email,
     division_id = updates.division_id,
     role = updates.role,
     status = 'Aktif',
-    employee_id = updates.employee_id
+    employee_id = e.id
 from (values
-  ('head-content', 3, 'Yahya Muhammad', 'yahyaalbayaz@gmail.com', 'project-content', 'Kepala Divisi'),
-  ('staff-general', 4, 'Dewi Wulandari', 'dewiiwulandari03@gmail.com', 'project-content', 'Staff'),
-  ('head-admin-booking', 5, 'Nayla Rizki Rachmania', 'naylarizki16@gmail.com', 'admin-booking', 'Kepala Divisi'),
-  ('employee-6', 6, 'Ayu Safitri', 'ayu808485@gmail.com', 'admin-booking', 'Staff'),
-  ('employee-7', 7, 'M. Mirza Al-farizi', 'mijaa478@gmail.com', 'media-production', 'Staff'),
-  ('head-public-relation-admin', 14, 'Alifa Dwi Kharisma', 'alifadwi230506@gmail.com', 'public-relation-admin', 'Kepala Divisi'),
-  ('employee-15', 15, 'Febriyan Budi Prasetyo', 'febriyanbudi921@gmail.com', 'public-relation-admin', 'Staff'),
-  ('employee-16', 16, 'Teuku Arnel', 'teukujunefri@gmail.com', 'media-production', 'Staff')
-) as updates(id, employee_id, name, email, division_id, role)
-where u.id = updates.id or u.employee_id = updates.employee_id;
+  ('head-content', 'Yahya Muhammad', 'yahyaalbayaz@gmail.com', 'project-content', 'Kepala Divisi'),
+  ('staff-general', 'Dewi Wulandari', 'dewiiwulandari03@gmail.com', 'project-content', 'Staff'),
+  ('head-admin-booking', 'Nayla Rizki Rachmania', 'naylarizki16@gmail.com', 'admin-booking', 'Kepala Divisi'),
+  ('employee-6', 'Ayu Safitri', 'ayu808485@gmail.com', 'admin-booking', 'Staff'),
+  ('employee-7', 'M. Mirza Al-farizi', 'mijaa478@gmail.com', 'media-production', 'Staff'),
+  ('head-public-relation-admin', 'Alifa Dwi Kharisma', 'alifadwi230506@gmail.com', 'public-relation-admin', 'Kepala Divisi'),
+  ('employee-15', 'Febriyan Budi Prasetyo', 'febriyanbudi921@gmail.com', 'public-relation-admin', 'Staff'),
+  ('employee-16', 'Teuku Arnel', 'teukujunefri@gmail.com', 'media-production', 'Staff')
+) as updates(id, name, email, division_id, role)
+join employees e on lower(e.email) = lower(updates.email)
+where u.id = updates.id or lower(u.email) = lower(updates.email) or u.employee_id = e.id;
 
-insert into app_users (id, name, email, role, division_id, status, employee_id) values
-  ('head-content', 'Yahya Muhammad', 'yahyaalbayaz@gmail.com', 'Kepala Divisi', 'project-content', 'Aktif', 3),
-  ('head-admin-booking', 'Nayla Rizki Rachmania', 'naylarizki16@gmail.com', 'Kepala Divisi', 'admin-booking', 'Aktif', 5),
-  ('head-public-relation-admin', 'Alifa Dwi Kharisma', 'alifadwi230506@gmail.com', 'Kepala Divisi', 'public-relation-admin', 'Aktif', 14)
+insert into app_users (id, name, email, role, division_id, status, employee_id)
+select updates.id, updates.name, updates.email, updates.role, updates.division_id, 'Aktif', e.id
+from (values
+  ('head-content', 'Yahya Muhammad', 'yahyaalbayaz@gmail.com', 'Kepala Divisi', 'project-content'),
+  ('head-admin-booking', 'Nayla Rizki Rachmania', 'naylarizki16@gmail.com', 'Kepala Divisi', 'admin-booking'),
+  ('head-public-relation-admin', 'Alifa Dwi Kharisma', 'alifadwi230506@gmail.com', 'Kepala Divisi', 'public-relation-admin')
+) as updates(id, name, email, role, division_id)
+join employees e on lower(e.email) = lower(updates.email)
 on conflict (email) do update set
   id = excluded.id,
   name = excluded.name,
@@ -492,11 +538,17 @@ using (private.is_management() or (private.current_app_role() = 'Kepala Divisi' 
 create policy "scoped read reports" on reports for select to authenticated
 using (private.current_app_role() is not null);
 create policy "staff insert reports" on reports for insert to authenticated
-with check (private.current_app_role() in ('Owner', 'Wakil Owner', 'Developer', 'Kepala Divisi'));
+with check (
+  private.current_app_role() in ('Staff', 'Magang')
+  and employee_id = private.current_employee_id()
+);
 create policy "scoped read weekly reports" on weekly_reports for select to authenticated
 using (private.current_app_role() is not null);
 create policy "staff insert weekly reports" on weekly_reports for insert to authenticated
-with check (private.current_app_role() in ('Owner', 'Wakil Owner', 'Developer', 'Kepala Divisi'));
+with check (
+  private.current_app_role() in ('Staff', 'Magang')
+  and employee_id = private.current_employee_id()
+);
 
 create policy "authenticated read announcements" on announcements for select to authenticated using (private.current_app_role() is not null);
 create policy "management insert announcements" on announcements for insert to authenticated with check (private.is_management() or private.current_app_role() = 'HRD');

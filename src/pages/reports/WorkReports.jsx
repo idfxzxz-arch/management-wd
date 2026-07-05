@@ -2,9 +2,9 @@ import Badge from "../../components/Badge";
 import DataTable from "../../components/DataTable";
 import Modal from "../../components/Modal";
 import { useState } from "react";
-import { Activity, AlertTriangle, BarChart3, CheckCircle2, ClipboardList, Target } from "lucide-react";
+import { Activity, AlertTriangle, BarChart3, CheckCircle2, ClipboardList, Send, Target } from "lucide-react";
 import { getCurrentUser } from "../../utils/auth";
-import { detectPerformance } from "../../utils/helpers";
+import { detectPerformance, isStaffLike } from "../../utils/helpers";
 import { Page } from "../../components/PageShell";
 import StatCard from "../../components/StatCard";
 import ProgressBar from "../../components/ProgressBar";
@@ -13,10 +13,11 @@ import { supabase, isSupabaseConfigured } from "../../lib/supabase";
 
 export default function WorkReports() {
   const user = getCurrentUser();
-  const { reports, weeklyReports, divisionName, scopedByDivision, loading, error, reload } = useAppData();
+  const { reports, weeklyReports, divisionName, loading, error, reload } = useAppData();
   const [open, setOpen] = useState(false);
-  const rows = scopedByDivision(reports, user);
-  const weeklyRows = scopedByDivision(weeklyReports, user);
+  const canSubmitReport = isStaffLike(user?.role);
+  const rows = reports;
+  const weeklyRows = weeklyReports;
   const totals = weeklyRows.reduce(
     (acc, report) => {
       acc.completed += report.completedTasks;
@@ -39,7 +40,16 @@ export default function WorkReports() {
   });
 
   return (
-    <Page title="Laporan Kerja" subtitle="Laporan harian, laporan mingguan, statistik, dan deteksi kinerja otomatis.">
+    <Page
+      title="Laporan Kerja"
+      subtitle="Laporan harian, laporan mingguan, statistik, dan deteksi kinerja otomatis."
+      action={canSubmitReport && (
+        <button onClick={() => setOpen(true)} className="inline-flex items-center justify-center gap-2 rounded-lg bg-navy-800 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-navy-900">
+          <Send size={16} />
+          Kirim Laporan
+        </button>
+      )}
+    >
       {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data...</div>}
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
@@ -118,7 +128,7 @@ export default function WorkReports() {
         ]}
       />
       </section>
-      <Modal open={false} title="Form Laporan Kerja" onClose={() => setOpen(false)}>
+      <Modal open={canSubmitReport && open} title="Form Laporan Kerja" onClose={() => setOpen(false)}>
         <ReportForm user={user} onSaved={() => { setOpen(false); reload(); }} />
       </Modal>
     </Page>

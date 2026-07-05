@@ -198,15 +198,15 @@ update app_users set name = 'Wildan Deni Fahrezi' where role = 'Owner';
 update employees set name = 'Wildan Deni Fahrezi' where role = 'Owner';
 update tasks set assigned_by_name = 'Wildan Deni Fahrezi' where assigned_by = 'Owner';
 update task_submissions set reviewed_by = 'Wildan Deni Fahrezi' where reviewer_role = 'Owner';
-update app_users set employee_id = 1, division_id = 'all' where role = 'Owner';
-update app_users set employee_id = 18, division_id = 'all' where role = 'Wakil Owner';
-update app_users set employee_id = 19, division_id = 'all' where role = 'Developer';
-update app_users set employee_id = 20, division_id = 'all' where role = 'HRD';
-update app_users set employee_id = 2, name = 'Tegar', email = 'tegardarmawan59@gmail.com', division_id = 'it' where id = 'head-general';
-update app_users set employee_id = 3, name = 'Yahya Muhammad', email = 'yahyaalbayaz@gmail.com', division_id = 'project-content' where id = 'head-content';
-update app_users set employee_id = 5, name = 'Nayla Rizki Rachmania', email = 'naylarizki16@gmail.com', division_id = 'admin-booking' where id = 'head-admin-booking';
-update app_users set employee_id = 14, name = 'Alifa Dwi Kharisma', email = 'alifadwi230506@gmail.com', division_id = 'public-relation-admin' where id = 'head-public-relation-admin';
-update app_users set employee_id = 4, name = 'Dewi Wulandari', email = 'dewiiwulandari03@gmail.com', division_id = 'project-content' where id = 'staff-general';
+update app_users u set employee_id = e.id, division_id = 'all' from employees e where u.role = 'Owner' and lower(e.email) = 'dosenwildandeni@gmail.com';
+update app_users u set employee_id = e.id, division_id = 'all' from employees e where u.role = 'Wakil Owner' and lower(e.email) = 'cantikaqiza@gmail.com';
+update app_users u set employee_id = e.id, division_id = 'all' from employees e where u.role = 'Developer' and lower(e.email) = 'developer@wdgroup.com';
+update app_users u set employee_id = e.id, division_id = 'all' from employees e where u.role = 'HRD' and lower(e.email) = 'ilhamarthaid@gmail.com';
+update app_users u set employee_id = e.id, name = 'Tegar', email = 'tegardarmawan59@gmail.com', division_id = 'it' from employees e where u.id = 'head-general' and lower(e.email) = 'tegardarmawan59@gmail.com';
+update app_users u set employee_id = e.id, name = 'Yahya Muhammad', email = 'yahyaalbayaz@gmail.com', division_id = 'project-content' from employees e where u.id = 'head-content' and lower(e.email) = 'yahyaalbayaz@gmail.com';
+update app_users u set employee_id = e.id, name = 'Nayla Rizki Rachmania', email = 'naylarizki16@gmail.com', division_id = 'admin-booking' from employees e where u.id = 'head-admin-booking' and lower(e.email) = 'naylarizki16@gmail.com';
+update app_users u set employee_id = e.id, name = 'Alifa Dwi Kharisma', email = 'alifadwi230506@gmail.com', division_id = 'public-relation-admin' from employees e where u.id = 'head-public-relation-admin' and lower(e.email) = 'alifadwi230506@gmail.com';
+update app_users u set employee_id = e.id, name = 'Dewi Wulandari', email = 'dewiiwulandari03@gmail.com', division_id = 'project-content' from employees e where u.id = 'staff-general' and lower(e.email) = 'dewiiwulandari03@gmail.com';
 update divisions d
 set head = heads.name
 from (
