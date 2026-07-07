@@ -2,7 +2,7 @@ import Badge from "../../components/Badge";
 import DataTable from "../../components/DataTable";
 import Modal from "../../components/Modal";
 import { useState } from "react";
-import { Activity, AlertTriangle, BarChart3, CheckCircle2, ClipboardList, Send, Target } from "lucide-react";
+import { Activity, AlertTriangle, BarChart3, CheckCircle2, ClipboardList, Eye, Send, Target } from "lucide-react";
 import { getCurrentUser } from "../../utils/auth";
 import { detectPerformance, isStaffLike } from "../../utils/helpers";
 import { Page } from "../../components/PageShell";
@@ -15,6 +15,7 @@ export default function WorkReports() {
   const user = getCurrentUser();
   const { reports, weeklyReports, divisionName, loading, error, reload } = useAppData();
   const [open, setOpen] = useState(false);
+  const [selectedDailyReport, setSelectedDailyReport] = useState(null);
   const canSubmitReport = isStaffLike(user?.role) || user?.role === "Kepala Divisi";
   const rows = reports;
   const weeklyRows = weeklyReports;
@@ -115,23 +116,77 @@ export default function WorkReports() {
 
       <section className="space-y-3">
         <h2 className="section-title font-semibold text-slate-900">Laporan Harian</h2>
-      <DataTable
-        rows={rows}
-        columns={[
-          { key: "staff", header: "Nama Staff" },
-          { key: "divisionId", header: "Divisi", render: (row) => divisionName(row.divisionId) },
-          { key: "done", header: "Sudah Dilakukan", render: (row) => <span className="block max-w-md whitespace-normal">{row.done}</span> },
-          { key: "blockers", header: "Kendala", render: (row) => <span className="block max-w-md whitespace-normal">{row.blockers}</span> },
-          { key: "next", header: "Rencana Berikutnya", render: (row) => <span className="block max-w-md whitespace-normal">{row.next}</span> },
-          { key: "date", header: "Tanggal" },
-          { key: "status", header: "Status", render: (row) => <Badge>{row.status}</Badge> },
-        ]}
-      />
+        <DataTable
+          rows={rows}
+          columns={[
+            { key: "staff", header: "Nama Staff", width: "170px", contentClassName: "font-medium text-slate-900" },
+            { key: "divisionId", header: "Divisi", width: "180px", render: (row) => divisionName(row.divisionId) },
+            { key: "done", header: "Sudah Dilakukan", width: "280px", render: (row) => <ReportPreview value={row.done} /> },
+            { key: "blockers", header: "Kendala", width: "260px", render: (row) => <ReportPreview value={row.blockers} /> },
+            { key: "next", header: "Rencana Berikutnya", width: "280px", render: (row) => <ReportPreview value={row.next} /> },
+            { key: "date", header: "Tanggal", width: "120px" },
+            { key: "status", header: "Status", width: "120px", render: (row) => <Badge>{row.status}</Badge> },
+            {
+              key: "actions",
+              header: "Aksi",
+              width: "88px",
+              cellClassName: "align-middle",
+              render: (row) => (
+                <button
+                  type="button"
+                  title="Lihat detail laporan"
+                  aria-label={`Lihat detail laporan ${row.staff}`}
+                  onClick={() => setSelectedDailyReport(row)}
+                  className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                >
+                  <Eye size={16} />
+                </button>
+              ),
+            },
+          ]}
+        />
       </section>
       <Modal open={canSubmitReport && open} title="Form Laporan Kerja" onClose={() => setOpen(false)}>
         <ReportForm user={user} onSaved={() => { setOpen(false); reload(); }} />
       </Modal>
+      <Modal open={Boolean(selectedDailyReport)} title="Detail Laporan Harian" onClose={() => setSelectedDailyReport(null)} size="lg">
+        {selectedDailyReport && (
+          <div className="space-y-4">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <ReportInfo label="Nama Staff" value={selectedDailyReport.staff} />
+              <ReportInfo label="Divisi" value={divisionName(selectedDailyReport.divisionId)} />
+              <ReportInfo label="Tanggal" value={selectedDailyReport.date} />
+              <ReportInfo label="Status" value={<Badge>{selectedDailyReport.status}</Badge>} />
+            </div>
+            <ReportTextBlock label="Sudah Dilakukan" value={selectedDailyReport.done} />
+            <ReportTextBlock label="Kendala" value={selectedDailyReport.blockers} />
+            <ReportTextBlock label="Rencana Berikutnya" value={selectedDailyReport.next} />
+          </div>
+        )}
+      </Modal>
     </Page>
+  );
+}
+
+function ReportPreview({ value }) {
+  return <span className="cell-clamp text-slate-700" title={value || ""}>{value || "-"}</span>;
+}
+
+function ReportInfo({ label, value }) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-3">
+      <p className="text-xs font-bold uppercase text-slate-400">{label}</p>
+      <div className="mt-1 min-w-0 break-words text-sm font-semibold text-slate-800">{value || "-"}</div>
+    </div>
+  );
+}
+
+function ReportTextBlock({ label, value }) {
+  return (
+    <section className="rounded-lg border border-slate-200 bg-white p-4">
+      <p className="text-xs font-bold uppercase text-slate-400">{label}</p>
+      <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-slate-700">{value || "-"}</p>
+    </section>
   );
 }
 
