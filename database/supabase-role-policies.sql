@@ -539,14 +539,14 @@ create policy "scoped read reports" on reports for select to authenticated
 using (private.current_app_role() is not null);
 create policy "staff insert reports" on reports for insert to authenticated
 with check (
-  private.current_app_role() in ('Staff', 'Magang')
+  private.current_app_role() in ('Kepala Divisi', 'Staff', 'Magang')
   and employee_id = private.current_employee_id()
 );
 create policy "scoped read weekly reports" on weekly_reports for select to authenticated
 using (private.current_app_role() is not null);
 create policy "staff insert weekly reports" on weekly_reports for insert to authenticated
 with check (
-  private.current_app_role() in ('Staff', 'Magang')
+  private.current_app_role() in ('Kepala Divisi', 'Staff', 'Magang')
   and employee_id = private.current_employee_id()
 );
 

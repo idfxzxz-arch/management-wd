@@ -15,7 +15,7 @@ export default function WorkReports() {
   const user = getCurrentUser();
   const { reports, weeklyReports, divisionName, loading, error, reload } = useAppData();
   const [open, setOpen] = useState(false);
-  const canSubmitReport = isStaffLike(user?.role);
+  const canSubmitReport = isStaffLike(user?.role) || user?.role === "Kepala Divisi";
   const rows = reports;
   const weeklyRows = weeklyReports;
   const totals = weeklyRows.reduce(
@@ -212,7 +212,7 @@ function ReportForm({ user, onSaved }) {
 
     if (error) {
       const isPolicyError = error.message.toLowerCase().includes("row-level security");
-      setMessage(isPolicyError ? "Hanya akun Staf yang dapat mengirim laporan miliknya sendiri." : error.message);
+      setMessage(isPolicyError ? "Hanya akun Staf, Magang, atau Kepala Divisi yang dapat mengirim laporan miliknya sendiri." : error.message);
       setSaving(false);
       return;
     }
