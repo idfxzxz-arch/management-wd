@@ -209,15 +209,7 @@ export default function ReviewTasks() {
             key: "reviewStatus",
             header: "Status & Deadline",
             width: "220px",
-            render: (row) => (
-              <div className="min-w-[190px] space-y-2">
-                <div className="flex flex-wrap gap-2">
-                  <Badge>{row.status}</Badge>
-                  <Badge>{row.isLate ? "Terlambat" : row.punctuality}</Badge>
-                </div>
-                <p className="text-xs text-slate-500">Deadline: <span className="font-semibold text-slate-700">{row.deadline || "-"}</span></p>
-              </div>
-            ),
+            render: (row) => <ReviewStatusCell row={row} />,
           },
           { key: "actions", header: "Aksi", width: "150px", render: (row) => (
             <div className="flex min-w-[128px] gap-2">
@@ -323,6 +315,36 @@ function FilterSelect({ value, onChange, children, disabled = false }) {
       {children}
     </select>
   );
+}
+
+function ReviewStatusCell({ row }) {
+  const tone = reviewTone(row);
+
+  return (
+    <div className="min-w-[190px] rounded-md border border-slate-200 bg-white px-3 py-2 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-slate-900">{row.status}</p>
+          <p className="mt-0.5 text-[11px] font-bold uppercase text-slate-400">{row.isLate ? "Terlambat" : row.punctuality}</p>
+        </div>
+        <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${tone.dot}`} aria-hidden="true" />
+      </div>
+      <div className="mt-2 flex items-center justify-between gap-3 border-t border-slate-100 pt-2 text-xs">
+        <span className="text-slate-400">Deadline</span>
+        <span className="font-semibold text-slate-700">{row.deadline || "-"}</span>
+      </div>
+      <div className={`mt-2 h-1 rounded-full ${tone.bar}`} />
+    </div>
+  );
+}
+
+function reviewTone(row) {
+  if (row.isLate || row.status === "Terlambat") return { dot: "bg-rose-500", bar: "bg-rose-500" };
+  if (row.status === "Diterima" || row.status === "Approved") return { dot: "bg-emerald-600", bar: "bg-emerald-600" };
+  if (row.status === "Revisi") return { dot: "bg-red-500", bar: "bg-red-500" };
+  if (row.status === "Revisi Dikirim Ulang") return { dot: "bg-blue-500", bar: "bg-blue-500" };
+  if (row.status === "Menunggu Review") return { dot: "bg-amber-500", bar: "bg-amber-500" };
+  return { dot: "bg-slate-400", bar: "bg-slate-300" };
 }
 
 function Info({ label, value, wide = false }) {
