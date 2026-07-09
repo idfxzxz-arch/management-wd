@@ -22,19 +22,42 @@ export default function IndividualJobdesk() {
       <Search value={query} setValue={setQuery} placeholder="Cari tugas, staf, atau catatan" />
       <DataTable
         rows={rows}
+        minWidth="760px"
         columns={[
-          { key: "assigneeId", header: "PIC", render: (row) => employeeName(row.assigneeId) },
-          { key: "divisionId", header: "Divisi", render: (row) => divisionName(row.divisionId) },
-          { key: "assignedBy", header: "Dari", render: (row) => <Badge>{row.assignedBy}</Badge> },
-          { key: "title", header: "Judul Tugas", render: (row) => <Link className="font-semibold text-navy-700 hover:underline" to={`/jobdesk/${row.id}`}>{row.title}</Link> },
-          { key: "description", header: "Deskripsi", width: "260px", render: (row) => <span className="cell-clamp">{row.description}</span> },
-          { key: "deadline", header: "Deadline" },
+          {
+            key: "task",
+            header: "Tugas",
+            width: "44%",
+            wrap: true,
+            render: (row) => (
+              <div className="min-w-[240px] max-w-xl">
+                <Link className="font-semibold leading-5 text-navy-700 hover:underline" to={`/jobdesk/${row.id}`}>{row.title}</Link>
+                <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-500">{row.description}</p>
+                {row.note && <p className="mt-2 line-clamp-1 text-xs text-slate-400">Catatan: {row.note}</p>}
+              </div>
+            ),
+          },
+          {
+            key: "owner",
+            header: "PIC & Divisi",
+            width: "24%",
+            render: (row) => (
+              <div className="min-w-[170px]">
+                <p className="font-semibold text-slate-800">{employeeName(row.assigneeId)}</p>
+                <p className="mt-1 text-sm text-slate-500">{divisionName(row.divisionId)}</p>
+                <div className="mt-2">
+                  <Badge>{row.assignedBy}</Badge>
+                </div>
+              </div>
+            ),
+          },
+          { key: "deadline", header: "Deadline", width: "120px", contentClassName: "font-medium text-slate-700" },
           {
             key: "status",
             header: "Status",
-            width: "190px",
+            width: "210px",
             render: (row) => (
-              <div className="min-w-[170px] space-y-2">
+              <div className="min-w-[180px] space-y-2">
                 <div className="flex flex-wrap gap-2">
                   <Badge>{row.priority}</Badge>
                   <Badge>{row.status}</Badge>
@@ -43,7 +66,6 @@ export default function IndividualJobdesk() {
               </div>
             ),
           },
-          { key: "note", header: "Catatan", width: "240px", render: (row) => <span className="cell-clamp">{row.note}</span> },
         ]}
       />
     </Page>

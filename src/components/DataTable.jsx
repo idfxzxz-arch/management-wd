@@ -4,7 +4,7 @@ function joinClass(...classes) {
 
 const wrapKeys = ["description", "content", "discussion", "decision", "followUp", "done", "blockers", "next", "note", "action"];
 
-export default function DataTable({ columns, rows, empty = "Data tidak ditemukan" }) {
+export default function DataTable({ columns, rows, empty = "Data tidak ditemukan", minWidth = "980px" }) {
   return (
     <div className="overflow-hidden rounded-lg border border-slate-200 bg-white/95 shadow-sm shadow-slate-200/60">
       <div className="grid gap-3 p-2.5 sm:p-3 md:hidden">
@@ -27,7 +27,7 @@ export default function DataTable({ columns, rows, empty = "Data tidak ditemukan
         ))}
       </div>
       <div className="table-scroll hidden overflow-x-auto md:block">
-        <table className="min-w-[980px] border-separate border-spacing-0 text-sm xl:min-w-full">
+        <table style={{ minWidth }} className="w-full border-separate border-spacing-0 text-sm">
           <thead className="bg-slate-50/95 shadow-[inset_0_-1px_0_#e2e8f0]">
             <tr>
               {columns.map((column) => (
