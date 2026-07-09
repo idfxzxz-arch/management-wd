@@ -519,12 +519,12 @@ with check (
 
 create policy "scoped read meetings" on meetings for select to authenticated using (private.current_app_role() is not null);
 create policy "scoped insert meetings" on meetings for insert to authenticated
-with check (private.is_management() or (private.current_app_role() = 'Kepala Divisi' and division_id = private.current_app_division()));
+with check (private.is_management() or private.current_app_role() = 'Kepala Divisi');
 create policy "scoped update meetings" on meetings for update to authenticated
-using (private.is_management() or (private.current_app_role() = 'Kepala Divisi' and division_id = private.current_app_division()))
-with check (private.is_management() or (private.current_app_role() = 'Kepala Divisi' and division_id = private.current_app_division()));
+using (private.is_management() or private.current_app_role() = 'Kepala Divisi')
+with check (private.is_management() or private.current_app_role() = 'Kepala Divisi');
 create policy "scoped delete meetings" on meetings for delete to authenticated
-using (private.is_management() or (private.current_app_role() = 'Kepala Divisi' and division_id = private.current_app_division()));
+using (private.is_management() or private.current_app_role() = 'Kepala Divisi');
 
 create policy "scoped read minutes" on minutes for select to authenticated using (private.current_app_role() is not null);
 create policy "scoped insert minutes" on minutes for insert to authenticated

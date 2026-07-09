@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Pencil, Trash2 } from "lucide-react";
 import Badge from "../../components/Badge";
 import DataTable from "../../components/DataTable";
 import Modal from "../../components/Modal";
@@ -11,8 +12,48 @@ export default function MeetingAgenda() {
   const user = getCurrentUser();
   const { meetings, divisions, divisionName, scopedByDivision, loading, error, reload } = useAppData();
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [deleting, setDeleting] = useState(null);
+  const [deletingNow, setDeletingNow] = useState(false);
+  const [message, setMessage] = useState("");
   const canManage = user?.role === "Owner" || user?.role === "Kepala Divisi" || user?.role === "Wakil Owner" || user?.role === "Developer";
   const rows = scopedByDivision(meetings, user);
+
+  async function deleteMeeting() {
+    if (!deleting || !canManage) return;
+    setMessage("");
+    if (!isSupabaseConfigured) {
+      setMessage("Koneksi data belum dikonfigurasi.");
+      return;
+    }
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      setMessage("Session login belum aktif. Silakan logout lalu login ulang.");
+      return;
+    }
+
+    setDeletingNow(true);
+    const { error: deleteError } = await supabase.from("meetings").delete().eq("id", deleting.id);
+    if (deleteError) {
+      setMessage(deleteError.message.toLowerCase().includes("row-level security") ? "Role Anda tidak memiliki akses menghapus agenda ini." : deleteError.message);
+      setDeletingNow(false);
+      return;
+    }
+
+    await supabase.from("activity_logs").insert({
+      actor: user?.name || "User",
+      division_id: deleting.divisionId,
+      action: `menghapus agenda rapat "${deleting.topic}"`,
+      time: new Date().toISOString().slice(0, 16).replace("T", " "),
+      severity: "warning",
+    });
+
+    setDeletingNow(false);
+    setDeleting(null);
+    setMessage("Agenda berhasil dihapus.");
+    reload();
+  }
 
   return (
     <Page
@@ -22,6 +63,7 @@ export default function MeetingAgenda() {
     >
       {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data...</div>}
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
+      {message && <div className={`rounded-lg border p-4 text-sm ${message.includes("berhasil") ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-red-200 bg-red-50 text-red-700"}`}>{message}</div>}
       <DataTable
         rows={rows}
         columns={[
@@ -31,23 +73,59 @@ export default function MeetingAgenda() {
           { key: "topic", header: "Topik" },
           { key: "participants", header: "Peserta", render: (row) => row.participants.join(", ") },
           { key: "status", header: "Status", render: (row) => <Badge>{row.status}</Badge> },
+          ...(canManage ? [{ key: "actions", header: "Aksi", render: (row) => (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                title="Edit agenda"
+                aria-label={`Edit agenda ${row.topic}`}
+                onClick={() => { setEditing(row); setMessage(""); }}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              >
+                <Pencil size={16} />
+              </button>
+              <button
+                type="button"
+                title="Hapus agenda"
+                aria-label={`Hapus agenda ${row.topic}`}
+                onClick={() => { setDeleting(row); setMessage(""); }}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-700 transition hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-300"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+          ) }] : []),
         ]}
       />
       <Modal open={open} title="Tambah Agenda Rapat" onClose={() => setOpen(false)}>
         <MeetingForm divisions={divisions} user={user} onSaved={() => { setOpen(false); reload(); }} />
       </Modal>
+      <Modal open={Boolean(editing)} title="Edit Agenda Rapat" onClose={() => setEditing(null)}>
+        {editing && <MeetingForm meeting={editing} divisions={divisions} user={user} onSaved={() => { setEditing(null); setMessage("Agenda berhasil diperbarui."); reload(); }} />}
+      </Modal>
+      <Modal open={Boolean(deleting)} title="Hapus Agenda Rapat" onClose={() => !deletingNow && setDeleting(null)}>
+        {deleting && (
+          <div>
+            <p className="text-sm leading-6 text-slate-600">Agenda <span className="font-semibold text-slate-900">{deleting.topic}</span> akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.</p>
+            <div className="mt-5 flex justify-end gap-2">
+              <button type="button" disabled={deletingNow} onClick={() => setDeleting(null)} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 disabled:opacity-60">Batal</button>
+              <button type="button" disabled={deletingNow} onClick={deleteMeeting} className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-60">{deletingNow ? "Menghapus..." : "Ya, Hapus"}</button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </Page>
   );
 }
 
-function MeetingForm({ divisions, user, onSaved }) {
+function MeetingForm({ meeting = null, divisions, user, onSaved }) {
   const [form, setForm] = useState({
-    date: "",
-    time: "",
-    divisionId: user?.role === "Owner" || user?.role === "Wakil Owner" || user?.role === "Developer" ? "all" : user?.divisionId || "all",
-    topic: "",
-    participants: "",
-    status: "Terjadwal",
+    date: meeting?.date || "",
+    time: meeting?.time?.slice(0, 5) || "",
+    divisionId: meeting?.divisionId || (user?.role === "Owner" || user?.role === "Wakil Owner" || user?.role === "Developer" ? "all" : user?.divisionId || "all"),
+    topic: meeting?.topic || "",
+    participants: meeting?.participants?.join(", ") || "",
+    status: meeting?.status || "Terjadwal",
   });
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -78,18 +156,22 @@ function MeetingForm({ divisions, user, onSaved }) {
 
     setSaving(true);
     const participants = form.participants.split(",").map((item) => item.trim()).filter(Boolean);
-    const { error } = await supabase.from("meetings").insert({
+    const payload = {
       date: form.date,
       time: form.time,
       division_id: form.divisionId,
       topic: form.topic,
       participants,
       status: form.status,
-    });
+    };
+    const request = meeting
+      ? supabase.from("meetings").update(payload).eq("id", meeting.id)
+      : supabase.from("meetings").insert(payload);
+    const { error } = await request;
 
     if (error) {
       const isPolicyError = error.message.toLowerCase().includes("row-level security");
-      setMessage(isPolicyError ? "Akses ditolak oleh policy role. Pastikan migrasi supabase-role-policies.sql sudah dijalankan." : error.message);
+      setMessage(isPolicyError ? `Role Anda tidak memiliki akses ${meeting ? "mengedit" : "menambah"} agenda ini.` : error.message);
       setSaving(false);
       return;
     }
@@ -97,7 +179,7 @@ function MeetingForm({ divisions, user, onSaved }) {
     await supabase.from("activity_logs").insert({
       actor: user?.name || "User",
       division_id: form.divisionId,
-      action: `menambahkan agenda rapat "${form.topic}"`,
+      action: `${meeting ? "memperbarui" : "menambahkan"} agenda rapat "${form.topic}"`,
       time: new Date().toISOString().slice(0, 16).replace("T", " "),
       severity: user?.role === "Owner" || user?.role === "Wakil Owner" || user?.role === "Developer" ? "owner" : "info",
     });
@@ -145,7 +227,7 @@ function MeetingForm({ divisions, user, onSaved }) {
       </label>
       <div className="form-actions">
         <button disabled={saving} className="primary-action w-full sm:w-auto">
-          {saving ? "Menyimpan..." : "Simpan Agenda"}
+          {saving ? "Menyimpan..." : meeting ? "Simpan Perubahan" : "Simpan Agenda"}
         </button>
       </div>
     </form>
