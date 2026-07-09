@@ -25,12 +25,11 @@ export default function IndividualJobdesk() {
       <Search value={query} setValue={setQuery} placeholder="Cari tugas, staf, atau catatan" />
       <DataTable
         rows={rows}
+        minWidth="760px"
         columns={[
           { key: "assigneeId", header: "PIC", width: "140px", contentClassName: "font-medium text-slate-900", render: (row) => employeeName(row.assigneeId) },
           { key: "divisionId", header: "Divisi", width: "180px", render: (row) => divisionName(row.divisionId) },
-          { key: "title", header: "Judul Tugas", width: "240px", contentClassName: "font-medium text-slate-900", render: (row) => <TaskPreview value={row.title} /> },
-          { key: "description", header: "Deskripsi", width: "280px", render: (row) => <TaskPreview value={row.description} /> },
-          { key: "note", header: "Catatan", width: "240px", render: (row) => <TaskPreview value={row.note} /> },
+          { key: "title", header: "Judul Tugas", width: "280px", contentClassName: "font-medium text-slate-900", render: (row) => <TaskPreview value={row.title} /> },
           { key: "deadline", header: "Deadline", width: "120px" },
           {
             key: "status",
