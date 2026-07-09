@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useMemo, useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { Eye, Pencil, Trash2 } from "lucide-react";
 import DataTable from "../../components/DataTable";
 import Modal from "../../components/Modal";
 import { getCurrentUser } from "../../utils/auth";
@@ -14,6 +14,7 @@ export default function Minutes() {
   const { minutes, divisions, divisionName, scopedByDivision, loading, error, reload } = useAppData();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState(null);
   const [editing, setEditing] = useState(null);
   const [deleting, setDeleting] = useState(null);
   const [deletingNow, setDeletingNow] = useState(false);
@@ -67,41 +68,73 @@ export default function Minutes() {
       <Search value={query} setValue={setQuery} placeholder="Cari notulen rapat" />
       <DataTable
         rows={rows}
+        minWidth="820px"
         columns={[
-          { key: "title", header: "Judul Rapat", render: (row) => <Link className="font-semibold text-navy-700 hover:underline" to={`/minutes/${row.id}`}>{row.title}</Link> },
-          { key: "date", header: "Tanggal" },
-          { key: "time", header: "Waktu" },
-          { key: "divisionId", header: "Divisi", render: (row) => divisionName(row.divisionId) },
-          { key: "leader", header: "Pemimpin" },
-          { key: "participants", header: "Peserta", render: (row) => row.participants.join(", ") },
-          { key: "decision", header: "Keputusan", render: (row) => <span className="block max-w-md whitespace-normal">{row.decision}</span> },
-          { key: "followUp", header: "Tindak Lanjut", render: (row) => <span className="block max-w-md whitespace-normal">{row.followUp}</span> },
-          ...(canManage ? [{ key: "actions", header: "Aksi", render: (row) => (
+          { key: "title", header: "Judul Rapat", width: "280px", contentClassName: "font-medium text-slate-900", render: (row) => <MinutePreview value={row.title} /> },
+          { key: "date", header: "Tanggal", width: "120px" },
+          { key: "time", header: "Waktu", width: "96px" },
+          { key: "divisionId", header: "Divisi", width: "190px", render: (row) => divisionName(row.divisionId) },
+          { key: "leader", header: "Pemimpin", width: "180px", render: (row) => <MinutePreview value={row.leader} /> },
+          { key: "actions", header: "Aksi", width: canManage ? "136px" : "88px", cellClassName: "align-middle", render: (row) => (
             <div className="flex gap-2">
               <button
                 type="button"
-                title="Edit notulen"
-                aria-label={`Edit notulen ${row.title}`}
-                onClick={() => { setEditing(row); setMessage(""); }}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                title="Lihat detail notulen"
+                aria-label={`Lihat detail notulen ${row.title}`}
+                onClick={() => { setSelected(row); setMessage(""); }}
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300"
               >
-                <Pencil size={16} />
+                <Eye size={16} />
               </button>
-              <button
-                type="button"
-                title="Hapus notulen"
-                aria-label={`Hapus notulen ${row.title}`}
-                onClick={() => { setDeleting(row); setMessage(""); }}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-700 transition hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-300"
-              >
-                <Trash2 size={16} />
-              </button>
+              {canManage && (
+                <>
+                  <button
+                    type="button"
+                    title="Edit notulen"
+                    aria-label={`Edit notulen ${row.title}`}
+                    onClick={() => { setEditing(row); setMessage(""); }}
+                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  >
+                    <Pencil size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    title="Hapus notulen"
+                    aria-label={`Hapus notulen ${row.title}`}
+                    onClick={() => { setDeleting(row); setMessage(""); }}
+                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-700 transition hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-300"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </>
+              )}
             </div>
-          ) }] : []),
+          ) },
         ]}
       />
       <Modal open={open} title="Tambah Notulen Rapat" onClose={() => setOpen(false)}>
         <MinuteForm divisions={divisions} user={user} onSaved={() => { setOpen(false); reload(); }} />
+      </Modal>
+      <Modal open={Boolean(selected)} title="Detail Notulen Rapat" onClose={() => setSelected(null)} size="lg">
+        {selected && (
+          <div className="space-y-4">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <MinuteInfo label="Judul Rapat" value={selected.title} />
+              <MinuteInfo label="Divisi" value={divisionName(selected.divisionId)} />
+              <MinuteInfo label="Tanggal" value={selected.date} />
+              <MinuteInfo label="Waktu" value={selected.time} />
+              <MinuteInfo label="Pemimpin" value={selected.leader} />
+              <MinuteInfo label="Deadline Tindak Lanjut" value={selected.actionDeadline || "-"} />
+            </div>
+            <MinuteTextBlock label="Peserta" value={selected.participants.join(", ")} />
+            <MinuteTextBlock label="Pembahasan" value={selected.discussion} />
+            <MinuteTextBlock label="Keputusan" value={selected.decision} />
+            <MinuteTextBlock label="Tindak Lanjut" value={selected.followUp} />
+            <Link className="inline-flex rounded-lg bg-navy-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-900" to={`/minutes/${selected.id}`}>
+              Buka Detail Notulen
+            </Link>
+          </div>
+        )}
       </Modal>
       <Modal open={Boolean(editing)} title="Edit Notulen Rapat" onClose={() => setEditing(null)}>
         {editing && <MinuteForm minute={editing} divisions={divisions} user={user} onSaved={() => { setEditing(null); setMessage("Notulen berhasil diperbarui."); reload(); }} />}
@@ -118,6 +151,28 @@ export default function Minutes() {
         )}
       </Modal>
     </Page>
+  );
+}
+
+function MinutePreview({ value }) {
+  return <span className="cell-clamp text-slate-700" title={value || ""}>{value || "-"}</span>;
+}
+
+function MinuteInfo({ label, value }) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-3">
+      <p className="text-xs font-bold uppercase text-slate-400">{label}</p>
+      <div className="mt-1 min-w-0 break-words text-sm font-semibold text-slate-800">{value || "-"}</div>
+    </div>
+  );
+}
+
+function MinuteTextBlock({ label, value }) {
+  return (
+    <section className="rounded-lg border border-slate-200 bg-white p-4">
+      <p className="text-xs font-bold uppercase text-slate-400">{label}</p>
+      <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-slate-700">{value || "-"}</p>
+    </section>
   );
 }
 
