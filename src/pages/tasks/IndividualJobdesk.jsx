@@ -34,16 +34,8 @@ export default function IndividualJobdesk() {
           {
             key: "status",
             header: "Status",
-            width: "180px",
-            render: (row) => (
-              <div className="min-w-[150px] space-y-2">
-                <div className="flex flex-wrap gap-2">
-                  <Badge>{row.priority}</Badge>
-                  <Badge>{row.status}</Badge>
-                </div>
-                <ProgressBar value={row.progress} />
-              </div>
-            ),
+            width: "200px",
+            render: (row) => <TaskStatusCell task={row} />,
           },
           {
             key: "actions",
@@ -97,6 +89,31 @@ export default function IndividualJobdesk() {
 
 function TaskPreview({ value }) {
   return <span className="cell-clamp text-slate-700" title={value || ""}>{value || "-"}</span>;
+}
+
+function TaskStatusCell({ task }) {
+  return (
+    <div className="min-w-[170px] rounded-md border border-slate-200 bg-white px-3 py-2 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-slate-900">{task.status}</p>
+          <p className="mt-0.5 text-[11px] font-bold uppercase text-slate-400">{task.priority}</p>
+        </div>
+        <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700">{task.progress}%</span>
+      </div>
+      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-200">
+        <div className={`h-full rounded-full ${progressColor(task)}`} style={{ width: `${task.progress || 0}%` }} />
+      </div>
+    </div>
+  );
+}
+
+function progressColor(task) {
+  if (task.status === "Terlambat") return "bg-rose-500";
+  if (task.status === "Selesai" || task.progress >= 100) return "bg-emerald-600";
+  if (task.status === "Proses") return "bg-blue-500";
+  if (task.status === "Menunggu Review") return "bg-amber-500";
+  return "bg-emerald-500";
 }
 
 function TaskInfo({ label, value }) {
