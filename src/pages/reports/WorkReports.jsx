@@ -118,12 +118,10 @@ export default function WorkReports() {
         <h2 className="section-title font-semibold text-slate-900">Laporan Harian</h2>
         <DataTable
           rows={rows}
+          minWidth="760px"
           columns={[
             { key: "staff", header: "Nama Staff", width: "170px", contentClassName: "font-medium text-slate-900" },
             { key: "divisionId", header: "Divisi", width: "180px", render: (row) => divisionName(row.divisionId) },
-            { key: "done", header: "Sudah Dilakukan", width: "280px", render: (row) => <ReportPreview value={row.done} /> },
-            { key: "blockers", header: "Kendala", width: "260px", render: (row) => <ReportPreview value={row.blockers} /> },
-            { key: "next", header: "Rencana Berikutnya", width: "280px", render: (row) => <ReportPreview value={row.next} /> },
             { key: "date", header: "Tanggal", width: "120px" },
             { key: "status", header: "Status", width: "120px", render: (row) => <Badge>{row.status}</Badge> },
             {
@@ -166,10 +164,6 @@ export default function WorkReports() {
       </Modal>
     </Page>
   );
-}
-
-function ReportPreview({ value }) {
-  return <span className="cell-clamp text-slate-700" title={value || ""}>{value || "-"}</span>;
 }
 
 function ReportInfo({ label, value }) {
