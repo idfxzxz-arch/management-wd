@@ -1,8 +1,6 @@
 import { Link } from "react-router-dom";
 import { useMemo, useState } from "react";
 import Badge from "../../components/Badge";
-import DataTable from "../../components/DataTable";
-import ProgressBar from "../../components/ProgressBar";
 import { getCurrentUser } from "../../utils/auth";
 import { contains } from "../../utils/helpers";
 import { Page, Search } from "../../components/PageShell";
@@ -20,54 +18,64 @@ export default function IndividualJobdesk() {
       {loading && <div className="surface-panel p-4 text-sm text-slate-500">Memuat data...</div>}
       {error && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">{error}</div>}
       <Search value={query} setValue={setQuery} placeholder="Cari tugas, staf, atau catatan" />
-      <DataTable
-        rows={rows}
-        minWidth="760px"
-        columns={[
-          {
-            key: "task",
-            header: "Tugas",
-            width: "44%",
-            wrap: true,
-            render: (row) => (
-              <div className="min-w-[240px] max-w-xl">
-                <Link className="font-semibold leading-5 text-navy-700 hover:underline" to={`/jobdesk/${row.id}`}>{row.title}</Link>
-                <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-500">{row.description}</p>
-                {row.note && <p className="mt-2 line-clamp-1 text-xs text-slate-400">Catatan: {row.note}</p>}
-              </div>
-            ),
-          },
-          {
-            key: "owner",
-            header: "PIC & Divisi",
-            width: "24%",
-            render: (row) => (
-              <div className="min-w-[170px]">
-                <p className="font-semibold text-slate-800">{employeeName(row.assigneeId)}</p>
-                <p className="mt-1 text-sm text-slate-500">{divisionName(row.divisionId)}</p>
-                <div className="mt-2">
+      <TaskList rows={rows} divisionName={divisionName} employeeName={employeeName} />
+    </Page>
+  );
+}
+
+function TaskList({ rows, divisionName, employeeName }) {
+  return (
+    <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm shadow-slate-200/60">
+      {rows.length === 0 ? (
+        <div className="p-8 text-center text-sm text-slate-500">Data tidak ditemukan</div>
+      ) : (
+        <div className="divide-y divide-slate-100">
+          {rows.map((row) => (
+            <Link
+              key={row.id}
+              to={`/jobdesk/${row.id}`}
+              className="grid gap-3 px-4 py-3.5 transition hover:bg-slate-50 sm:px-5 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-center"
+            >
+              <div className="min-w-0">
+                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                  <h2 className="min-w-0 truncate text-sm font-semibold text-navy-800">{row.title}</h2>
                   <Badge>{row.assignedBy}</Badge>
                 </div>
+                <p className="mt-1 truncate text-sm text-slate-500">{row.description}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400">
+                  <span className="font-medium text-slate-500">{employeeName(row.assigneeId)}</span>
+                  <span>{divisionName(row.divisionId)}</span>
+                  <span>Deadline {row.deadline}</span>
+                  {row.note && <span className="max-w-full truncate sm:max-w-[360px]">Catatan: {row.note}</span>}
+                </div>
               </div>
-            ),
-          },
-          { key: "deadline", header: "Deadline", width: "120px", contentClassName: "font-medium text-slate-700" },
-          {
-            key: "status",
-            header: "Status",
-            width: "210px",
-            render: (row) => (
-              <div className="min-w-[180px] space-y-2">
-                <div className="flex flex-wrap gap-2">
+
+              <div className="min-w-0 space-y-2 lg:text-right">
+                <div className="flex flex-wrap gap-2 lg:justify-end">
                   <Badge>{row.priority}</Badge>
                   <Badge>{row.status}</Badge>
                 </div>
-                <ProgressBar value={row.progress} />
+                <MiniProgress value={row.progress} />
               </div>
-            ),
-          },
-        ]}
-      />
-    </Page>
+            </Link>
+          ))}
+        </div>
+      )}
+      <div className="flex flex-col gap-1 border-t border-slate-200 bg-slate-50 px-5 py-3 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+        <span>{rows.length} data ditampilkan</span>
+        <span>WD Group Internal Management</span>
+      </div>
+    </section>
+  );
+}
+
+function MiniProgress({ value = 0 }) {
+  return (
+    <div className="flex items-center gap-2 lg:justify-end">
+      <div className="h-1.5 w-full rounded-full bg-slate-200 lg:w-36">
+        <div className="h-1.5 rounded-full bg-emerald-500" style={{ width: `${value}%` }} />
+      </div>
+      <span className="w-9 text-right text-xs font-semibold text-slate-500">{value}%</span>
+    </div>
   );
 }
