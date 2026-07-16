@@ -19,7 +19,7 @@ export default function JobdeskDetail() {
   const employeeRole = (employeeId) => employees.find((employee) => String(employee.id) === String(employeeId))?.role || "Staff";
   const submissionRow = task ? buildSubmissionRows([task], taskSubmissions, { employeeName, employeeRole })[0] : null;
   const canEditTask = !isStaffLike(user?.role);
-  const isCurrentAssignee = canEditTask && task && String(user?.employeeId) === String(task.assigneeId);
+  const isCurrentAssignee = task && String(user?.employeeId) === String(task.assigneeId);
 
   if (loading) return <Page title="Detail Jobdesk"><p className="text-slate-500">Memuat data...</p></Page>;
   if (error) return <Page title="Detail Jobdesk"><p className="text-amber-700">{error}</p></Page>;
