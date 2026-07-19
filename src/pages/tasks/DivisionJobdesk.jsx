@@ -76,10 +76,10 @@ function JobdeskForm({ divisions, employees, user, divisionName, onNotice, onSav
   const baseDivisionOptions = buildDivisionOptions(divisions, employees);
   const divisionOptions = [{ id: "all", name: "Semua Divisi" }, ...baseDivisionOptions];
   const managedDivisionId = baseDivisionOptions[0]?.id || user?.divisionId || "it";
-  const managementRoles = ["Owner", "Wakil Owner", "Developer"];
+  const managementRoles = ["Owner", "Wakil Owner", "Developer", "HRD"];
   const broadcastRoles = ["Kepala Divisi", "Staff", "Magang"];
   const canReceiveTask = (employee, divisionId = managedDivisionId) => {
-    const allowedRoles = ["Owner", "Wakil Owner", "Developer", "Kepala Divisi", "Staff", "Magang"];
+    const allowedRoles = ["Owner", "Wakil Owner", "Developer", "HRD", "Kepala Divisi", "Staff", "Magang"];
     const isManagementAssignee = managementRoles.includes(employee.role);
     if (divisionId === "all") {
       return employee.status === "Aktif" && broadcastRoles.includes(employee.role) && employee.divisionId && employee.divisionId !== "all";
@@ -136,7 +136,7 @@ function JobdeskForm({ divisions, employees, user, divisionName, onNotice, onSav
       }
     } else {
       if (!assignee || (!managementRoles.includes(assignee.role) && assignee.divisionId !== form.divisionId)) {
-        setMessage("Penerima tugas harus berasal dari divisi yang dipilih, kecuali Owner, Wakil Owner, atau Developer.");
+        setMessage("Penerima tugas harus berasal dari divisi yang dipilih, kecuali Owner, Wakil Owner, Developer, atau HRD.");
         return;
       }
     }

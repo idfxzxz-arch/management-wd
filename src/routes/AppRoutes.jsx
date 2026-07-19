@@ -28,7 +28,8 @@ import Settings from "../pages/account/Settings";
 
 const allRoles = ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer", "HRD"];
 const managementAndAllRoles = ["Owner", "Wakil Owner", "Developer", "Kepala Divisi", "Staff", "Magang", "HRD"];
-const taskRoles = ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer"];
+const taskManagerRoles = ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer"];
+const taskAssigneeRoles = [...taskManagerRoles, "HRD"];
 
 export default function AppRoutes() {
   return (
@@ -63,16 +64,18 @@ export default function AppRoutes() {
             <Route path="/interns" element={<Interns />} />
             <Route path="/reports" element={<WorkReports />} />
           </Route>
-          <Route element={<ProtectedRoute roles={taskRoles} />}>
+          <Route element={<ProtectedRoute roles={taskManagerRoles} />}>
             <Route path="/division-jobdesk" element={<DivisionJobdesk />} />
             <Route path="/approval" element={<Navigate to="/reviews" replace />} />
           </Route>
-          <Route element={<ProtectedRoute roles={taskRoles} />}>
+          <Route element={<ProtectedRoute roles={taskManagerRoles} />}>
             <Route path="/reviews" element={<ReviewTasks />} />
           </Route>
-          <Route element={<ProtectedRoute roles={taskRoles} />}>
+          <Route element={<ProtectedRoute roles={taskAssigneeRoles} />}>
             <Route path="/individual-jobdesk" element={<IndividualJobdesk />} />
             <Route path="/jobdesk/:id" element={<JobdeskDetail />} />
+          </Route>
+          <Route element={<ProtectedRoute roles={taskManagerRoles} />}>
             <Route path="/minutes" element={<Minutes />} />
             <Route path="/minutes/:id" element={<MinuteDetail />} />
             <Route path="/agenda" element={<MeetingAgenda />} />

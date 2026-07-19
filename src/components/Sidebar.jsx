@@ -29,7 +29,7 @@ const menus = [
   { to: "/employees", label: "Staf", icon: Users, roles: ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer", "HRD"] },
   { to: "/interns", label: "Staf Magang", icon: Users, roles: ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer", "HRD"] },
   { to: "/division-jobdesk", label: "Jobdesk Divisi", icon: Briefcase, roles: ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer"] },
-  { to: "/individual-jobdesk", label: "Jobdesk Individu", icon: CheckSquare, roles: ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer"] },
+  { to: "/individual-jobdesk", label: "Jobdesk Individu", icon: CheckSquare, roles: ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer", "HRD"] },
   { to: "/reviews", label: "Review Tugas", staffLabel: "Feedback Tugas", icon: MessageSquareText, roles: ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer"] },
   { to: "/minutes", label: "Notulen Rapat", icon: ClipboardList, roles: ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer"] },
   { to: "/agenda", label: "Agenda Rapat", icon: CalendarDays, roles: ["Owner", "Kepala Divisi", "Staff", "Magang", "Wakil Owner", "Developer"] },
